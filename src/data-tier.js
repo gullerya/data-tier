@@ -1,1 +1,3 @@
-window.alert('some');
+(function () {
+	'use strict';
+})();
