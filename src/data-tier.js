@@ -48,6 +48,20 @@
 		return value;
 	}
 
+	function publish(data, path) {
+		//	traverse the DOM and find all of the elements subscribed for this path
+		//	update those DOM elements with the new data according to the target property
+	}
+
+	function getObserver(ref, path) {
+		var r = function (changes) {
+			//	process the changes and mainly invoke the publishing logic
+			publish('data, replace this of course', path);
+		}
+		observersMap.set(ref, r);
+		return r;
+	}
+
 	function rootObserver(changes) {
 		changes.forEach(function (change) {
 			if (change.type === 'add') {
