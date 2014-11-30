@@ -75,6 +75,10 @@
 		}
 	}
 
+	function domObserver() {
+
+	}
+
 	function getObserver(path) {
 		var r = function (changes) {
 			changes.forEach(function (change) {
