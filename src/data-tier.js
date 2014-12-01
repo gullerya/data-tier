@@ -1,21 +1,7 @@
-//	Meta code for usage:
-//	
-//	DataTier.bind('currentUser', user)							at this point i expect that the following will happen:
-//																	1)	all of the DOM elements having 'data-path: DataTier.currentUser....' would get updated with the values (recursively scan 'user')
-//																	2)	listeners would be bound for any change within the 'user' or it's descendants that will immediatelly update the relevant DOM
-//																	3)	listeners would be bound to the DOM elements to track the 'changed' event to immediatelly update the DataTier band
-//																	4)	would be added proper handling for adding/removal in DOM and adding/removal in DataTier
-//	DataTier.tear('currentUser')
-//																at this point the following should be done:
-//																	1)	release all of the related listeners
-//																	2)	remove all the references to the 'currentUser....' recursively
-
-
-'use strict';
-
 (function (options) {
+	'use strict';
 
-	var root = {};
+	var PATH_ATTRIBUTE = 'data-dt-path', PATH_PROPERTY = 'dtPath', root = {}, domObserver;
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -42,7 +28,7 @@
 		return ref;
 	}
 
-	function delPath(ref, path) {
+	function cutPath(ref, path) {
 		var list = path.split('.'), i = 0, value;
 		for (; i < list.length - 1; i++) {
 			if (list[i] in ref) ref = ref[list[i]];
@@ -53,64 +39,6 @@
 		return value;
 	}
 
-	function publish(data, path) {
-		var views, view, dest, i, l;
-		if (typeof data === 'object') {
-			if (!data) { throw new Error('data MUST a primitive value or non-null object'); } else {
-				Object.keys(data).forEach(function (key) {
-					publish(data[key], path + '.' + key);
-				});
-			}
-		} else {
-			views = document.querySelectorAll('*[data-dt-path="' + path + '"]');
-			for (i = 0, l = views.length; i < l; i++) {
-				view = views[i];
-				if (view.dataset.dest && getPath(view, view.dataset.dest)) {
-					dest = view.dataset.dest;
-				} else {
-					dest = 'textContent';
-				}
-				setPath(view, dest, data);
-			}
-		}
-	}
-
-	function domObserver() {
-
-	}
-
-	function getObserver(path) {
-		var r = function (changes) {
-			changes.forEach(function (change) {
-				publish(change.object[change.name], path + '.' + change.name);
-			});
-		}
-		return r;
-	}
-
-	function rootObserver(changes) {
-		var observer;
-		//	TODO: validate that on the root namespace there are only objects
-		//	TODO: add deep object observers
-		//	TODO: add publishing on the first set
-		changes.forEach(function (change) {
-			if (change.type === 'add') {
-				if (typeof root[change.name] !== 'object') {
-					throw new Error('on an object may be tracked');
-				}
-				observer = getObserver(change.name);
-				Object.observe(root[change.name], observer);
-				publish(root[change.name], change.name);
-			} else if (change.type === 'update') {
-				console.log(change);
-				//	remove the observers from the old object and add new ones
-			} else if (change.type === 'delete') {
-				console.log(change);
-				//	remove the observers
-			}
-		});
-	}
-
 	function bind(namespace, initialValue) {
 		if (typeof namespace !== 'string' || /\./.test(namespace)) { throw new Error('bad namespace parameter'); }
 		if (typeof getPath(root, namespace) !== 'undefined') { throw new Error('the namespace already exist'); }
@@ -118,16 +46,135 @@
 		setPath(root, namespace, initialValue || null);
 	}
 
+	function publishToElement(data, element) {
+		var dest;
+		if (element.dataset.dest && getPath(element, element.dataset.dest)) {
+			dest = element.dataset.dest;
+		} else {
+			dest = 'textContent';
+		}
+		setPath(element, dest, data);
+	}
+
+	function publishToTree(data, path, rootElement) {
+		var views = [], i, l;
+		if (rootElement.nodeType !== Node.DOCUMENT_NODE &&
+			rootElement.nodeType !== Node.DOCUMENT_FRAGMENT_NODE &&
+			rootElement.nodeType !== Node.ELEMENT_NODE) {
+			throw new Error('invalid root element');
+		}
+		if (typeof data === 'object') {
+			if (!data) { throw new Error('data MUST a primitive value or non-null object'); } else {
+				Object.keys(data).forEach(function (key) {
+					publishToTree(data[key], path + '.' + key, rootElement);
+				});
+			}
+		} else {
+			rootElement.dataset && rootElement.dataset[PATH_PROPERTY] === path && views.push(rootElement);
+			Array.prototype.push.apply(views, rootElement.querySelectorAll('*[' + PATH_ATTRIBUTE + '="' + path + '"]'));
+			for (i = 0, l = views.length; i < l; i++) {
+				publishToElement(data, views[i]);
+			}
+		}
+	}
+
+	//	TODO: add error handling
+	function updateElement(element) {
+		var path = element.dataset[PATH_PROPERTY];
+		if (path) {
+			publishToElement(getPath(root, path), element);
+		}
+	}
+
+	function updateElementTree(element) {
+		var list = [];
+		if (element.nodeType === Node.DOCUMENT_NODE ||
+			element.nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
+			element.nodeType === Node.ELEMENT_NODE) {
+			(PATH_PROPERTY in element.dataset) && list.push(element);
+			Array.prototype.push.apply(list, element.querySelectorAll('*[' + PATH_ATTRIBUTE + ']'));
+			list.forEach(updateElement);
+		}
+	}
+
 	function tear(namespace) {
 		if (typeof namespace !== 'string' || /\./.test(namespace)) throw new Error('bad namespace parameter');
 		if (getPath(root, namespace) === 'undefined') throw new Error('the namespace not exist');
-		delPath(root, namespace);
+		cutPath(root, namespace);
 	}
 
-	Object.observe(root, rootObserver);
+	function getObserver(path) {
+		var r = function (changes) {
+			changes.forEach(function (change) {
+				publishToTree(change.object[change.name], path + '.' + change.name, document);
+			});
+		}
+		return r;
+	}
+
+	function initDataObserver() {
+		function processData(changes) {
+			var observer;
+			//	TODO: validate that on the root namespace there are only objects
+			//	TODO: add deep object observers
+			//	TODO: add publishing on the first set
+			changes.forEach(function (change) {
+				if (change.type === 'add') {
+					if (typeof root[change.name] !== 'object') {
+						throw new Error('on an object may be tracked');
+					}
+					observer = getObserver(change.name);
+					Object.observe(root[change.name], observer);
+					publishToTree(root[change.name], change.name, document);
+				} else if (change.type === 'update') {
+					console.log(change);
+					//	remove the observers from the old object and add new ones
+				} else if (change.type === 'delete') {
+					console.log(change);
+					//	remove the observers
+				}
+			});
+		}
+		Object.observe(root, processData);
+	}
+
+	function initDomObserver() {
+		function processDom(changes) {
+			changes.forEach(function (change) {
+				var path, i, l;
+				if (change.type === 'attributes') {
+					path = change.target.getAttribute(PATH_ATTRIBUTE);
+					if (path) {
+						publishToElement(getPath(root, path), change.target);
+					}
+				} else if (change.type === 'childList' && change.addedNodes.length) {
+					for (i = 0, l = change.addedNodes.length; i < l; i++) {
+						updateElementTree(change.addedNodes[i]);
+					}
+				} else { throw new Error('unsupported DOM mutation type'); }
+			});
+		};
+
+		domObserver = new MutationObserver(processDom);
+		domObserver.observe(document.body, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: [PATH_ATTRIBUTE],
+			attributeOldValue: true,
+			characterData: false,
+			characterDataOldValue: false
+		});
+	}
+
+	initDataObserver();
+	initDomObserver();
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
 		bind: { value: bind },
-		tear: { value: tear }
+		tear: { value: tear },
+		setPath: { value: setPath },
+		getPath: { value: getPath },
+		cutPath: { value: cutPath }
 	});
 })((typeof arguments === 'object' ? arguments[0] : undefined));
