@@ -1,8 +1,19 @@
 ﻿(function () {
-	window.user = {
-		name: 'ziv',
-		age: 5
-	}, dt = window.Utils.DataTier;
+	'use strict';
 
-	dt.bind('user', window.user);
+	var suite = window.Utils.JustTest.createSuite('testing the tests :)');
+
+	suite.createCase(function (pass, fail) {
+		pass('this is passed');
+	});
+
+	suite.createCase({}, function (pass, fail) {
+		fail('this is failed');
+	});
+
+	suite.createCase({ description: 'throwing' }, function (pass, fail) {
+		//	timeout should happen here
+	});
+
+	suite.run();
 })();
