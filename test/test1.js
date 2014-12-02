@@ -11,9 +11,9 @@
 		fail('this is failed');
 	});
 
-	suite.createCase({ description: 'throwing' }, function (pass, fail) {
-		//	timeout should happen here
-	});
+	//suite.createCase({ description: 'throwing' }, function (pass, fail) {
+	//	//	timeout should happen here
+	//});
 
 	suite.run();
 })();

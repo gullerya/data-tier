@@ -14,43 +14,43 @@
 	}
 
 	function TestCase(id, description, async, ttl, func) {
-		var status = 'idle', result, message, duration, beg, end, timeoutWatcher, runner, promise;
+		var status = 'idle', result, message, duration, beg, end, casePromise;
 
-		function pass(msg) {
-			if (!result) {
-				clearInterval(timeoutWatcher);
-				end = performance.now();
-				status = 'done';
-				result = 'success';
-				message = msg;
-				duration = end - beg;
-				dump();
-			}
-		}
-		function fail(msg) {
-			if (!result) {
-				clearInterval(timeoutWatcher);
-				end = performance.now();
-				status = 'done';
-				result = 'failure';
-				message = msg;
-				duration = end - beg;
-				dump();
-			}
-		}
-		function dump() {
+		function finalize(msg) {
 			var tmp = out.querySelector('#' + id);
+			end = performance.now();
+			message = msg;
+			duration = end - beg;
+			status = 'done';
 			tmp.textContent = description + ' - ' + message + ' - ' + result + ' - ' + duration.toFixed(2) + 'ms';
 		}
-		function runner() {
-			timeoutWatcher = setTimeout(function () {
-				fail('timeout');
-			}, ttl);
+
+		function run() {
 			status = 'running';
 			beg = performance.now();
-			promise = new Promise(func);
-			promise.then(pass, fail);
-			return promise;
+			casePromise = new Promise(function (resolve, reject) {
+				var timeoutWatcher;
+				function pass(msg) {
+					clearInterval(timeoutWatcher);
+					result = 'success';
+					resolve(msg);
+				}
+				function fail(msg) {
+					clearInterval(timeoutWatcher);
+					result = 'failure';
+					reject(mgs);
+				}
+				if (async) {
+					console.error('not yet implemented');
+				} else {
+					timeoutWatcher = setTimeout(function () {
+						fail('timeout');
+					}, ttl);
+					func(pass, fail);
+				}
+			});
+			casePromise.then(finalize, finalize);
+			return casePromise;
 		}
 
 		Object.defineProperties(this, {
@@ -58,55 +58,89 @@
 			result: { value: result },
 			message: { value: message },
 			duration: { value: duration },
-			run: { value: runner }
+			run: { value: run }
 		});
 	}
 
 	function TestSuite(description) {
-		var id = suites.length + 1, cases = [], status = 'idle', view, tmp;
+		var id = suites.length + 1, cases = [], status = 'idle', suitePromise, view, tmp;
 		suites.push(this);
+
 		view = document.createElement('div');
 		view.id = 'testSuite_' + id;
 		view.style.cssText = 'position:relative;width:100%;height:auto';
+
 		tmp = document.createElement('div');
+		tmp.className = 'suiteTitle';
 		tmp.style.cssText = 'color:#fff';
 		tmp.textContent = 'Suite ' + id + ': ' + description;
 		view.appendChild(tmp);
+
+		tmp = document.createElement('div');
+		tmp.className = 'suiteSummary'
+		tmp.style.cssText = 'position:absolute;right:0px;top:0px';
+		view.querySelector('.suiteTitle').appendChild(tmp);
+
 		out.appendChild(view);
 
-		function runNext() {
+		function createCase(options, executor) {
+			if (typeof options === 'function') { executor = options; } else if (typeof executor !== 'function') { throw new Error('test function must be a last of not more than two parameters'); }
+			cases.push(new TestCase(
+				'testCase_' + id + '_' + (cases.length + 1),
+				options.description || 'test ' + (cases.length + 1),
+				typeof options.async === 'boolean' ? options.async : false,
+				typeof options.ttl === 'number' ? options.ttl : DEFAULT_TEST_TTL,
+				executor
+			));
+			tmp = document.createElement('div');
+			tmp.id = 'testCase_' + id + '_' + cases.length;
+			tmp.style.cssText = 'position:relative;margin-left:40px;color:#fff';
+			view.appendChild(tmp);
+			return cases.slice(-1)[0];
+		}
 
+		function run() {
+			var asyncFlow = Promise.resolve();
+
+			//	TODO: handle UI stuff
+			view.querySelector('.suiteSummary').textContent = 'summary goes here';
+
+			function finalize() {
+				console.log('finished the suite');
+			}
+
+			suitePromise = new Promise(function (resolve, reject) {
+				if (!cases.length) { throw new Error('empty suite can not be run'); }
+				(function iterate(index) {
+					var testCase;
+					if (index === cases.length) {
+						asyncFlow.then(resolve, reject);
+					} else {
+						testCase = cases[index++];
+						if (testCase.async) {
+							asyncFlow = asyncFlow.then(testCase.run());
+							iterate(index);
+						} else {
+							testCase.run().then(function () {
+								//	handle success
+								iterate(index);
+							}, function () {
+								//	handle failure
+								iterate(index);
+							});
+						}
+					}
+
+				})(0);
+			});
+			suitePromise.then(finalize, finalize);
+			return suitePromise;
 		}
 
 		Object.defineProperties(this, {
 			id: { get: function () { return id; } },
-			createCase: {
-				value: function (options, func) {
-					if (typeof options === 'function') { func = options; } else if (typeof func !== 'function') { throw new Error('test function must be a last of not more than two parameters'); }
-					cases.push(new TestCase(
-						'testCase_' + id + '_' + (cases.length + 1),
-						options.description || 'test ' + (cases.length + 1),
-						typeof options.async === 'boolean' ? options.async : true,
-						typeof options.ttl === 'number' ? options.ttl : DEFAULT_TEST_TTL,
-						func
-					));
-					tmp = document.createElement('div');
-					tmp.id = 'testCase_' + id + '_' + cases.length;
-					tmp.style.cssText = 'position:relative;margin-left:40px;color:#fff';
-					view.appendChild(tmp);
-					return cases.slice(-1)[0];
-				}
-			},
-			run: {
-				value: function () {
-					for (var i = 0, l = cases.length; i < l; i++) {
-						if (!cases[i].result && cases[i].status === 'idle') {
-							cases[i].run().then(runNext, runNext);
-							if (!cases[i].async) break;
-						}
-					}
-				}
-			}
+			createCase: { value: createCase },
+			run: { value: run }
 		});
 	}
 
@@ -128,7 +162,6 @@
 	}
 
 	buildOut();
-
 	Object.defineProperty(options.namespace, 'JustTest', { value: {} });
 	Object.defineProperties(options.namespace.JustTest, {
 		createSuite: {
