@@ -14,43 +14,38 @@
 	}
 
 	function TestCase(id, description, async, ttl, func) {
-		var status = 'idle', result, message, duration, beg, end, casePromise;
-
-		function finalize(msg) {
-			var tmp = out.querySelector('#' + id);
-			end = performance.now();
-			message = msg;
-			duration = end - beg;
-			status = 'done';
-			tmp.textContent = description + ' - ' + message + ' - ' + result + ' - ' + duration.toFixed(2) + 'ms';
-		}
+		var status = 'idle', result, message, duration, beg, end;
 
 		function run() {
+			var internalPromise, timeoutWatcher, tmp = out.querySelector('#' + id);
+			tmp.textContent = description + ' is running...';
 			status = 'running';
 			beg = performance.now();
-			casePromise = new Promise(function (resolve, reject) {
-				var timeoutWatcher;
-				function pass(msg) {
-					clearInterval(timeoutWatcher);
-					result = 'success';
-					resolve(msg);
-				}
-				function fail(msg) {
-					clearInterval(timeoutWatcher);
-					result = 'failure';
-					reject(mgs);
-				}
-				if (async) {
-					console.error('not yet implemented');
-				} else {
+			function finalize(res, msg, settle) {
+				timeoutWatcher && clearInterval(timeoutWatcher);
+				end = performance.now();
+				result = res;
+				message = msg;
+				duration = end - beg;
+				status = 'done';
+				tmp.textContent = description + ' - ' + message + ' - ' + result + ' - ' + duration.toFixed(2) + 'ms';
+				settle();
+			}
+			internalPromise = new Promise(function (resolve, reject) {
+				if (!async) {
 					timeoutWatcher = setTimeout(function () {
-						fail('timeout');
+						reject('timeout');
 					}, ttl);
-					func(pass, fail);
 				}
+				func(resolve, reject);
 			});
-			casePromise.then(finalize, finalize);
-			return casePromise;
+			return new Promise(function (resolve) {
+				internalPromise.then(function (msg) {
+					finalize('success', msg, resolve);
+				}, function (msg) {
+					finalize('failure', msg, resolve);
+				});
+			});
 		}
 
 		Object.defineProperties(this, {
@@ -58,6 +53,7 @@
 			result: { value: result },
 			message: { value: message },
 			duration: { value: duration },
+			async: { value: async },
 			run: { value: run }
 		});
 	}
@@ -118,19 +114,16 @@
 					} else {
 						testCase = cases[index++];
 						if (testCase.async) {
-							asyncFlow = asyncFlow.then(testCase.run());
+							asyncFlow = Promise.all([asyncFlow, testCase.run()]);
 							iterate(index);
 						} else {
 							testCase.run().then(function () {
-								//	handle success
 								iterate(index);
 							}, function () {
-								//	handle failure
 								iterate(index);
 							});
 						}
 					}
-
 				})(0);
 			});
 			suitePromise.then(finalize, finalize);
