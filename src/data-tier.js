@@ -1,12 +1,34 @@
 (function (options) {
 	'use strict';
 
-	var PATH_ATTRIBUTE = 'data-dt-path', PATH_PROPERTY = 'dtPath', root = {}, domObserver;
+	var root = {}, domObserver,
+		PATH_ATTRIBUTE = 'data-dt-path',
+		PATH_PROPERTY = 'dtPath';
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
 		if (typeof window.Utils !== 'object') Object.defineProperty(window, 'Utils', { value: {} });
 		options.namespace = window.Utils;
+	}
+
+	function camelToDashes(value) {
+		var r = '';
+		if (!value) return r;
+		for (var i = 0, l = value.length, cc, nc; i < l - 1; i++) {
+			if (/[A-Z]/.test(value[i])) r += '-' + value[i].toLowerCase(); else r += value[i];
+		}
+		r += value[value.length - 1];
+		return r;
+	}
+
+	function dashesToCamel(value) {
+		var r = '';
+		if (!value) return r;
+		for (var i = 0, l = value.length, cc, nc; i < l - 1; i++) {
+			if (value[i] === '-' && /[a-z]/.test(value[i + 1])) r += value[1 + i++].toUpperCase(); else r += value[i];
+		}
+		r += value[value.length - 1];
+		return r;
 	}
 
 	function setPath(ref, path, value) {
