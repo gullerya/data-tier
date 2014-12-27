@@ -1,9 +1,20 @@
+
+
+
+
 (function (options) {
 	'use strict';
 
-	var root = {}, domObserver,
-		PATH_ATTRIBUTE = 'data-dt-path',
-		PATH_PROPERTY = 'dtPath';
+	//	TODO: make the properties names customizable
+	var root = {}, domObserver, observersMap = new Map(),
+	FULL_PATH_ATTRIBUTE = 'data-path',
+	FULL_PATH_PROPERTY = dataAttrToProp(FULL_PATH_ATTRIBUTE),
+	ROOT_PATH_ATTRIBUTE = 'data-path-root',
+	ROOT_PATH_PROPERTY = dataAttrToProp(ROOT_PATH_ATTRIBUTE),
+	NODE_PATH_ATTRIBUTE = 'data-path-node',
+	NODE_PATH_PROPERTY = dataAttrToProp(NODE_PATH_ATTRIBUTE),
+	LEAF_PATH_ATTRIBUTE = 'data-path-leaf',
+	LEAF_PATH_PROPERTY = dataAttrToProp(LEAF_PATH_ATTRIBUTE);
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -30,6 +41,10 @@
 		r += value[value.length - 1];
 		return r;
 	}
+
+	function dataAttrToProp(value) { return dashesToCamel(value.replace('data-', '')); }
+
+	function dataPropToAttr(value) { return 'data-' + camelToDashes(value); }
 
 	function setPath(ref, path, value) {
 		var list = path.split('.'), i;
@@ -61,13 +76,6 @@
 		return value;
 	}
 
-	function bind(namespace, initialValue) {
-		if (typeof namespace !== 'string' || /\./.test(namespace)) { throw new Error('bad namespace parameter'); }
-		if (typeof getPath(root, namespace) !== 'undefined') { throw new Error('the namespace already exist'); }
-		if (typeof initialValue !== undefined && typeof initialValue !== 'object') { throw new Error('initial value, if provided, MUST be an object'); }
-		setPath(root, namespace, initialValue || null);
-	}
-
 	function publishToElement(data, element) {
 		var dest;
 		if (element.dataset.dest && getPath(element, element.dataset.dest)) {
@@ -78,7 +86,7 @@
 		setPath(element, dest, data);
 	}
 
-	function publishToTree(data, path, rootElement) {
+	function publishData(data, path, rootElement) {
 		var views = [], i, l;
 		if (rootElement.nodeType !== Node.DOCUMENT_NODE &&
 			rootElement.nodeType !== Node.DOCUMENT_FRAGMENT_NODE &&
@@ -86,23 +94,20 @@
 			throw new Error('invalid root element');
 		}
 		if (typeof data === 'object') {
-			if (!data) { throw new Error('data MUST a primitive value or non-null object'); } else {
-				Object.keys(data).forEach(function (key) {
-					publishToTree(data[key], path + '.' + key, rootElement);
-				});
-			}
+			Object.keys(data).forEach(function (key) {
+				publishData(data[key], path + '.' + key, rootElement);
+			});
 		} else {
-			rootElement.dataset && rootElement.dataset[PATH_PROPERTY] === path && views.push(rootElement);
-			Array.prototype.push.apply(views, rootElement.querySelectorAll('*[' + PATH_ATTRIBUTE + '="' + path + '"]'));
+			rootElement.dataset && rootElement.dataset[FULL_PATH_PROPERTY] === path && views.push(rootElement);
+			Array.prototype.push.apply(views, rootElement.querySelectorAll('*[' + FULL_PATH_ATTRIBUTE + '="' + path + '"]'));
 			for (i = 0, l = views.length; i < l; i++) {
 				publishToElement(data, views[i]);
 			}
 		}
 	}
 
-	//	TODO: add error handling
 	function updateElement(element) {
-		var path = element.dataset[PATH_PROPERTY];
+		var path = element.dataset[FULL_PATH_PROPERTY];
 		if (path) {
 			publishToElement(getPath(root, path), element);
 		}
@@ -113,59 +118,65 @@
 		if (element.nodeType === Node.DOCUMENT_NODE ||
 			element.nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
 			element.nodeType === Node.ELEMENT_NODE) {
-			(PATH_PROPERTY in element.dataset) && list.push(element);
-			Array.prototype.push.apply(list, element.querySelectorAll('*[' + PATH_ATTRIBUTE + ']'));
+			(FULL_PATH_PROPERTY in element.dataset) && list.push(element);
+			Array.prototype.push.apply(list, element.querySelectorAll('*[' + FULL_PATH_ATTRIBUTE + ']'));
 			list.forEach(updateElement);
 		}
 	}
 
-	function tear(namespace) {
-		if (typeof namespace !== 'string' || /\./.test(namespace)) throw new Error('bad namespace parameter');
-		if (getPath(root, namespace) === 'undefined') throw new Error('the namespace not exist');
-		cutPath(root, namespace);
-	}
-
-	function getObserver(path) {
-		var r = function (changes) {
+	function getObserver(namespace) {
+		return function (changes) {
 			changes.forEach(function (change) {
-				publishToTree(change.object[change.name], path + '.' + change.name, document);
+				//	TODO: now naive, but must handle any kind of changes: removal of values, removal of objects, addition of values, addition of objects
+				publishData(change.object[change.name], namespace + '.' + change.name, document);
 			});
 		}
-		return r;
 	}
 
-	function initDataObserver() {
-		function processData(changes) {
-			var observer;
-			//	TODO: validate that on the root namespace there are only objects
-			//	TODO: add deep object observers
-			//	TODO: add publishing on the first set
-			changes.forEach(function (change) {
-				if (change.type === 'add') {
-					if (typeof root[change.name] !== 'object') {
-						throw new Error('on an object may be tracked');
-					}
-					observer = getObserver(change.name);
-					Object.observe(root[change.name], observer);
-					publishToTree(root[change.name], change.name, document);
-				} else if (change.type === 'update') {
-					console.log(change);
-					//	remove the observers from the old object and add new ones
-				} else if (change.type === 'delete') {
-					console.log(change);
-					//	remove the observers
+	function bindNS(namespace, initialValue) {
+		var observer;
+		if (typeof namespace !== 'string' || /\./.test(namespace)) { throw new Error('bad namespace parameter'); }
+		if (typeof root[namespace] !== 'undefined') { throw new Error('the namespace already bound, you can (re)set the value though'); }
+		if (!initialValue || typeof initialValue !== 'object') { throw new Error('initial value MUST be a non-null object'); }
+		root[namespace] = initialValue;
+		(function iterate(ns, o) {
+			observer = getObserver(ns);
+			Object.observe(o, observer, ['add', 'update', 'delete']);
+			observersMap.set(o, observer);
+			Object.keys(o).forEach(function (key) {
+				if (o[key] && typeof o[key] === 'object') {
+					iterate(ns + '.' + key, o[key]);
 				}
 			});
-		}
-		Object.observe(root, processData);
+		})(namespace, initialValue);
+		console.info('"' + namespace + '" bound, total number of observers now is ' + observersMap.size);
+
+		//	update DOM
+		publishData(initialValue, namespace, document);
 	}
 
-	function initDomObserver() {
+	function tearNS(namespace) {
+		if (typeof namespace !== 'string' || /\./.test(namespace)) throw new Error('bad namespace parameter');
+		if (getPath(root, namespace) === 'undefined') throw new Error('the namespace not exist');
+		(function iterate(ns, o) {
+			Object.unobserve(o, observersMap.get(o));
+			observersMap.delete(o);
+			Object.keys(o).forEach(function (key) {
+				if (o[key] && typeof o[key] === 'object') {
+					iterate(ns + '.' + key, o[key]);
+				}
+			});
+		})(namespace, root[namespace]);
+		delete root[namespace];
+		console.info('"' + namespace + '" torn, total number of observers now is ' + observersMap.size);
+	}
+
+	(function initDomObserver() {
 		function processDom(changes) {
 			changes.forEach(function (change) {
 				var path, i, l;
 				if (change.type === 'attributes') {
-					path = change.target.getAttribute(PATH_ATTRIBUTE);
+					path = change.target.getAttribute(FULL_PATH_ATTRIBUTE);
 					if (path) {
 						publishToElement(getPath(root, path), change.target);
 					}
@@ -173,7 +184,7 @@
 					for (i = 0, l = change.addedNodes.length; i < l; i++) {
 						updateElementTree(change.addedNodes[i]);
 					}
-				} else { throw new Error('unsupported DOM mutation type'); }
+				} else { console.info('unsupported DOM mutation type'); }
 			});
 		};
 
@@ -182,21 +193,16 @@
 			childList: true,
 			subtree: true,
 			attributes: true,
-			attributeFilter: [PATH_ATTRIBUTE],
+			attributeFilter: [FULL_PATH_ATTRIBUTE],
 			attributeOldValue: true,
 			characterData: false,
 			characterDataOldValue: false
 		});
-	}
+	})();
 
-	initDataObserver();
-	initDomObserver();
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
-		bind: { value: bind },
-		tear: { value: tear },
-		setPath: { value: setPath },
-		getPath: { value: getPath },
-		cutPath: { value: cutPath }
+		bind: { value: bindNS },
+		tear: { value: tearNS }
 	});
 })((typeof arguments === 'object' ? arguments[0] : undefined));
