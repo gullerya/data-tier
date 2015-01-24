@@ -8,9 +8,8 @@
 (function (options) {
 	'use strict';
 
-	var domObserver, ties = {}, FULL_PATH_PROPERTY = 'source',
-		//	deprecated
-		FULL_PATH_ATTRIBUTE = 'data-path';
+	var domObserver,
+		ties = {};
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -121,86 +120,96 @@
 
 	function updateElementTree(element) {
 		var list = [];
-		if (element.nodeType === Node.DOCUMENT_NODE ||
-			element.nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
-			element.nodeType === Node.ELEMENT_NODE) {
-			(FULL_PATH_PROPERTY in element.dataset) && list.push(element);
-			Array.prototype.push.apply(list, element.querySelectorAll('*[' + FULL_PATH_ATTRIBUTE + ']'));
-			list.forEach(updateElement);
-		}
+		//if (element.nodeType === Node.DOCUMENT_NODE ||
+		//	element.nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
+		//	element.nodeType === Node.ELEMENT_NODE) {
+		//	(FULL_PATH_PROPERTY in element.dataset) && list.push(element);
+		//	Array.prototype.push.apply(list, element.querySelectorAll('*[' + FULL_PATH_ATTRIBUTE + ']'));
+		//	list.forEach(updateElement);
+		//}
 	}
 
-	function getObserver(namespace) {
-		return function (changes) {
+	function destroyDataObservers(data, namespace, observers) {
+		//	TODO: reafactor this algorythm to run on observers list rather than data tree
+		Object.keys(data).forEach(function (key) {
+			if (data[key] && typeof data[key] === 'object') {
+				if (observers[namespace + '.' + key]) {
+					Object.unobserve(data[key], observers[namespace + '.' + key]);
+					delete observers[namespace + '.' + key];
+				}
+				destroyDataObservers(data[key], namespace + '.' + key, observers);
+			}
+		});
+	}
+
+	function setupDataObservers(data, namespace, observers) {
+		var o;
+		o = function (changes) {
 			changes.forEach(function (change) {
-				//	TODO: now naive, but must handle any kind of changes: removal of values, removal of objects, addition of values, addition of objects
-				publishData(change.object[change.name], namespace + '.' + change.name, document);
-			});
-		}
-	}
-
-	//	TODO: refactor since namespace becomes first letter upper cased
-	function getViews(namespace, rootElement) {
-		var views = [], f = {}, i;
-		f.acceptNode = function (node) {
-			var result = NodeFilter.FILTER_SKIP;
-			Object.keys(node.dataset).some(function (key) {
-				if (key.indexOf(FULL_PATH_PROPERTY + namespace) === 0) {
-					result = NodeFilter.FILTER_ACCEPT;
-					return true;
+				if (typeof change.oldValue === 'object') {
+					destroyDataObservers(change.oldValue, namespace, observers);
+				} else if (change.object[change.name] && typeof change.object[change.name] === 'object') {
+					setupDataObservers(change.object[change.name], namespace, observers);
+				} else {
+					console.log(namespace + '.' + change.name + ' - primitive change, to be updated');
 				}
 			});
-			return result;
 		};
-		i = document.createNodeIterator(rootElement, NodeFilter.SHOW_DOCUMENT | NodeFilter.SHOW_DOCUMENT_FRAGMENT | NodeFilter.SHOW_ELEMENT, f);
-		while (i.nextNode()) views.push(i.referencedNode);
-		return views;
+		observers[namespace] = o;
+		Object.observe(data, o, ['add', 'update', 'delete']);
+		Object.keys(data).forEach(function (key) {
+			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key, observers);
+		});
+	}
+
+	function updateViews(namespace, rootElement, views) {
+		var i, n;
+		i = document.createNodeIterator(rootElement, NodeFilter.SHOW_DOCUMENT | NodeFilter.SHOW_DOCUMENT_FRAGMENT | NodeFilter.SHOW_ELEMENT);
+		while (i.nextNode()) {
+			n = i.referencedNode;
+			Object.keys(n.dataset).forEach(function (key) {
+				if (/^tie[A-Z]/.test(key) && n.dataset[key].indexOf(namespace) === 0) {
+					if (!views[n.dataset[key]]) views[n.dataset[key]] = [];
+					views[n.dataset[key]].push(n);
+				}
+			});
+		}
+	}
+
+	function View(element, data, path) {
+		Object.defineProperties(this, {
+			element: { get: function () { return element; } },
+			data: { get: function () { return data; } },
+			path: { get: function () { return path; } }
+		});
 	}
 
 	function Tie(options) {
 		if (!options || typeof options !== 'object') throw new Error('options MUST be a non null object');
-		if (!options.namespace || typeof namespace !== 'string') throw new Error('options.namespace MUST be a non empty string');
+		if (!options.namespace || typeof options.namespace !== 'string') throw new Error('options.namespace MUST be a non empty string');
 		if (/\W|[A-Z]/.test(options.namespace)) throw new Error('options.namespace MUST consist of alphanumeric non uppercase characters only');
 		if (ties[options.namespace]) throw new Error('namespace "' + options.namespace + '" already exists');
 		if (!options.data || typeof options.data !== 'object') throw new Error('options.data MUST be a non null object');
 
-		var namespace = options.namespace, data = options.data, viewSets = {};
+		var namespace = options.namespace,
+			data = options.data,
+			observers = {},
+			views = {};
+
 		ties[namespace] = this;
-		// TODO: traverse the data and bind the observers
+		setupDataObservers(data, namespace, observers);
+		views = getViews(namespace, document, views);
+
+		//	TODO: update views to model
+
 		Object.defineProperties(this, {
-			addViews: {
-				value: function (domRoot) {
-					var l = getViews(namespace, domRoot), path;
-					l.forEach(function (v) {
-						if (v.dataset[FULL_PATH_PROPERTY + namespace]) {
-							path = v.dataset[namespace + FULL_PATH_PROPERTY];
-						} else {
-							console.info('TODO: add support for partial pathing');
-							path = null;
-						}
-						if (path) {
-							if (!viewSets[path]) viewSets[path] = [];
-							viewSets[path].push(l[v]);
-						}
-					});
-				}
-			},
-			removeViews: {
-				value: function (domRoot) {
-					var viewSet, i, l;
-					Object.keys(viewSets).forEach(function (viewPath) {
-						viewSet = viewSets[viewPath];
-						for (i = 0, l = viewSet.length; i < l; i++) {
-							if (domRoot.contains(viewSet[i])) {
-								viewSet.splice(i, 1);
-								i--;
-							}
-						}
-					});
+			namespace: { get: function () { return namespace; } },
+			untie: {
+				value: function () {
+					console.info('to be implemented');
 				}
 			}
 		});
-		this.addViews(document);
 	}
 
 
@@ -279,6 +288,10 @@
 
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
-		Tie: { value: Tie }
+		tieData: {
+			value: function (options) {
+				return new Tie(options);
+			}
+		}
 	});
 })((typeof arguments === 'object' ? arguments[0] : undefined));
