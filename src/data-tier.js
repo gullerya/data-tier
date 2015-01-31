@@ -1,10 +1,3 @@
-//	Example of the attributes: data-tie=user.name data-tie-color=user.color data-tie-title=l10n.buttons.tooltips.mainmenu.save
-//
-//	Phase A: API created for adding namespace/s, listener on DOM mutations to support late binding. Full data path support only. Explicit/implicit destination support, few OTB dests.
-//	Phase B: API to support custom destinations including extensible/pluggable 'lifecycle'
-//	Phase C: Support for partial paths - data-tie=...[0]...		data-tie=...name	data-tie=user...
-
-
 (function (options) {
 	'use strict';
 
@@ -17,37 +10,28 @@
 		options.namespace = window.Utils;
 	}
 
-	function camelToDashes(value) {
-		var r = '';
-		if (!value) return r;
-		for (var i = 0, l = value.length, cc, nc; i < l - 1; i++) {
-			if (/[A-Z]/.test(value[i])) r += '-' + value[i].toLowerCase(); else r += value[i];
-		}
-		r += value[value.length - 1];
-		return r;
-	}
-
-	function dashesToCamel(value) {
-		var r = '';
-		if (!value) return r;
-		for (var i = 0, l = value.length, cc, nc; i < l - 1; i++) {
-			if (value[i] === '-' && /[a-z]/.test(value[i + 1])) r += value[1 + i++].toUpperCase(); else r += value[i];
-		}
-		r += value[value.length - 1];
-		return r;
-	}
-
-	function dataAttrToProp(value) { return dashesToCamel(value.replace('data-', '')); }
-
-	function dataPropToAttr(value) { return 'data-' + camelToDashes(value); }
-
 	function pathToNodes(value) {
-		var r, re = /(\[[\w\.]+\])/g, m;
-		//	first process brackets...
-		while ((m = re.exec(value)) !== null) {
-
+		var c = 0, b = false, n = '', r = [];
+		while (c < value.length) {
+			if (value[c] === '.') {
+				n.length && r.push(n);
+				n = '';
+			} else if (value[c] === '[') {
+				if (b) throw new Error('bad path: "' + value + '", at: ' + c);
+				n.length && r.push(n);
+				n = '';
+				b = true;
+			} else if (value[c] === ']') {
+				if (!b) throw new Error('bad path: "' + value + '", at: ' + c);
+				n.length && r.push(n);
+				n = '';
+				b = false;
+			} else {
+				n += value[c];
+			}
+			c++;
 		}
-		//	now process dots.
+		n.length && r.push(n);
 		return r;
 	}
 
@@ -81,107 +65,67 @@
 		return value;
 	}
 
-	function publishToElement(data, element) {
-		var dest;
-		if (element.dataset.dest && getPath(element, element.dataset.dest)) {
-			dest = element.dataset.dest;
-		} else {
-			dest = 'textContent';
-		}
-		setPath(element, dest, data);
-	}
-
-	function publishData(data, path, rootElement) {
-		var views = [], i, l;
-		if (rootElement.nodeType !== Node.DOCUMENT_NODE &&
-			rootElement.nodeType !== Node.DOCUMENT_FRAGMENT_NODE &&
-			rootElement.nodeType !== Node.ELEMENT_NODE) {
-			throw new Error('invalid root element');
-		}
+	function publishData(data, path, views) {
 		if (typeof data === 'object') {
 			Object.keys(data).forEach(function (key) {
-				publishData(data[key], path + '.' + key, rootElement);
+				publishData(data[key], path + '.' + key, views);
 			});
 		} else {
-			rootElement.dataset && rootElement.dataset[FULL_PATH_PROPERTY] === path && views.push(rootElement);
-			Array.prototype.push.apply(views, rootElement.querySelectorAll('*[' + FULL_PATH_ATTRIBUTE + '="' + path + '"]'));
-			for (i = 0, l = views.length; i < l; i++) {
-				publishToElement(data, views[i]);
+			if (views[path]) {
+				views[path].forEach(function (view) {
+					//	TODO: expand the visualization to many destinations
+					view.textContent = data;
+				});
 			}
 		}
 	}
 
-	//function updateElement(element) {
-	//	var path = element.dataset[FULL_PATH_PROPERTY];
-	//	if (path) {
-	//		publishToElement(getPath(root, path), element);
-	//	}
-	//}
-
-	function updateElementTree(element) {
-		var list = [];
-		//if (element.nodeType === Node.DOCUMENT_NODE ||
-		//	element.nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
-		//	element.nodeType === Node.ELEMENT_NODE) {
-		//	(FULL_PATH_PROPERTY in element.dataset) && list.push(element);
-		//	Array.prototype.push.apply(list, element.querySelectorAll('*[' + FULL_PATH_ATTRIBUTE + ']'));
-		//	list.forEach(updateElement);
-		//}
-	}
-
 	function destroyDataObservers(data, namespace, observers) {
-		//	TODO: reafactor this algorythm to run on observers list rather than data tree
-		Object.keys(data).forEach(function (key) {
-			if (data[key] && typeof data[key] === 'object') {
-				if (observers[namespace + '.' + key]) {
-					Object.unobserve(data[key], observers[namespace + '.' + key]);
-					delete observers[namespace + '.' + key];
-				}
-				destroyDataObservers(data[key], namespace + '.' + key, observers);
+		var o;
+		Object.keys(observers).forEach(function (key) {
+			if (key.indexOf(namespace) === 0) {
+				o = getPath(data, key.replace(namespace + '.', ''));
+				Object.unobserve(o, observers[key]);
 			}
 		});
 	}
 
-	function setupDataObservers(data, namespace, observers) {
+	function setupDataObservers(data, namespace, observers, views) {
 		var o;
 		o = function (changes) {
 			changes.forEach(function (change) {
-				if (typeof change.oldValue === 'object') {
-					destroyDataObservers(change.oldValue, namespace, observers);
-				} else if (change.object[change.name] && typeof change.object[change.name] === 'object') {
-					setupDataObservers(change.object[change.name], namespace, observers);
-				} else {
-					console.log(namespace + '.' + change.name + ' - primitive change, to be updated');
+				var ov = change.oldValue, nv = change.object[change.name], p = namespace + '.' + change.name;
+				if (ov && typeof ov === 'object') {
+					destroyDataObservers(ov, p, observers);
+					console.log(observers.length)
 				}
+				if (nv && typeof nv === 'object') {
+					setupDataObservers(nv, p, observers, views);
+					console.log(observers.length)
+				}
+				nv && publishData(nv, p, views);
 			});
 		};
 		observers[namespace] = o;
 		Object.observe(data, o, ['add', 'update', 'delete']);
 		Object.keys(data).forEach(function (key) {
-			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key, observers);
+			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key, observers, views);
 		});
 	}
 
-	function updateViews(namespace, rootElement, views) {
+	function updateViewsMap(namespace, rootElement, views) {
 		var i, n;
 		i = document.createNodeIterator(rootElement, NodeFilter.SHOW_DOCUMENT | NodeFilter.SHOW_DOCUMENT_FRAGMENT | NodeFilter.SHOW_ELEMENT);
 		while (i.nextNode()) {
-			n = i.referencedNode;
+			n = i.referenceNode;
+			if (!n.dataset) continue;
 			Object.keys(n.dataset).forEach(function (key) {
-				if (/^tie[A-Z]/.test(key) && n.dataset[key].indexOf(namespace) === 0) {
+				if (/^tie([A-Z]|$)/.test(key) && n.dataset[key].indexOf(namespace) === 0) {
 					if (!views[n.dataset[key]]) views[n.dataset[key]] = [];
 					views[n.dataset[key]].push(n);
 				}
 			});
 		}
-	}
-
-	function View(element, data, path) {
-		Object.defineProperties(this, {
-			element: { get: function () { return element; } },
-			data: { get: function () { return data; } },
-			path: { get: function () { return path; } }
-		});
 	}
 
 	function Tie(options) {
@@ -197,13 +141,13 @@
 			views = {};
 
 		ties[namespace] = this;
-		setupDataObservers(data, namespace, observers);
-		views = getViews(namespace, document, views);
-
-		//	TODO: update views to model
+		setupDataObservers(data, namespace, observers, views);
+		updateViewsMap(namespace, document, views);
+		publishData(data, namespace, views);
 
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
+			data: { get: function () { return data; } },
 			untie: {
 				value: function () {
 					console.info('to be implemented');
@@ -211,43 +155,6 @@
 			}
 		});
 	}
-
-
-	//function bindNS(namespace, initialValue) {
-	//	var observer;
-	//	if (typeof namespace !== 'string' || /\./.test(namespace)) { throw new Error('bad namespace parameter'); }
-	//	if (typeof root[namespace] !== 'undefined') { throw new Error('the namespace already bound, you can (re)set the value though'); }
-	//	if (!initialValue || typeof initialValue !== 'object') { throw new Error('initial value MUST be a non-null object'); }
-	//	root[namespace] = initialValue;
-	//	(function iterate(ns, o) {
-	//		observer = getObserver(ns);
-	//		Object.observe(o, observer, ['add', 'update', 'delete']);
-	//		observersMap.set(o, observer);
-	//		Object.keys(o).forEach(function (key) {
-	//			if (o[key] && typeof o[key] === 'object') {
-	//				iterate(ns + '.' + key, o[key]);
-	//			}
-	//		});
-	//	})(namespace, initialValue);
-	//	console.info('"' + namespace + '" bound, total number of observers now is ' + observersMap.size);
-	//	publishData(initialValue, namespace, document);
-	//}
-
-	//function tearNS(namespace) {
-	//	if (typeof namespace !== 'string' || /\./.test(namespace)) throw new Error('bad namespace parameter');
-	//	if (getPath(root, namespace) === 'undefined') throw new Error('the namespace not exist');
-	//	(function iterate(ns, o) {
-	//		Object.unobserve(o, observersMap.get(o));
-	//		observersMap.delete(o);
-	//		Object.keys(o).forEach(function (key) {
-	//			if (o[key] && typeof o[key] === 'object') {
-	//				iterate(ns + '.' + key, o[key]);
-	//			}
-	//		});
-	//	})(namespace, root[namespace]);
-	//	delete root[namespace];
-	//	console.info('"' + namespace + '" torn, total number of observers now is ' + observersMap.size);
-	//}
 
 	(function initDomObserver() {
 		function processDom(changes) {
@@ -262,13 +169,13 @@
 					if (change.addedNodes.length) {
 						//	traverse all added nodes and add any relevant to ties
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
-							updateElementTree(change.addedNodes[i]);
+							//	updateElementTree(change.addedNodes[i]);
 						}
 					}
 					if (change.removedNodes.length) {
 						//	traverse all deleted nodes and remove any relevant from ties
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
-							updateElementTree(change.addedNodes[i]);
+							//	updateElementTree(change.addedNodes[i]);
 						}
 					}
 				} else { console.info('unsupported DOM mutation type'); }
@@ -291,6 +198,11 @@
 		tieData: {
 			value: function (options) {
 				return new Tie(options);
+			}
+		},
+		getTie: {
+			value: function (namespace) {
+				return ties[namespace];
 			}
 		}
 	});
