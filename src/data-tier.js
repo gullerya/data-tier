@@ -1,8 +1,7 @@
 (function (options) {
 	'use strict';
 
-	var domObserver,
-		ties = {};
+	var domObserver, ties = {}, views;
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -65,14 +64,16 @@
 		return value;
 	}
 
-	function publishData(data, path, views) {
+	function publishData(data, path) {
+		var vs;
 		if (typeof data === 'object') {
 			Object.keys(data).forEach(function (key) {
-				publishData(data[key], path + '.' + key, views);
+				publishData(data[key], path + '.' + key);
 			});
 		} else {
-			if (views[path]) {
-				views[path].forEach(function (view) {
+			vs = getPath(views, path);
+			if (vs) {
+				vs.forEach(function (view) {
 					//	TODO: expand the visualization to many destinations
 					view.textContent = data;
 				});
@@ -90,7 +91,7 @@
 		});
 	}
 
-	function setupDataObservers(data, namespace, observers, views) {
+	function setupDataObservers(data, namespace, observers) {
 		var o;
 		o = function (changes) {
 			changes.forEach(function (change) {
@@ -100,32 +101,40 @@
 					console.log(observers.length)
 				}
 				if (nv && typeof nv === 'object') {
-					setupDataObservers(nv, p, observers, views);
+					setupDataObservers(nv, p, observers);
 					console.log(observers.length)
 				}
-				nv && publishData(nv, p, views);
+				nv && publishData(nv, p);
 			});
 		};
 		observers[namespace] = o;
 		Object.observe(data, o, ['add', 'update', 'delete']);
 		Object.keys(data).forEach(function (key) {
-			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key, observers, views);
+			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key, observers);
 		});
 	}
 
-	function updateViewsMap(namespace, rootElement, views) {
-		var i, n;
+	function collectViews(rootElement) {
+		var i, n, b;
+		b = performance.now();
+		if (!views) {
+			console.info('DT: Starting initial scan for a views...');
+			views = {};
+		} else {
+			console.info('DT: Starting scan for a views...');
+		}
 		i = document.createNodeIterator(rootElement, NodeFilter.SHOW_DOCUMENT | NodeFilter.SHOW_DOCUMENT_FRAGMENT | NodeFilter.SHOW_ELEMENT);
 		while (i.nextNode()) {
 			n = i.referenceNode;
 			if (!n.dataset) continue;
 			Object.keys(n.dataset).forEach(function (key) {
-				if (/^tie([A-Z]|$)/.test(key) && n.dataset[key].indexOf(namespace) === 0) {
-					if (!views[n.dataset[key]]) views[n.dataset[key]] = [];
-					views[n.dataset[key]].push(n);
+				if (/^tie([A-Z]|$)/.test(key)) {
+					if (!getPath(views, n.dataset[key])) setPath(views, n.dataset[key], []);
+					getPath(views, n.dataset[key]).push(n);
 				}
 			});
 		}
+		console.info('DT: Scan finished in ' + (performance.now() - b).toFixed(3) + 'ms');
 	}
 
 	function Tie(options) {
@@ -137,13 +146,12 @@
 
 		var namespace = options.namespace,
 			data = options.data,
-			observers = {},
-			views = {};
+			observers = {};
 
 		ties[namespace] = this;
-		setupDataObservers(data, namespace, observers, views);
-		updateViewsMap(namespace, document, views);
-		publishData(data, namespace, views);
+		setupDataObservers(data, namespace, observers);
+		if (!views) collectViews(document);			//	TODO: rethink if this is the appropriate place (ALL of the views will be collected here)
+		publishData(data, namespace);
 
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
@@ -157,7 +165,8 @@
 	}
 
 	(function initDomObserver() {
-		function processDom(changes) {
+		function processDomChanges(changes) {
+			if (!views) return;
 			changes.forEach(function (change) {
 				var path, i, l;
 				if (change.type === 'attributes') {
@@ -182,7 +191,7 @@
 			});
 		};
 
-		domObserver = new MutationObserver(processDom);
+		domObserver = new MutationObserver(processDomChanges);
 		domObserver.observe(document.body, {
 			childList: true,
 			subtree: true,
@@ -196,6 +205,7 @@
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
 		tieData: {
+
 			value: function (options) {
 				return new Tie(options);
 			}
