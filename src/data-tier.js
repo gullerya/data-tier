@@ -99,7 +99,7 @@
 				}
 			});
 		}
-		b && console.info('DT: Scan finished in ' + (performance.now() - b).toFixed(3) + 'ms');
+		b && console.info('DT: Initial scan finished in ' + (performance.now() - b).toFixed(3) + 'ms');
 	}
 
 	function repathView(view, oldPath, newPath) {
