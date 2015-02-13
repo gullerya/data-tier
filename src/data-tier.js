@@ -1,3 +1,12 @@
+//	are those below convenient ones?
+//	<div data-tie="users...">
+//		<div data-tie="users..[0]">
+//			<span data-tie-value="users..name"></span>
+//			<span data-tie-color="users..active"></span>
+//			<span data-tie-bdate="users[0].birthday"></span>
+//		</div>
+//	</div>
+
 (function (options) {
 	'use strict';
 
@@ -10,6 +19,8 @@
 	}
 
 	function pathToNodes(value) {
+		if (Array.isArray(value)) return value;
+
 		var c = 0, b = false, n = '', r = [];
 		while (c < value.length) {
 			if (value[c] === '.') {
@@ -35,7 +46,7 @@
 	}
 
 	function setPath(ref, path, value) {
-		var list = Array.isArray(path) ? path : pathToNodes(path), i;
+		var list = pathToNodes(path), i;
 		for (i = 0; i < list.length - 1; i++) {
 			if (typeof ref[list[i]] === 'object') ref = ref[list[i]];
 			else if (!(list[i] in ref)) ref = (ref[list[i]] = {});
@@ -45,7 +56,7 @@
 	}
 
 	function getPath(ref, path) {
-		var list = Array.isArray(path) ? path : pathToNodes(path), i = 0;
+		var list = pathToNodes(path), i = 0;
 		for (; i < list.length; i++) {
 			if (list[i] in ref) ref = ref[list[i]];
 			else return;
@@ -54,7 +65,7 @@
 	}
 
 	function cutPath(ref, path) {
-		var list = Array.isArray(path) ? path : pathToNodes(path), i = 0, value;
+		var list = pathToNodes(path), i = 0, value;
 		for (; i < list.length - 1; i++) {
 			if (list[i] in ref) ref = ref[list[i]];
 			else return;
@@ -73,39 +84,48 @@
 		}
 	}
 
+	function resolvePath(e, p) {
+		//	TODO: add support for composite paths
+		return pathToNodes(p);
+	}
+
 	function collectViews(rootElement) {
-		var l, v, b, re = /^tie([A-Z]|$)/, va, pl;
+		var l, v, b, p, va;
+
+		if (!rootElement.getElementsByTagName) return;
 		if (!views) {
 			console.info('DT: Starting initial scan for a views...');
 			views = {};
 			b = performance.now();
 		}
-		if (rootElement.getElementsByTagName) {
-			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
-			l.push(rootElement);
-			l.forEach(function (v) {
-				if (v.dataset) {
-					Object.keys(v.dataset).forEach(function (key) {
-						if (re.test(key)) {
-							pl = pathToNodes(v.dataset[key]);
-							va = getPath(views, pl);
-							if (!va) setPath(views, pl, (va = []));
-							if (va.indexOf(v) < 0) {
-								va.push(v);
-								updateView(v, 'content', pl);
-							}
+		l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
+		l.push(rootElement);
+		l.forEach(function (v) {
+			if (v.dataset) {
+				Object.keys(v.dataset).forEach(function (k) {
+					if (k.indexOf('tie') === 0) {
+						p = resolvePath(v, v.dataset[k]);
+						va = getPath(views, p);
+						if (!va) setPath(views, p, (va = []));
+						if (va.indexOf(v) < 0) {
+							va.push(v);
+							updateView(v, 'content', p);
 						}
-					});
-				}
-			});
-		}
+					}
+				});
+			}
+		});
 		b && console.info('DT: Initial scan finished in ' + (performance.now() - b).toFixed(3) + 'ms');
 	}
 
 	function repathView(view, oldPath, newPath) {
+
+		//	delete old path
 		var pathViews = getPath(views, oldPath), i = -1, npn = pathToNodes(newPath);
 		if (pathViews) i = pathViews.indexOf(view);
 		if (i >= 0) pathViews.splice(i, 1);
+
+		//	add new path
 		if (!getPath(views, npn)) setPath(views, npn, []);
 		getPath(views, npn).push(view);
 		updateView(view, 'content', npn)
@@ -163,16 +183,38 @@
 		});
 	}
 
+	function Rule(id, path) {
+		if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
+		path = pathToNodes(path);
+		Object.defineProperties(this, {
+			id: { get: function () { return id; } },
+			path: { get: function () { return path; } }
+		});
+	}
+
+	function RulesSet() {
+		Object.defineProperties(this, {
+			addRule: {
+				value: function (id, targetPath) {
+					//	TODO: validate id and targetPath
+					this[id] = new Rule(id, targetPath);
+				}
+			},
+			getRule: { value: function (id) { return this.hasOwnProperty(id) ? this[id] : null; } },
+			delRule: { value: function (id) { return delete this[id]; } }
+		});
+	}
+	RulesSet.prototype = new RulesSet();
+	RulesSet.prototype.addRule('tieText', 'textContent');
+	RulesSet.prototype.addRule('tieValue', 'value');
+
 	function Tie(namespace, data) {
-		var observers = {};
+		var observers = {}, rulesSet = new RulesSet();
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
 			data: { get: function () { return data; } },
-			untie: {
-				value: function () {
-					console.info('to be implemented');
-				}
-			}
+			untie: { value: function () { console.info('to be implemented'); } },
+			rules: { value: rulesSet }
 		});
 		ties[namespace] = this;
 		setupDataObservers(data, namespace, observers);
