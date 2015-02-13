@@ -98,11 +98,11 @@
 	}
 
 	function updateView(view, rule, path) {
-		var ns = path.shift(), t = ties[ns], r, d;
+		var ns = path.shift(), t = ties[ns], r, data;
 		if (t) {
 			r = t.getRule(rule, view);
-			d = getPath(t.data, path);
-			r.apply(view, d);
+			data = getPath(t.data, path);
+			r.apply(view, data);
 		}
 	}
 
@@ -208,18 +208,14 @@
 		});
 	}
 
-	function Rule(id, path) {
+	function Rule(id, setup) {
 		var p, a;
-		p = pathToNodes(path);
-		a = function (v, d) { setPath(v, p, d); };
+		if (typeof setup === 'function') { a = setup; } else {
+			p = pathToNodes(setup);
+			a = function (v, d) { setPath(v, p, d); };
+		}
 		Object.defineProperties(this, {
-			apply: {
-				get: function () { return a; },
-				set: function (f) {
-					if (typeof f === 'function') a = f;
-					else throw new Error('function parameter expected');
-				}
-			}
+			apply: { value: a }
 		});
 	}
 
@@ -227,9 +223,12 @@
 		var s = this;
 		Object.defineProperties(s, {
 			add: {
-				value: function (id, targetPath) {
+				value: function (id, setup) {
+					if (!id || !setup) throw new Error('bad parameters; f(string, string|function) expected');
 					if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
-					s[id] = new Rule(id, targetPath);
+					if (s.hasOwnProperty(id) && s[id] instanceof Rule) throw new Error('rule with id "' + id + '" already exists');
+					if (s.hasOwnProperty(id)) throw new Error('"' + id + '" is a reserved property');
+					return s[id] = new Rule(id, setup);
 				}
 			},
 			get: {
@@ -283,7 +282,7 @@
 						}
 					}
 					if (change.removedNodes.length) {
-						//	traverse all deleted nodes and remove any relevant from ties
+						//	traverse all deleted nodes and remove any relevant from views
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							//	updateElementTree(change.addedNodes[i]);
 						}
