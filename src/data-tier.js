@@ -1,4 +1,4 @@
-//	are those below convenient ones?
+//	Below is the final wanted example
 //	<div data-tie="users...">
 //		<div data-tie="users..[0]">
 //			<span data-tie-value="users..name"></span>
@@ -6,16 +6,22 @@
 //			<span data-tie-bdate="users[0].birthday"></span>
 //		</div>
 //	</div>
-
 (function (options) {
 	'use strict';
 
-	var domObserver, ties = {}, views;
+	var domObserver, ties = {}, views, protoRules;
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
 		if (typeof window.Utils !== 'object') Object.defineProperty(window, 'Utils', { value: {} });
 		options.namespace = window.Utils;
+	}
+
+	function dataAttrToProp(v) {
+		var i = 2, l = v.split('-'), r;
+		r = l[1];
+		while (i < l.length) r += l[i][0].toUpperCase() + l[i++].substr(1);
+		return r;
 	}
 
 	function pathToNodes(value) {
@@ -75,18 +81,29 @@
 		return value;
 	}
 
-	function updateView(view, target, pathInNodes) {
-		var t = ties[pathInNodes.shift()], d = getPath(t.data, pathInNodes);
-		if (target === 'content') {
-			view.textContent = d;
-		} else {
-			throw new Error('not yet supported target');
+	function isEqualPaths(p1, p2) {
+		var i, l;
+		p1 = pathToNodes(p1);
+		p2 = pathToNodes(p2);
+		if (p1.length !== p2.length) return false;
+		for (i = 0, l = p1.length; i < l; i++) {
+			if (p1[i] !== p2[i]) return false;
 		}
+		return true;
 	}
 
 	function resolvePath(e, p) {
-		//	TODO: add support for composite paths
+		//	TODO: add support for composite paths, means also API notice of partial part being processed
 		return pathToNodes(p);
+	}
+
+	function updateView(view, rule, path) {
+		var ns = path.shift(), t = ties[ns], r, d;
+		if (t) {
+			r = t.getRule(rule, view);
+			d = getPath(t.data, path);
+			r.apply(view, d);
+		}
 	}
 
 	function collectViews(rootElement) {
@@ -109,7 +126,7 @@
 						if (!va) setPath(views, p, (va = []));
 						if (va.indexOf(v) < 0) {
 							va.push(v);
-							updateView(v, 'content', p);
+							updateView(v, k, p);
 						}
 					}
 				});
@@ -118,34 +135,42 @@
 		b && console.info('DT: Initial scan finished in ' + (performance.now() - b).toFixed(3) + 'ms');
 	}
 
-	function repathView(view, oldPath, newPath) {
+	function repathView(view, dataKey, oldPath, newPath) {
+		var pathViews, i = -1, npn;
 
 		//	delete old path
-		var pathViews = getPath(views, oldPath), i = -1, npn = pathToNodes(newPath);
-		if (pathViews) i = pathViews.indexOf(view);
-		if (i >= 0) pathViews.splice(i, 1);
+		if (oldPath) {
+			pathViews = getPath(views, oldPath);
+			if (pathViews) i = pathViews.indexOf(view);
+			if (i >= 0) pathViews.splice(i, 1);
+		}
 
 		//	add new path
+		npn = pathToNodes(newPath);
 		if (!getPath(views, npn)) setPath(views, npn, []);
 		getPath(views, npn).push(view);
-		updateView(view, 'content', npn)
+		updateView(view, dataKey, npn)
 	}
 
-	function publishDataNode(data, view) {
-		//	TODO: expand the visualization to many destinations
-		view.textContent = data;
-	}
-
-	function publishDataTree(data, path) {
-		var vs;
+	function publishDataChange(data, path) {
+		var vs, p;
 		if (typeof data === 'object') {
 			Object.keys(data).forEach(function (key) {
-				publishDataTree(data[key], path + '.' + key);
+				publishDataChange(data[key], path + '.' + key);
 			});
 		} else {
 			vs = getPath(views, path);
 			if (vs) {
-				vs.forEach(function (view) { publishDataNode(data, view) });
+				vs.forEach(function (v) {
+					Object.keys(v.dataset).forEach(function (k) {
+						if (k.indexOf('tie') === 0) {
+							p = resolvePath(v, v.dataset[k]);
+							if (isEqualPaths(p, path)) {
+								updateView(v, k, p);
+							}
+						}
+					});
+				});
 			}
 		}
 	}
@@ -173,7 +198,7 @@
 					setupDataObservers(nv, p, observers);
 					console.log(observers.length)
 				}
-				nv && publishDataTree(nv, p);
+				nv && publishDataChange(nv, p);
 			});
 		};
 		observers[namespace] = o;
@@ -184,37 +209,58 @@
 	}
 
 	function Rule(id, path) {
-		if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
-		path = pathToNodes(path);
+		var p, a;
+		p = pathToNodes(path);
+		a = function (v, d) { setPath(v, p, d); };
 		Object.defineProperties(this, {
-			id: { get: function () { return id; } },
-			path: { get: function () { return path; } }
+			apply: {
+				get: function () { return a; },
+				set: function (f) {
+					if (typeof f === 'function') a = f;
+					else throw new Error('function parameter expected');
+				}
+			}
 		});
 	}
 
 	function RulesSet() {
-		Object.defineProperties(this, {
-			addRule: {
+		var s = this;
+		Object.defineProperties(s, {
+			add: {
 				value: function (id, targetPath) {
-					//	TODO: validate id and targetPath
-					this[id] = new Rule(id, targetPath);
+					if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
+					s[id] = new Rule(id, targetPath);
 				}
 			},
-			getRule: { value: function (id) { return this.hasOwnProperty(id) ? this[id] : null; } },
-			delRule: { value: function (id) { return delete this[id]; } }
+			get: {
+				value: function (id, e) {
+					var r = s[id];
+					if (!r) {
+						if (!e) throw new Error('rule "' + id + '" not found, supply DOM element to get the default view');
+						if (e instanceof HTMLInputElement) return s['tieValue'];
+						else if (e instanceof HTMLImageElement) return s['tieImage'];
+						else return s['tieText'];
+					}
+					return r;
+				}
+			},
+			del: { value: function (id) { return delete s[id]; } }
 		});
 	}
 	RulesSet.prototype = new RulesSet();
-	RulesSet.prototype.addRule('tieText', 'textContent');
-	RulesSet.prototype.addRule('tieValue', 'value');
+	RulesSet.prototype.add('tieText', 'textContent');
+	RulesSet.prototype.add('tieValue', 'value');
+	RulesSet.prototype.add('tieImage', 'scr');
 
 	function Tie(namespace, data) {
-		var observers = {}, rulesSet = new RulesSet();
+		var observers = {}, rules = new RulesSet();
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
 			data: { get: function () { return data; } },
 			untie: { value: function () { console.info('to be implemented'); } },
-			rules: { value: rulesSet }
+			addRule: { value: rules.add },
+			getRule: { value: rules.get },
+			delRule: { value: rules.del }
 		});
 		ties[namespace] = this;
 		setupDataObservers(data, namespace, observers);
@@ -229,7 +275,7 @@
 				if (change.type === 'attributes' && (an = change.attributeName).indexOf('data-tie') == 0) {
 					op = change.oldValue;
 					np = change.target.getAttribute(an);
-					repathView(change.target, op, np);
+					repathView(change.target, dataAttrToProp(change.attributeName), op, np);
 				} else if (change.type === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
