@@ -249,6 +249,7 @@
 	RulesSet.prototype = new RulesSet();
 	RulesSet.prototype.add('tieText', 'textContent');
 	RulesSet.prototype.add('tieValue', 'value');
+	RulesSet.prototype.add('tieTooltip', 'title');
 	RulesSet.prototype.add('tieImage', 'scr');
 
 	function Tie(namespace, data) {
