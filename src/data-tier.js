@@ -9,13 +9,31 @@
 (function (options) {
 	'use strict';
 
-	var domObserver, ties = {}, views, protoRules;
+	var domObserver, ties = {}, views, log = {};
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
 		if (typeof window.Utils !== 'object') Object.defineProperty(window, 'Utils', { value: {} });
 		options.namespace = window.Utils;
 	}
+
+	Object.defineProperties(log, {
+		info: {
+			value: function (m) {
+				console.info('DT: ' + m);
+			},
+		},
+		warn: {
+			value: function (m) {
+				console.warn('DT: ' + m);
+			}
+		},
+		error: {
+			value: function (m) {
+				console.error('DT: ' + m);
+			}
+		}
+	});
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -257,7 +275,6 @@
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
 			data: { get: function () { return data; } },
-			untie: { value: function () { console.info('to be implemented'); } },
 			addRule: { value: rules.add },
 			getRule: { value: rules.get },
 			delRule: { value: rules.del }
@@ -308,8 +325,8 @@
 		tieData: {
 			value: function (namespace, data) {
 				if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
-				if (/\W|[A-Z]/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
-				if (ties[namespace]) throw new Error('namespace "' + options.namespace + '" already exists');
+				if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
+				if (ties[namespace]) throw new Error('namespace "' + namespace + '" already exists');
 				if (!data || typeof data !== 'object') throw new Error('data (second param) MUST be a non null object');
 				return new Tie(namespace, data);
 			}
@@ -318,6 +335,7 @@
 			value: function (namespace) {
 				return ties[namespace];
 			}
-		}
+		},
+		untie: { value: function () { console.error('to be implemented'); } },
 	});
 })((typeof arguments === 'object' ? arguments[0] : undefined));
