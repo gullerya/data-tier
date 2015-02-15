@@ -9,7 +9,7 @@
 (function (options) {
 	'use strict';
 
-	var domObserver, ties = {}, views, log = {};
+	var domObserver, dataRoot = {}, observers = {}, ties = {}, views, log = {};
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -193,7 +193,7 @@
 		}
 	}
 
-	function destroyDataObservers(data, namespace, observers) {
+	function destroyDataObservers(data, namespace) {
 		var o;
 		Object.keys(observers).forEach(function (key) {
 			if (key.indexOf(namespace) === 0) {
@@ -203,18 +203,18 @@
 		});
 	}
 
-	function setupDataObservers(data, namespace, observers) {
+	function setupDataObservers(data, namespace) {
 		var o;
 		o = function (changes) {
 			changes.forEach(function (change) {
 				var ov = change.oldValue, nv = change.object[change.name], p = namespace + '.' + change.name;
 				if (ov && typeof ov === 'object') {
-					destroyDataObservers(ov, p, observers);
-					console.log(observers.length)
+					destroyDataObservers(ov, p);
+					console.log(Object.keys(observers).length)
 				}
 				if (nv && typeof nv === 'object') {
-					setupDataObservers(nv, p, observers);
-					console.log(observers.length)
+					setupDataObservers(nv, p);
+					console.log(Object.keys(observers).length)
 				}
 				nv && publishDataChange(nv, p);
 			});
@@ -222,7 +222,7 @@
 		observers[namespace] = o;
 		Object.observe(data, o, ['add', 'update', 'delete']);
 		Object.keys(data).forEach(function (key) {
-			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key, observers);
+			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key);
 		});
 	}
 
@@ -254,7 +254,7 @@
 					var r = s[id];
 					if (!r) {
 						if (!e) throw new Error('rule "' + id + '" not found, supply DOM element to get the default view');
-						if (e instanceof HTMLInputElement) return s['tieValue'];
+						if (e instanceof HTMLInputElement || e instanceof HTMLSelectElement) return s['tieValue'];
 						else if (e instanceof HTMLImageElement) return s['tieImage'];
 						else return s['tieText'];
 					}
@@ -271,7 +271,7 @@
 	RulesSet.prototype.add('tieImage', 'scr');
 
 	function Tie(namespace, data) {
-		var observers = {}, rules = new RulesSet();
+		var rules = new RulesSet();
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
 			data: { get: function () { return data; } },
@@ -280,9 +280,11 @@
 			delRule: { value: rules.del }
 		});
 		ties[namespace] = this;
-		setupDataObservers(data, namespace, observers);
+		dataRoot[namespace] = data;
 		if (!views) collectViews(document);
 	}
+
+	setupDataObservers(dataRoot, '');
 
 	(function initDomObserver() {
 		function processDomChanges(changes) {
