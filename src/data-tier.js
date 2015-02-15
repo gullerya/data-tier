@@ -115,6 +115,22 @@
 		return pathToNodes(p);
 	}
 
+	function changeListener(ev) {
+		var v = ev.target;
+		//	get path from the data-tie[-value] attribute
+		//	get relevant Rule for the tied namespase
+		//	set path to the value using the Rule
+	}
+
+	function addChangeListener(v) {
+		//	if there is dataset.tieValue || there is dataset.tie and it's value tie - set listener
+		v.addEventListener('change', changeListener);
+	}
+
+	function delChangeListener(v) {
+		v.removeEventListener('change', changeListener);
+	}
+
 	function updateView(view, rule, path) {
 		var ns = path.shift(), t = ties[ns], r, data;
 		if (t) {
@@ -145,12 +161,36 @@
 						if (va.indexOf(v) < 0) {
 							va.push(v);
 							updateView(v, k, p);
+							addChangeListener(v);
 						}
 					}
 				});
 			}
 		});
 		b && console.info('DT: Initial scan finished in ' + (performance.now() - b).toFixed(3) + 'ms');
+	}
+
+	function discardViews(rootElement) {
+		var l, v, p, va, i;
+		if (!rootElement.getElementsByTagName) return;
+		l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
+		l.push(rootElement);
+		l.forEach(function (v) {
+			if (v.dataset) {
+				Object.keys(v.dataset).forEach(function (k) {
+					i = -1;
+					if (k.indexOf('tie') === 0) {
+						p = resolvePath(v, v.dataset[k]);
+						va = getPath(views, p);
+						i = va && va.indexOf(v);
+						if (i >= 0) {
+							va.splice(i, 1);
+							removeEventListener(v);
+						}
+					}
+				});
+			}
+		});
 	}
 
 	function repathView(view, dataKey, oldPath, newPath) {
@@ -281,11 +321,11 @@
 		});
 		ties[namespace] = this;
 		dataRoot[namespace] = data;
-		if (!views) collectViews(document);
 	}
 
 	setupDataObservers(dataRoot, '');
 
+	collectViews(document);
 	(function initDomObserver() {
 		function processDomChanges(changes) {
 			if (!views) return;
@@ -302,9 +342,8 @@
 						}
 					}
 					if (change.removedNodes.length) {
-						//	traverse all deleted nodes and remove any relevant from views
-						for (i = 0, l = change.addedNodes.length; i < l; i++) {
-							//	updateElementTree(change.addedNodes[i]);
+						for (i = 0, l = change.removedNodes.length; i < l; i++) {
+							discardViews(change.removedNodes[i]);
 						}
 					}
 				}

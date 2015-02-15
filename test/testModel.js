@@ -20,11 +20,13 @@
 
 	suite.addTest({ name: 'new model bound' }, function (pass, fail) {
 		window.Utils.DataTier.tieData('userA', user);
-		if (s1.textContent !== user.name) fail(new Error('expected the content to be updated'));
-		if (s2.textContent != user.age) fail(new Error('expected the content to be updated'));
-		if (s3.textContent !== user.address.street) fail(new Error('expected the content to be updated'));
-		if (s4.textContent != user.address.apt) fail(new Error('expected the content to be updated'));
-		pass();
+		setTimeout(function () {
+			if (s1.textContent !== user.name) fail(new Error('expected the content to be updated'));
+			if (s2.textContent != user.age) fail(new Error('expected the content to be updated'));
+			if (s3.textContent !== user.address.street) fail(new Error('expected the content to be updated'));
+			if (s4.textContent != user.address.apt) fail(new Error('expected the content to be updated'));
+			pass();
+		}, 0)
 	});
 
 	suite.addTest({ name: 'primitive model changes' }, function (pass, fail) {
