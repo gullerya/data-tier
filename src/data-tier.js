@@ -6,6 +6,10 @@
 //			<span data-tie-bdate="users[0].birthday"></span>
 //		</div>
 //	</div>
+//
+//	TODO: when binding data check that the corresponding views are not pointing on properties of type 'object', but primitives only
+//	TODO: as the above, but do provide listing handling for the arrays (create DOM from template)
+//
 (function (options) {
 	'use strict';
 
@@ -116,10 +120,17 @@
 	}
 
 	function changeListener(ev) {
-		var v = ev.target;
-		//	get path from the data-tie[-value] attribute
-		//	get relevant Rule for the tied namespase
-		//	set path to the value using the Rule
+		var v = ev.target, p, t;
+		if (v.dataset.tieValue) {
+			p = v.dataset.tieValue;
+		} else {
+			p = v.dataset.tie;
+		}
+		if (p) {
+			p = resolvePath(v, p);
+			t = ties[p.shift()];
+			setPath(t.data, p, v.value);
+		}
 	}
 
 	function addChangeListener(v) {
@@ -256,7 +267,7 @@
 					setupDataObservers(nv, p);
 					console.log(Object.keys(observers).length)
 				}
-				nv && publishDataChange(nv, p);
+				typeof nv !== 'undefined' && publishDataChange(nv, p);
 			});
 		};
 		observers[namespace] = o;
