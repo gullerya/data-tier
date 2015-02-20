@@ -337,7 +337,8 @@
 	setupDataObservers(dataRoot, '');
 
 	collectViews(document);
-	(function initDomObserver() {
+
+	function initDomObserver() {
 		function processDomChanges(changes) {
 			if (!views) return;
 			changes.forEach(function (change) {
@@ -362,7 +363,7 @@
 		};
 
 		domObserver = new MutationObserver(processDomChanges);
-		domObserver.observe(document.body, {
+		domObserver.observe(document, {
 			childList: true,
 			subtree: true,
 			attributes: true,
@@ -370,7 +371,8 @@
 			characterData: false,
 			characterDataOldValue: false
 		});
-	})();
+	};
+	initDomObserver();
 
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {

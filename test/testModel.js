@@ -18,7 +18,7 @@
 	s4.dataset.tie = 'userA.address.apt';
 	document.body.appendChild(s4);
 
-	suite.addTest({ name: 'new model bound' }, function (pass, fail) {
+	suite.addTest({ name: 'new model bound' }, function (pass, fail, utils) {
 		window.Utils.DataTier.tieData('userA', user);
 		setTimeout(function () {
 			if (s1.textContent !== user.name) fail(new Error('expected the content to be updated'));
