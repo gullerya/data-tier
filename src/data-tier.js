@@ -305,8 +305,8 @@
 					var r = s[id];
 					if (!r) {
 						if (!e) throw new Error('rule "' + id + '" not found, supply DOM element to get the default view');
-						if (e instanceof HTMLInputElement || e instanceof HTMLSelectElement) return s['tieValue'];
-						else if (e instanceof HTMLImageElement) return s['tieImage'];
+						if (e.nodeName === 'INPUT' || e.nodeName === 'SELECT') return s['tieValue'];
+						else if (e.nodeName === 'IMAGE') return s['tieImage'];
 						else return s['tieText'];
 					}
 					return r;
@@ -350,7 +350,7 @@
 				} else if (change.type === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
-							if (change.addedNodes[i] instanceof HTMLIFrameElement) {
+							if (change.addedNodes[i].nodeName === 'IFRAME') {
 								collectViews(change.addedNodes[i].contentDocument);
 								initDomObserver(change.addedNodes[i].contentDocument);
 								change.addedNodes[i].addEventListener('load', function () {
@@ -364,7 +364,11 @@
 					}
 					if (change.removedNodes.length) {
 						for (i = 0, l = change.removedNodes.length; i < l; i++) {
-							discardViews(change.removedNodes[i]);
+							if (change.removedNodes[i].nodeName === 'IFRAME') {
+								discardViews(change.removedNodes[i].contentDocument);
+							} else {
+								discardViews(change.removedNodes[i]);
+							}
 						}
 					}
 				}
