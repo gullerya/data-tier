@@ -338,7 +338,7 @@
 
 	collectViews(document);
 
-	function initDomObserver() {
+	function initDomObserver(d) {
 		function processDomChanges(changes) {
 			if (!views) return;
 			changes.forEach(function (change) {
@@ -351,6 +351,7 @@
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							collectViews(change.addedNodes[i]);
+							if (change.addedNodes[i] instanceof HTMLIFrameElement) initDomObserver(change.addedNodes[i].contentDocument);
 						}
 					}
 					if (change.removedNodes.length) {
@@ -363,7 +364,7 @@
 		};
 
 		domObserver = new MutationObserver(processDomChanges);
-		domObserver.observe(document, {
+		domObserver.observe(d, {
 			childList: true,
 			subtree: true,
 			attributes: true,
@@ -372,7 +373,7 @@
 			characterDataOldValue: false
 		});
 	};
-	initDomObserver();
+	initDomObserver(document);
 
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
