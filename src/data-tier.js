@@ -350,10 +350,14 @@
 				} else if (change.type === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
-							collectViews(change.addedNodes[i]);
 							if (change.addedNodes[i] instanceof HTMLIFrameElement) {
+								collectViews(change.addedNodes[i].contentDocument);
 								initDomObserver(change.addedNodes[i].contentDocument);
-								change.addedNodes[i].addEventListener('load', function () { initDomObserver(this.contentDocument); })
+								change.addedNodes[i].addEventListener('load', function () {
+									initDomObserver(this.contentDocument);
+								});
+							} else {
+								collectViews(change.addedNodes[i]);
 							}
 						}
 					}
