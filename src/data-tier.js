@@ -354,6 +354,7 @@
 								collectViews(change.addedNodes[i].contentDocument);
 								initDomObserver(change.addedNodes[i].contentDocument);
 								change.addedNodes[i].addEventListener('load', function () {
+									collectViews(this.contentDocument);
 									initDomObserver(this.contentDocument);
 								});
 							} else {
