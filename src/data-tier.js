@@ -351,7 +351,10 @@
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							collectViews(change.addedNodes[i]);
-							if (change.addedNodes[i] instanceof HTMLIFrameElement) initDomObserver(change.addedNodes[i].contentDocument);
+							if (change.addedNodes[i] instanceof HTMLIFrameElement) {
+								initDomObserver(change.addedNodes[i].contentDocument);
+								change.addedNodes[i].addEventListener('load', function () { initDomObserver(this.contentDocument); })
+							}
 						}
 					}
 					if (change.removedNodes.length) {
