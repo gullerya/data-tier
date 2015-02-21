@@ -357,6 +357,9 @@
 									collectViews(this.contentDocument);
 									initDomObserver(this.contentDocument);
 								});
+								change.addedNodes[i].addEventListener('unload', function () {
+									discardViews(this.contentDocument);
+								});
 							} else {
 								collectViews(change.addedNodes[i]);
 							}
