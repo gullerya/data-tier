@@ -347,6 +347,8 @@
 					op = change.oldValue;
 					np = change.target.getAttribute(an);
 					repathView(change.target, dataAttrToProp(change.attributeName), op, np);
+				} else if (change.type === 'attributes' && change.attributeName === 'src' && change.target.nodeName === 'IFRAME') {
+					discardViews(change.target.contentDocument);
 				} else if (change.type === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
