@@ -357,7 +357,7 @@
 								initDomObserver(change.addedNodes[i].contentDocument);
 								collectViews(change.addedNodes[i].contentDocument);
 								change.addedNodes[i].addEventListener('load', function () {
-									initDomObserver(this.contentDocument);		//	TODO: check if you need this function, probably once set it will be working regardless reload
+									initDomObserver(this.contentDocument);
 									collectViews(this.contentDocument);
 								});
 							} else {
