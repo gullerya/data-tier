@@ -356,10 +356,10 @@
 							if (change.addedNodes[i].nodeName === 'IFRAME') {
 								initDomObserver(change.addedNodes[i].contentDocument);
 								collectViews(change.addedNodes[i].contentDocument);
-								change.addedNodes[i].addEventListener('load', function () {
-									initDomObserver(this.contentDocument);		//	TODO: check if you need this function, probably once set it will be working regardless reload
-									collectViews(this.contentDocument);
-								});
+								//change.addedNodes[i].addEventListener('load', function () {
+								//	initDomObserver(this.contentDocument);		//	TODO: check if you need this function, probably once set it will be working regardless reload
+								//	collectViews(this.contentDocument);
+								//});
 							} else {
 								collectViews(change.addedNodes[i]);
 							}
