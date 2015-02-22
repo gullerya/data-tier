@@ -316,8 +316,9 @@
 		});
 	}
 	RulesSet.prototype = new RulesSet();
-	RulesSet.prototype.add('tieText', 'textContent');
 	RulesSet.prototype.add('tieValue', 'value');
+	RulesSet.prototype.add('tieText', 'textContent');
+	RulesSet.prototype.add('tiePlaceholder', 'placeholder');
 	RulesSet.prototype.add('tieTooltip', 'title');
 	RulesSet.prototype.add('tieImage', 'scr');
 
@@ -353,11 +354,11 @@
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							if (change.addedNodes[i].nodeName === 'IFRAME') {
-								collectViews(change.addedNodes[i].contentDocument);
 								initDomObserver(change.addedNodes[i].contentDocument);
+								collectViews(change.addedNodes[i].contentDocument);
 								change.addedNodes[i].addEventListener('load', function () {
+									initDomObserver(this.contentDocument);		//	TODO: check if you need this function, probably once set it will be working regardless reload
 									collectViews(this.contentDocument);
-									initDomObserver(this.contentDocument);
 								});
 							} else {
 								collectViews(change.addedNodes[i]);
