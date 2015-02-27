@@ -7,6 +7,14 @@
 //		</div>
 //	</div>
 //
+//	Repeaters API
+//
+//	<div id="container" data-tie-array-container="each in users">
+//		<template>
+//			<span data-tie="..name"></span>
+//		</template>
+//	</div>
+//
 //	TODO: when binding data check that the corresponding views are not pointing on properties of type 'object', but primitives only
 //	TODO: as the above, but do provide listing handling for the arrays (create DOM from template)
 //
@@ -22,22 +30,41 @@
 	}
 
 	Object.defineProperties(log, {
-		info: {
-			value: function (m) {
-				console.info('DT: ' + m);
-			},
-		},
-		warn: {
-			value: function (m) {
-				console.warn('DT: ' + m);
-			}
-		},
-		error: {
-			value: function (m) {
-				console.error('DT: ' + m);
-			}
-		}
+		info: { value: function (m) { console.info('DT: ' + m); }, },
+		warn: { value: function (m) { console.warn('DT: ' + m); } },
+		error: { value: function (m) { console.error('DT: ' + m); } }
 	});
+
+	//	place to store views
+	//	retrieve views
+	//	process elements dataset keys-values
+	function ViewsManager() {
+		var views = {};
+
+		function add(path, view) {
+			//	add one view
+		}
+
+		function get(path) {
+			//	get an array of views or empty array
+		}
+
+		function del() {
+			//	Q: delete just element, path whole or any other flavor - check usecases
+		}
+
+		function retrieveTies() {
+			//	process the element
+		}
+
+		Object.defineProperties(this, {
+			add: { value: add },
+			get: { value: get },
+			del: { value: del },
+			getTiesForView: { value: retrieveTies }
+		});
+	}
+	views = new ViewsManager();
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -121,6 +148,7 @@
 
 	function changeListener(ev) {
 		var v = ev.target, p, t;
+
 		if (v.dataset.tieValue) {
 			p = v.dataset.tieValue;
 		} else {
@@ -134,7 +162,6 @@
 	}
 
 	function addChangeListener(v) {
-		//	if there is dataset.tieValue || there is dataset.tie and it's value tie - set listener
 		v.addEventListener('change', changeListener);
 	}
 
