@@ -1,16 +1,16 @@
 DataTier - Intro
 ================
 
-DataTier is a framework, or better utility, that provides two way binding (Model-View, View-Model - MVVM) in the domain of client HTML/Javascript applications.
-The most important principals for me here are: simplicity of usage, as short as possible learning curve and yet an ability to give all of the essentials expected from such a utility.
+DataTier is a framework, or better utility, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
+The most important principals that guided the author were simplicity of usage, shortest learning curve and yet an ability to give all of the essentials expected from such a utility.
 I tried to design this library in such a way that the more simpe the usecase - less needs to be done to get it working.
-So i believe that in it's current architecture, DataTier covers most of the usecases in quite a simple and straight forward way, yet as more complicated the things you'd need to achieve with it - you can, you'll just need to get more into the internals.
+So i believe that in it's current architecture, DataTier covers most of the usecases in quite a simple and straight forward way, yet the more complicated the things you'd need to achieve with it - you can, you'll just need to get more into the internals.
 
 
 Basic examples
 ==============
 
-Let's assume you have and object that holds user info and you want to bind it to it's view in HTML. This splits into the declarative part in the HTML itself and functional part in the Javascript.
+Let's assume you have and object that holds user info and you want to bind it to it's view in HTML. This splits into the <b>declarative part in the HTML</b> and <b>functional part in the Javascript</b>.<br>
 In Javascript you'll need to tell to DataTier that the object 'user' is to be tied to it's views and watched for changes. This is done using API as in the following example (let's assume that you've got the reference to the library in 'dataTier' variable):
 
 <pre><code>var user = {
