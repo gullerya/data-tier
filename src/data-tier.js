@@ -411,7 +411,8 @@
 				if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
 				if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
 				if (ties[namespace]) throw new Error('namespace "' + namespace + '" already exists');
-				if (!data || typeof data !== 'object') throw new Error('data (second param) MUST be a non null object');
+				if (data && typeof data !== 'object') throw new Error('data (second param) MUST be a non null object');
+				if (!data) data = null;
 				return new Tie(namespace, data);
 			}
 		},
