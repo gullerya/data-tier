@@ -272,13 +272,10 @@
 		function get(path) {
 			var p = pathToNodes(path), r = arguments[1] ? arguments[1] : [], tmp, key;
 			tmp = getPath(vs, p);
-			if (tmp) {
-				for (key in tmp) {
-					if (!tmp.hasOwnProperty(key)) continue;
-					if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
-					else Array.prototype.push.apply(r, get(path + '.' + key, r));
-				}
-			}
+			tmp && Object.keys(tmp).forEach(function (key) {
+				if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
+				else Array.prototype.push.apply(r, get(path + '.' + key, r));
+			});
 			return r;
 		}
 
