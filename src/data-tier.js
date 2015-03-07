@@ -270,11 +270,11 @@
 		}
 
 		function get(path) {
-			var p = pathToNodes(path), r = arguments[1] ? arguments[1] : [], tmp, key;
+			var p = pathToNodes(path), r = [], tmp, key;
 			tmp = getPath(vs, p);
 			tmp && Object.keys(tmp).forEach(function (key) {
 				if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
-				else Array.prototype.push.apply(r, get(path + '.' + key, r));
+				else Array.prototype.push.apply(r, get(path + '.' + key));
 			});
 			return r;
 		}
