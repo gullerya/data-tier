@@ -275,7 +275,7 @@
 			if (tmp) {
 				for (key in tmp) {
 					if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
-					else Array.prototype.push.apply(r, get(path + '.' + key));
+					else Array.prototype.push.apply(r, get(path + '.' + key, r));
 				}
 			}
 			return r;
