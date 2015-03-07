@@ -4,6 +4,8 @@
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing model changes' }),
 		user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } };
 
+	window.Utils.DataTier.tieData('userA', user);
+
 	var s1, s2, s3, s4;
 	s1 = document.createElement('div');
 	s1.dataset.tie = 'userA.name';
@@ -18,8 +20,7 @@
 	s4.dataset.tie = 'userA.address.apt';
 	document.body.appendChild(s4);
 
-	suite.addTest({ name: 'new model bound' }, function (pass, fail, utils) {
-		window.Utils.DataTier.tieData('userA', user);
+	suite.addTest({ name: 'new model bound' }, function (pass, fail) {
 		setTimeout(function () {
 			if (s1.textContent !== user.name) fail(new Error('expected the content to be updated'));
 			if (s2.textContent != user.age) fail(new Error('expected the content to be updated'));
@@ -30,6 +31,7 @@
 	});
 
 	suite.addTest({ name: 'primitive model changes' }, function (pass, fail) {
+		if (s1.textContent !== user.name) fail(new Error('preliminary check failed'));
 		user.name = 'other';
 		setTimeout(function () {
 			if (s1.textContent !== user.name) fail(new Error('expected the content to be "other"'));
@@ -43,6 +45,46 @@
 			if (s3.textContent !== user.address.street) fail(new Error('expected the content to be "Street"'));
 			pass();
 		}, 0);
+	});
+
+	suite.addTest({ name: 'full model replace (to null)' }, function (pass, fail) {
+		var t = window.Utils.DataTier.getTie('userA');
+		t.data = null;
+		setTimeout(function () {
+			if (s1.textContent !== '') fail(new Error('expected the content to be emptied'));
+			if (s2.textContent !== '') fail(new Error('expected the content to be emptied'));
+			if (s3.textContent !== '') fail(new Error('expected the content to be emptied'));
+			if (s4.textContent !== '') fail(new Error('expected the content to be emptied'));
+			pass();
+		}, 0);
+	});
+
+	suite.addTest({ name: 'full model replace (to new data)' }, function (pass, fail) {
+		var t = window.Utils.DataTier.getTie('userA');
+		t.data = { name: 'something else', age: 6 };
+		setTimeout(function () {
+			if (s1.textContent !== 'something else') fail(new Error('expected the content to be "something else"'));
+			if (s2.textContent !== '6') fail(new Error('expected the content to be "6"'));
+			if (s3.textContent !== '') fail(new Error('expected the content to be emptied'));
+			if (s4.textContent !== '') fail(new Error('expected the content to be emptied'));
+			pass();
+		}, 0);
+	});
+
+	suite.addTest({ name: 'binding view to object' }, function (pass, fail) {
+		var t = window.Utils.DataTier.getTie('userA');
+		s3.dataset.tie = 'userA.address';
+		setTimeout(function () {
+			if (s3.textContent !== '') fail(new Error('expected the content to be empty'));
+			t.data.address = { street: 'street name', apt: 17 };
+			t.data.address.toString = function () { return 'Street: ' + this.street + '; Apt: ' + this.apt };
+			setTimeout(function () {
+				if (s4.textContent !== '17') fail(new Error('expected the content to be 17'));
+				if (s3.textContent !== t.data.address.toString()) fail(new Error('expected the content to be string of object'));
+				pass();
+			}, 0);
+
+		});
 	});
 
 	suite.run();

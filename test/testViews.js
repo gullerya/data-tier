@@ -4,6 +4,8 @@
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing views changes' }),
 		user = { name: 'some name', age: 7, address: { street: 'str', apt: 9 } };
 
+	window.Utils.DataTier.tieData('userB', user);
+
 	var s1, s2, s3, s4;
 	s1 = document.createElement('div');
 	s1.dataset.tie = 'userB.name';
@@ -19,11 +21,13 @@
 	document.body.appendChild(s4);
 
 	suite.addTest({ name: 'update view when path changes (deep)' }, function (pass, fail) {
-		window.Utils.DataTier.tieData('userB', user);
-		s1.dataset.tie = 'userB.address.street';
 		setTimeout(function () {
-			if (s1.textContent !== user.address.street) fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
-			pass();
+			if (s1.textContent !== user.name) fail(new Error('preliminary check failed'));
+			s1.dataset.tie = 'userB.address.street';
+			setTimeout(function () {
+				if (s1.textContent !== user.address.street) fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
+				pass();
+			}, 0);
 		}, 0);
 	});
 

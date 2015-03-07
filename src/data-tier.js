@@ -35,36 +35,12 @@
 		error: { value: function (m) { console.error('DT: ' + m); } }
 	});
 
-	//	place to store views
-	//	retrieve views
-	//	process elements dataset keys-values
-	function ViewsManager() {
-		var views = {};
-
-		function add(path, view) {
-			//	add one view
-		}
-
-		function get(path) {
-			//	get an array of views or empty array
-		}
-
-		function del() {
-			//	Q: delete just element, path whole or any other flavor - check usecases
-		}
-
-		function retrieveTies() {
-			//	process the element
-		}
-
+	function ObserversManager() {
 		Object.defineProperties(this, {
-			add: { value: add },
-			get: { value: get },
-			del: { value: del },
-			getTiesForView: { value: retrieveTies }
+
 		});
 	}
-	views = new ViewsManager();
+	observers = new ObserversManager();
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -111,8 +87,10 @@
 	}
 
 	function getPath(ref, path) {
-		var list = pathToNodes(path), i = 0;
-		for (; i < list.length; i++) {
+		var list, i;
+		if (!ref) return;
+		list = pathToNodes(path)
+		for (i = 0; i < list.length; i++) {
 			if (list[i] in ref) ref = ref[list[i]];
 			else return;
 		}
@@ -130,12 +108,12 @@
 		return value;
 	}
 
-	function isEqualPaths(p1, p2) {
+	function isPathStartsWith(p1, p2) {
 		var i, l;
 		p1 = pathToNodes(p1);
 		p2 = pathToNodes(p2);
-		if (p1.length !== p2.length) return false;
-		for (i = 0, l = p1.length; i < l; i++) {
+		l = Math.min(p1.length, p2.length);
+		for (i = 0; i < l; i++) {
 			if (p1[i] !== p2[i]) return false;
 		}
 		return true;
@@ -178,95 +156,16 @@
 		}
 	}
 
-	function collectViews(rootElement) {
-		var l, v, b, p, va;
-
-		if (!rootElement.getElementsByTagName) return;
-		if (!views) {
-			console.info('DT: Starting initial scan for a views...');
-			views = {};
-			b = performance.now();
-		}
-		l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
-		l.push(rootElement);
-		l.forEach(function (v) {
-			if (v.dataset) {
-				Object.keys(v.dataset).forEach(function (k) {
-					if (k.indexOf('tie') === 0) {
-						p = resolvePath(v, v.dataset[k]);
-						va = getPath(views, p);
-						if (!va) setPath(views, p, (va = []));
-						if (va.indexOf(v) < 0) {
-							va.push(v);
-							updateView(v, k, p);
-							addChangeListener(v);
-						}
-					}
-				});
-			}
-		});
-		b && console.info('DT: Initial scan finished in ' + (performance.now() - b).toFixed(3) + 'ms');
-	}
-
-	function discardViews(rootElement) {
-		var l, v, p, va, i;
-		if (!rootElement.getElementsByTagName) return;
-		l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
-		l.push(rootElement);
-		l.forEach(function (v) {
-			if (v.dataset) {
-				Object.keys(v.dataset).forEach(function (k) {
-					i = -1;
-					if (k.indexOf('tie') === 0) {
-						p = resolvePath(v, v.dataset[k]);
-						va = getPath(views, p);
-						i = va && va.indexOf(v);
-						if (i >= 0) {
-							va.splice(i, 1);
-							removeEventListener(v);
-						}
-					}
-				});
-			}
-		});
-	}
-
-	function repathView(view, dataKey, oldPath, newPath) {
-		var pathViews, i = -1, npn;
-
-		//	delete old path
-		if (oldPath) {
-			pathViews = getPath(views, oldPath);
-			if (pathViews) i = pathViews.indexOf(view);
-			if (i >= 0) pathViews.splice(i, 1);
-		}
-
-		//	add new path
-		npn = pathToNodes(newPath);
-		if (!getPath(views, npn)) setPath(views, npn, []);
-		getPath(views, npn).push(view);
-		updateView(view, dataKey, npn)
-	}
-
 	function publishDataChange(data, path) {
-		var vs, p;
-		if (typeof data === 'object') {
-			Object.keys(data).forEach(function (key) {
-				publishDataChange(data[key], path + '.' + key);
-			});
-		} else {
-			vs = getPath(views, path);
-			if (vs) {
-				vs.forEach(function (v) {
-					Object.keys(v.dataset).forEach(function (k) {
-						if (k.indexOf('tie') === 0) {
-							p = resolvePath(v, v.dataset[k]);
-							if (isEqualPaths(p, path)) {
-								updateView(v, k, p);
-							}
-						}
-					});
-				});
+		var vs = views.get(path), i, l, key, p;
+		for (i = 0, l = vs.length; i < l; i++) {
+			for (key in vs[i].dataset) {
+				if (key.indexOf('tie') === 0) {
+					p = resolvePath(vs[i], vs[i].dataset[key]);
+					if (isPathStartsWith(path, p)) {
+						updateView(vs[i], key, p);
+					}
+				}
 			}
 		}
 	}
@@ -274,9 +173,14 @@
 	function destroyDataObservers(data, namespace) {
 		var o;
 		Object.keys(observers).forEach(function (key) {
-			if (key.indexOf(namespace) === 0) {
-				o = getPath(data, key.replace(namespace + '.', ''));
-				Object.unobserve(o, observers[key]);
+			if (key !== '') {
+				if (key === namespace) o = data;
+				else if (key.indexOf(namespace) === 0) o = getPath(data, key.replace(namespace + '.', ''));
+				else o = null;
+				if (o) {
+					Object.unobserve(o, observers[key]);
+					delete observers[key];
+				}
 			}
 		});
 	}
@@ -285,15 +189,11 @@
 		var o;
 		o = function (changes) {
 			changes.forEach(function (change) {
-				var ov = change.oldValue, nv = change.object[change.name], p = namespace + '.' + change.name;
-				if (ov && typeof ov === 'object') {
-					destroyDataObservers(ov, p);
-					console.log(Object.keys(observers).length)
-				}
-				if (nv && typeof nv === 'object') {
-					setupDataObservers(nv, p);
-					console.log(Object.keys(observers).length)
-				}
+				var ov = change.oldValue,
+					nv = change.object[change.name],
+					p = (namespace ? namespace + '.' : '') + change.name;
+				if (ov && typeof ov === 'object') { destroyDataObservers(ov, p); }
+				if (nv && typeof nv === 'object') { setupDataObservers(nv, p); }
 				typeof nv !== 'undefined' && publishDataChange(nv, p);
 			});
 		};
@@ -349,11 +249,103 @@
 	RulesSet.prototype.add('tieTooltip', 'title');
 	RulesSet.prototype.add('tieImage', 'scr');
 
+	function ViewsManager() {
+		var vpn = '___vs___', vs = {};
+
+		function add(view) {
+			var key, path, va;
+			for (key in view.dataset) {
+				if (key.indexOf('tie') !== 0) continue;
+				path = resolvePath(view, view.dataset[key]);
+				path.push(vpn);
+				va = getPath(vs, path);
+				if (!va) setPath(vs, path, (va = []));
+				if (va.indexOf(view) < 0) {
+					va.push(view);
+					path.pop();
+					updateView(view, key, path);
+					addChangeListener(view);
+				}
+			}
+		}
+
+		function get(path) {
+			var p = pathToNodes(path), r = arguments[1] ? arguments[1] : [], tmp, key;
+			tmp = getPath(vs, p);
+			if (tmp) {
+				for (key in tmp) {
+					if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
+					else Array.prototype.push.apply(r, get(path + '.' + key));
+				}
+			}
+			return r;
+		}
+
+		function collect(rootElement) {
+			var l;
+			if (!rootElement.getElementsByTagName) return;
+			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
+			l.push(rootElement);
+			l.forEach(add);
+		}
+
+		function discard(rootElement) {
+			var l, e, key, path, va, i;
+			if (!rootElement.getElementsByTagName) return;
+			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
+			l.push(rootElement);
+			l.forEach(function (e) {
+				for (key in e.dataset) {
+					i = -1;
+					if (key.indexOf('tie') === 0) {
+						path = resolvePath(e, e.dataset[key]);
+						path.push(vpn);
+						va = getPath(vs, path);
+						i = va && va.indexOf(e);
+						if (i >= 0) {
+							va.splice(i, 1);
+							removeEventListener(e);
+						}
+					}
+				};
+			});
+		}
+
+		function move(view, dataKey, oldPath, newPath) {
+			var pathViews, i = -1, npn;
+
+			//	delete old path
+			if (oldPath) {
+				pathViews = getPath(views, oldPath);
+				if (pathViews) i = pathViews.indexOf(view);
+				if (i >= 0) pathViews.splice(i, 1);
+			}
+
+			//	add new path
+			npn = pathToNodes(newPath);
+			if (!getPath(views, npn)) setPath(views, npn, []);
+			getPath(views, npn).push(view);
+			updateView(view, dataKey, npn)
+		}
+
+		Object.defineProperties(this, {
+			collect: { value: collect },
+			discard: { value: discard },
+			move: { value: move },
+			get: { value: get }
+		});
+	}
+	views = new ViewsManager();
+	views.collect(document);
+
 	function Tie(namespace, data) {
 		var rules = new RulesSet();
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
-			data: { get: function () { return data; } },
+			data: {
+				get: function () { return dataRoot[namespace]; },
+				set: function (value) { if (typeof value === 'object') dataRoot[namespace] = value; }
+			},
 			addRule: { value: rules.add },
 			getRule: { value: rules.get },
 			delRule: { value: rules.del }
@@ -364,40 +356,35 @@
 
 	setupDataObservers(dataRoot, '');
 
-	collectViews(document);
-
 	function initDomObserver(d) {
 		function processDomChanges(changes) {
-			if (!views) return;
 			changes.forEach(function (change) {
-				var an, op, np, i, l;
-				if (change.type === 'attributes' && (an = change.attributeName).indexOf('data-tie') == 0) {
-					op = change.oldValue;
-					np = change.target.getAttribute(an);
-					repathView(change.target, dataAttrToProp(change.attributeName), op, np);
-				} else if (change.type === 'attributes' && change.attributeName === 'src' && change.target.nodeName === 'IFRAME') {
-					discardViews(change.target.contentDocument);
-				} else if (change.type === 'childList') {
+				var tp = change.type, tr = change.target, an = change.attributeName, i, l;
+				if (tp === 'attributes' && an.indexOf('data-tie') == 0) {
+					views.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
+				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
+					views.discard(tr.contentDocument);
+				} else if (tp === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							if (change.addedNodes[i].nodeName === 'IFRAME') {
 								initDomObserver(change.addedNodes[i].contentDocument);
-								collectViews(change.addedNodes[i].contentDocument);
+								views.collect(change.addedNodes[i].contentDocument);
 								change.addedNodes[i].addEventListener('load', function () {
 									initDomObserver(this.contentDocument);
-									collectViews(this.contentDocument);
+									views.collect(this.contentDocument);
 								});
 							} else {
-								collectViews(change.addedNodes[i]);
+								views.collect(change.addedNodes[i]);
 							}
 						}
 					}
 					if (change.removedNodes.length) {
 						for (i = 0, l = change.removedNodes.length; i < l; i++) {
 							if (change.removedNodes[i].nodeName === 'IFRAME') {
-								discardViews(change.removedNodes[i].contentDocument);
+								views.discard(change.removedNodes[i].contentDocument);
 							} else {
-								discardViews(change.removedNodes[i]);
+								views.discard(change.removedNodes[i]);
 							}
 						}
 					}
