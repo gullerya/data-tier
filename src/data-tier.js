@@ -274,6 +274,7 @@
 			tmp = getPath(vs, p);
 			if (tmp) {
 				for (key in tmp) {
+					if (!tmp.hasOwnProperty(key)) continue;
 					if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
 					else Array.prototype.push.apply(r, get(path + '.' + key, r));
 				}
