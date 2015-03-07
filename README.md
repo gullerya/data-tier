@@ -13,8 +13,7 @@ Basic examples
 Let's assume you have and object that holds user info and you want to bind it to it's view in HTML. This splits into the declarative part in the HTML itself and functional part in the Javascript.
 In Javascript you'll need to tell to DataTier that the object 'user' is to be tied to it's views and watched for changes. This is done using API as in the following example (let's assume that you've got the reference to the library in 'dataTier' variable):
 
-<code>
-var user = {
+<pre><code>var user = {
 	name: 'User Name',
 	age: 7,
 	active: true,
@@ -24,23 +23,20 @@ var user = {
 	}
 };
 
-dataTier.tieData('userInfo', user);
-</code>
+dataTier.tieData('userInfo', user);</code></pre>
 
 The API to register an object/graph in the DataTier as 'tieData' function which accepts 2 parameters: namespace as a string and initial data as an object.
 Now, in order to have a views bound to this data we need to declare the ties in HTML also, it will go as following:
 
-<code>
-<div>
-	<span data-tie:"userInfo.name"></span>
-	<span data-tie-text:"userInfo.age"></span>
-	<input type="checkbox" data-tie-value="userInfo.active"/>
-	<div>
-		<input type="text" data-tie:"userInfo.address.street"/>
-		<input type="text" data-tie:"userInfo.address.apartment"/>
-	</div>
-</div>
-</code>
+<pre><code>&lt;div&gt;
+	&lt;span data-tie:"userInfo.name"&gt;&lt;/span&gt;
+	&lt;span data-tie-text:"userInfo.age"&gt;&lt;/span&gt;
+	&lt;input type="checkbox" data-tie-value="userInfo.active"/&gt;
+	&lt;div&gt;
+		&lt;input type="text" data-tie:"userInfo.address.street"/&gt;
+		&lt;input type="text" data-tie:"userInfo.address.apartment"/&gt;
+	&lt;/div&gt;
+&lt;/div&gt;</code></pre>
 
 Don't be confused with the diversity of variants of 'data' attributes - this is something to do with a concept of <b>rules</b> and will be covered later in docs, the main point here is that DOM elements are being tied to the data registered in DataTier by means of 'data' attributes with <b>path</b> values, which i also expand on in the documentation below.
 There is no importance of the order of things, Javascript part may run before the HTML declarations and an opposite. HTML chunks with binding attributes may be injected/built later on, say on dynamic rendering of the pages.
