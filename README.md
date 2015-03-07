@@ -25,7 +25,7 @@ In Javascript you'll need to tell to DataTier that the object 'user' is to be ti
 
 dataTier.tieData('userInfo', user);</code></pre>
 
-The API to register an object/graph in the DataTier as 'tieData' function which accepts 2 parameters: namespace as a string and initial data as an object.
+The API to register an object/graph in the DataTier is <b>tieData</b> function which accepts 2 parameters: namespace as a string and initial data as an object.
 Now, in order to have a views bound to this data we need to declare the ties in HTML also, it will go as following:
 
 <pre><code>&lt;div&gt;
