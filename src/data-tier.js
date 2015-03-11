@@ -140,6 +140,7 @@
 		v.removeEventListener('change', changeListener);
 	}
 
+	//	TODO: decide if encapsulate into ViewsManager and expost as API
 	function updateView(view, rule, path) {
 		var ns = path.shift(), t = ties[ns], r, data;
 		if (t) {
