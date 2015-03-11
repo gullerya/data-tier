@@ -21,7 +21,7 @@
 (function (options) {
 	'use strict';
 
-	var domObserver, dataRoot = {}, observers = {}, ties = {}, views, log = {};
+	var domObserver, dataRoot = {}, observers, ties = {}, views, log = {};
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -34,13 +34,6 @@
 		warn: { value: function (m) { console.warn('DT: ' + m); } },
 		error: { value: function (m) { console.error('DT: ' + m); } }
 	});
-
-	function ObserversManager() {
-		Object.defineProperties(this, {
-
-		});
-	}
-	observers = new ObserversManager();
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -91,8 +84,8 @@
 		if (!ref) return;
 		list = pathToNodes(path)
 		for (i = 0; i < list.length; i++) {
-			if (list[i] in ref) ref = ref[list[i]];
-			else return;
+			ref = ref[list[i]];
+			if (!ref) return;
 		}
 		return ref;
 	}
@@ -156,6 +149,7 @@
 		}
 	}
 
+	//	TODO: decide if encapsulate into ObserversManager
 	function publishDataChange(data, path) {
 		var vs = views.get(path), i, l, key, p;
 		for (i = 0, l = vs.length; i < l; i++) {
@@ -168,40 +162,6 @@
 				}
 			}
 		}
-	}
-
-	function destroyDataObservers(data, namespace) {
-		var o;
-		Object.keys(observers).forEach(function (key) {
-			if (key !== '') {
-				if (key === namespace) o = data;
-				else if (key.indexOf(namespace) === 0) o = getPath(data, key.replace(namespace + '.', ''));
-				else o = null;
-				if (o) {
-					Object.unobserve(o, observers[key]);
-					delete observers[key];
-				}
-			}
-		});
-	}
-
-	function setupDataObservers(data, namespace) {
-		var o;
-		o = function (changes) {
-			changes.forEach(function (change) {
-				var ov = change.oldValue,
-					nv = change.object[change.name],
-					p = (namespace ? namespace + '.' : '') + change.name;
-				if (ov && typeof ov === 'object') { destroyDataObservers(ov, p); }
-				if (nv && typeof nv === 'object') { setupDataObservers(nv, p); }
-				typeof nv !== 'undefined' && publishDataChange(nv, p);
-			});
-		};
-		observers[namespace] = o;
-		Object.observe(data, o, ['add', 'update', 'delete']);
-		Object.keys(data).forEach(function (key) {
-			if (data[key] && typeof data[key] === 'object') setupDataObservers(data[key], namespace + '.' + key);
-		});
 	}
 
 	function Rule(id, setup) {
@@ -248,6 +208,73 @@
 	RulesSet.prototype.add('tiePlaceholder', 'placeholder');
 	RulesSet.prototype.add('tieTooltip', 'title');
 	RulesSet.prototype.add('tieImage', 'scr');
+
+	function ObserversManager() {
+		var os = {};
+		function h(change, ns) {
+			var ov = change.oldValue,
+				nv = change.object[change.name],
+				p = (ns ? ns + '.' : '') + change.name;
+			if (ov && typeof ov === 'object') { remove(ov, p); }
+			if (nv && typeof nv === 'object') { create(nv, p); }
+			publishDataChange(nv, p);
+		}
+		function s(change, ns) {
+			var ov, nv, p = (ns ? ns + '.' : ''), i;
+			//	TODO: go to the views and process the repeaters for this particular path
+			for (i = 0; i < change.removed.length; i++) {
+				ov = change.removed[i];
+				if (ov && typeof ov === 'object') { remove(ov, p + (i + change.index)); }
+				publishDataChange(null, p);
+			}
+			for (i = 0; i < change.addedCount; i++) {
+				nv = change.object[i + change.index];
+				if (nv && typeof nv === 'object') { create(nv, p + (i + change.index)); }
+				publishDataChange(nv, p);
+			}
+		};
+
+		function create(data, namespace) {
+			if (typeof data !== 'object') return;
+			function oo(changes) {
+				changes.forEach(function (change) { h(change, namespace); });
+			}
+			function ao(changes) {
+				changes.forEach(function (change) {
+					if (change.type === 'splice') s(change, namespace); else h(change, namespace);
+				});
+			}
+			if (Array.isArray(data)) {
+				Array.observe(data, ao, ['add', 'update', 'delete', 'splice']);
+				os[namespace] = ao;
+			} else {
+				Object.observe(data, oo, ['add', 'update', 'delete']);
+				os[namespace] = oo;
+			}
+			Object.keys(data).forEach(function (key) {
+				if (data[key] && typeof data[key] === 'object') create(data[key], namespace + '.' + key);
+			});
+		}
+
+		function remove(data, namespace) {
+			var o;
+			Object.keys(os).forEach(function (key) {
+				if (key !== '') {
+					if (key === namespace) o = data;
+					else if (key.indexOf(namespace) === 0) o = getPath(data, key.replace(namespace + '.', ''));
+					else o = null;
+					if (o) {
+						if (Array.isArray(o)) Array.unobserve(o, os[key]);
+						else Object.unobserve(o, os[key]);
+						delete os[key];
+					}
+				}
+			});
+		}
+
+		create(dataRoot, '');
+	}
+	observers = new ObserversManager();
 
 	function ViewsManager() {
 		var vpn = '___vs___', vs = {};
@@ -351,8 +378,6 @@
 		ties[namespace] = this;
 		dataRoot[namespace] = data;
 	}
-
-	setupDataObservers(dataRoot, '');
 
 	function initDomObserver(d) {
 		function processDomChanges(changes) {
