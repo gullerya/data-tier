@@ -7,11 +7,13 @@
 //		</div>
 //	</div>
 //
-//	Repeaters API
+//	Lists API
 //
-//	<div id="container" data-tie-array-container="each in users">
+//	Principal solution as of now: there will be no composite paths!!! In the only case where there is an automatic tying full pathes will be generated.
+//	
+//	<div id="container" data-tie-list="users">
 //		<template>
-//			<span data-tie="..name"></span>
+//			<span data-tie="name"></span>
 //		</template>
 //	</div>
 //
@@ -112,11 +114,6 @@
 		return true;
 	}
 
-	function resolvePath(e, p) {
-		//	TODO: add support for composite paths, means also API notice of partial part being processed
-		return pathToNodes(p);
-	}
-
 	function changeListener(ev) {
 		var v = ev.target, p, t;
 
@@ -126,7 +123,7 @@
 			p = v.dataset.tie;
 		}
 		if (p) {
-			p = resolvePath(v, p);
+			p = pathToNodes(p);
 			t = ties[p.shift()];
 			setPath(t.data, p, v.value);
 		}
@@ -147,21 +144,6 @@
 			r = t.getRule(rule, view);
 			data = getPath(t.data, path);
 			r.apply(view, data);
-		}
-	}
-
-	//	TODO: decide if encapsulate into ObserversManager
-	function publishDataChange(data, path) {
-		var vs = views.get(path), i, l, key, p;
-		for (i = 0, l = vs.length; i < l; i++) {
-			for (key in vs[i].dataset) {
-				if (key.indexOf('tie') === 0) {
-					p = resolvePath(vs[i], vs[i].dataset[key]);
-					if (isPathStartsWith(path, p)) {
-						updateView(vs[i], key, p);
-					}
-				}
-			}
 		}
 	}
 
@@ -209,9 +191,50 @@
 	RulesSet.prototype.add('tiePlaceholder', 'placeholder');
 	RulesSet.prototype.add('tieTooltip', 'title');
 	RulesSet.prototype.add('tieImage', 'scr');
+	RulesSet.prototype.add('tieIterator', function (view, data) {
+		var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
+		if (view.childElementCount - 1 < data.length) {
+			ruleData = view.dataset.tieIterator.split(' ');			//	TODO: verify the syntax here
+			itemId = ruleData[0];
+			rulePath = ruleData[ruleData.length - 1];
+			tmpDF = document.createDocumentFragment();
+			for (i = view.childElementCount - 1; i < data.length; i++) {
+				nv = t.content.cloneNode(true);
+				vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
+				vs.forEach(function (v) {
+					Object.keys(v.dataset).forEach(function (key) {
+						//if (v.dataset[key].indexOf(itemId) === 0) {
+						v.dataset[key] = rulePath + '[' + i + '].' + v.dataset[key];
+						//}
+					});
+				});
+				tmpDF.appendChild(nv);
+			}
+			view.appendChild(tmpDF);
+		} else if (view.childElementCount - 1 > data.length) {
+			while (view.childElementCount - 1 > data.length) {
+				view.removeChild(view.lastChild);
+			}
+		}
+	});
 
 	function ObserversManager() {
 		var os = {};
+
+		function publishDataChange(data, path) {
+			var vs = views.get(path), i, l, key, p;
+			for (i = 0, l = vs.length; i < l; i++) {
+				for (key in vs[i].dataset) {
+					if (key.indexOf('tie') === 0) {
+						p = pathToNodes(vs[i].dataset[key]);
+						if (isPathStartsWith(path, p)) {
+							updateView(vs[i], key, p);
+						}
+					}
+				}
+			}
+		}
+
 		function h(change, ns) {
 			var ov = change.oldValue,
 				nv = change.object[change.name],
@@ -220,9 +243,9 @@
 			if (nv && typeof nv === 'object') { create(nv, p); }
 			publishDataChange(nv, p);
 		}
+
 		function s(change, ns) {
 			var ov, nv, p = (ns ? ns + '.' : ''), i;
-			//	TODO: go to the views and process the repeaters for this particular path
 			for (i = 0; i < change.removed.length; i++) {
 				ov = change.removed[i];
 				if (ov && typeof ov === 'object') { remove(ov, p + (i + change.index)); }
@@ -233,6 +256,7 @@
 				if (nv && typeof nv === 'object') { create(nv, p + (i + change.index)); }
 				publishDataChange(nv, p);
 			}
+			publishDataChange(change.object, p);
 		};
 
 		function create(data, namespace) {
@@ -284,7 +308,7 @@
 			var key, path, va;
 			for (key in view.dataset) {
 				if (key.indexOf('tie') !== 0) continue;
-				path = resolvePath(view, view.dataset[key]);
+				path = pathToNodes(view.dataset[key]);
 				path.push(vpn);
 				va = getPath(vs, path);
 				if (!va) setPath(vs, path, (va = []));
@@ -324,7 +348,7 @@
 				for (key in e.dataset) {
 					i = -1;
 					if (key.indexOf('tie') === 0) {
-						path = resolvePath(e, e.dataset[key]);
+						path = pathToNodes(e.dataset[key]);
 						path.push(vpn);
 						va = getPath(vs, path);
 						i = va && va.indexOf(e);
@@ -360,9 +384,10 @@
 			move: { value: move },
 			get: { value: get }
 		});
+
+		collect(document);
 	}
 	views = new ViewsManager();
-	views.collect(document);
 
 	function Tie(namespace, data) {
 		var rules = new RulesSet();
