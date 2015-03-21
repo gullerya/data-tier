@@ -1,16 +1,3 @@
-//	Lists API
-//
-//	Principal solution as of now: there will be no composite paths!!! In the only case where there is an automatic tying full pathes will be generated.
-//	
-//	<div id="container" data-tie-list="users foreach user">
-//		<template>
-//			<span data-tie="user.name"></span>
-//		</template>
-//	</div>
-//
-//	TODO: when binding data check that the corresponding views are not pointing on properties of type 'object', but primitives only
-//	TODO: as the above, but do provide listing handling for the arrays (create DOM from template)
-//
 (function (options) {
 	'use strict';
 
