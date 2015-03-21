@@ -23,7 +23,7 @@
 (function (options) {
 	'use strict';
 
-	var domObserver, dataRoot = {}, observers, ties = {}, views, log = {};
+	var domObserver, dataRoot = {}, observers, ties = {}, views, rules, log = {};
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -137,86 +137,124 @@
 		v.removeEventListener('change', changeListener);
 	}
 
-	//	TODO: decide if encapsulate into ViewsManager and expost as API
-	function updateView(view, rule, path) {
-		var ns = path.shift(), t = ties[ns], r, data;
-		if (t) {
-			r = t.getRule(rule, view);
+	//	TODO: decide if encapsulate into ViewsManager and expose as API
+	function updateView(view, ruleId, path) {
+		var ns, t, r, data;
+		ns = path.shift();
+		t = ties[ns];
+		r = rules.get(ruleId, view);
+		if (t && r) {
 			data = getPath(t.data, path);
-			r.apply(view, data);
+			r.dataToView(view, { data: data });
 		}
 	}
 
-	function Rule(id, setup) {
-		var p, a;
-		if (typeof setup === 'function') { a = setup; } else {
-			p = pathToNodes(setup);
-			a = function (v, d) { setPath(v, p, d); };
+
+	function RulesManager() {
+		var rs;
+
+		function dfltResolvePath(tieValue) {
+			return pathToNodes(tieValue);
 		}
-		Object.defineProperties(this, {
-			apply: { value: a }
+
+		function Rule(id, setup) {
+			var vpr, dtv, itd;
+
+			if (typeof setup === 'string') {
+				vpr = dfltResolvePath;
+				dtv = function (e, s) {
+					var d;
+					if (s) {
+						d = s.data;
+						setPath(e, setup, d);
+					}
+				};
+				itd = function () { throw new Error('not yet implemented'); };
+			} else if (typeof setup === 'function') {
+				vpr = dfltResolvePath;
+				dtv = setup;
+				itd = function () { throw new Error('no "inputToData" functionality defined in this rule'); }
+			} else if (typeof setup === 'object') {
+				vpr = setup.resolvePath || dfltResolvePath;
+				dtv = setup.dataToView;
+				itd = setup.inputToData;
+			}
+			Object.defineProperties(this, {
+				resolvePath: { value: vpr },
+				dataToView: { value: dtv },
+				inputToData: { value: itd }
+			});
+		}
+
+		function RulesSet() { }
+		rs = new RulesSet();
+		RulesSet.prototype.tieValue = new Rule('tieValue', 'value');
+		RulesSet.prototype.tieText = new Rule('tieText', 'textContent');
+		RulesSet.prototype.tiePlaceholder = new Rule('tiePlaceholder', 'placeholder');
+		RulesSet.prototype.tieTooltip = new Rule('tieTooltip', 'title');
+		RulesSet.prototype.tieImage = new Rule('tieImage', 'scr');
+		RulesSet.prototype.tieList = new Rule('tieList', {
+			resolvePath: function (tieValue) {
+				var ruleData = tieValue.split(' ');
+				return pathToNodes(ruleData[0]);
+			},
+			dataToView: function (view, tieValue) {
+				var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
+				if (view.childElementCount - 1 < tieValue.data.length) {
+					ruleData = view.dataset.tieList.split(' ');			//	TODO: verify the syntax here
+					itemId = ruleData[ruleData.length - 1];
+					rulePath = ruleData[0];
+					tmpDF = document.createDocumentFragment();
+					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
+						nv = t.content.cloneNode(true);
+						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
+						vs.forEach(function (v) {
+							Object.keys(v.dataset).forEach(function (key) {
+								if (v.dataset[key].indexOf(itemId) === 0) {
+									v.dataset[key] = v.dataset[key].replace(itemId, rulePath + '[' + i + ']');
+								}
+							});
+						});
+						tmpDF.appendChild(nv);
+					}
+					view.appendChild(tmpDF);
+				} else if (view.childElementCount - 1 > tieValue.data.length) {
+					while (view.childElementCount - 1 > tieValue.data.length) {
+						view.removeChild(view.lastChild);
+					}
+				}
+			}
 		});
-	}
 
-	function RulesSet() {
-		var s = this;
-		Object.defineProperties(s, {
+		Object.defineProperties(this, {
 			add: {
 				value: function (id, setup) {
 					if (!id || !setup) throw new Error('bad parameters; f(string, string|function) expected');
 					if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
-					if (s.hasOwnProperty(id) && s[id] instanceof Rule) throw new Error('rule with id "' + id + '" already exists');
-					if (s.hasOwnProperty(id)) throw new Error('"' + id + '" is a reserved property');
-					return s[id] = new Rule(id, setup);
+					if (rs.hasOwnProperty(id)) throw new Error('rule with id "' + id + '" already exists');
+					return rs[id] = new Rule(id, setup);
 				}
 			},
 			get: {
 				value: function (id, e) {
-					var r = s[id];
-					if (!r) {
+					var r = rs[id];
+					if (!r && id === 'tie') {
 						if (!e) throw new Error('rule "' + id + '" not found, supply DOM element to get the default view');
-						if (e.nodeName === 'INPUT' || e.nodeName === 'SELECT') return s['tieValue'];
-						else if (e.nodeName === 'IMAGE') return s['tieImage'];
-						else return s['tieText'];
+						if (e.nodeName === 'INPUT' || e.nodeName === 'SELECT') return rs['tieValue'];
+						else if (e.nodeName === 'IMAGE') return rs['tieImage'];
+						else return rs['tieText'];
 					}
 					return r;
 				}
 			},
-			del: { value: function (id) { return delete s[id]; } }
+			del: {
+				value: function (id) {
+					return delete rs[id];
+				}
+			}
 		});
-	}
-	RulesSet.prototype = new RulesSet();
-	RulesSet.prototype.add('tieValue', 'value');
-	RulesSet.prototype.add('tieText', 'textContent');
-	RulesSet.prototype.add('tiePlaceholder', 'placeholder');
-	RulesSet.prototype.add('tieTooltip', 'title');
-	RulesSet.prototype.add('tieImage', 'scr');
-	RulesSet.prototype.add('tieIterator', function (view, data) {
-		var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
-		if (view.childElementCount - 1 < data.length) {
-			ruleData = view.dataset.tieIterator.split(' ');			//	TODO: verify the syntax here
-			itemId = ruleData[0];
-			rulePath = ruleData[ruleData.length - 1];
-			tmpDF = document.createDocumentFragment();
-			for (i = view.childElementCount - 1; i < data.length; i++) {
-				nv = t.content.cloneNode(true);
-				vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
-				vs.forEach(function (v) {
-					Object.keys(v.dataset).forEach(function (key) {
-						//if (v.dataset[key].indexOf(itemId) === 0) {
-						v.dataset[key] = rulePath + '[' + i + '].' + v.dataset[key];
-						//}
-					});
-				});
-				tmpDF.appendChild(nv);
-			}
-			view.appendChild(tmpDF);
-		} else if (view.childElementCount - 1 > data.length) {
-			while (view.childElementCount - 1 > data.length) {
-				view.removeChild(view.lastChild);
-			}
-		}
-	});
+	};
+	rules = new RulesManager();
 
 	function ObserversManager() {
 		var os = {};
@@ -226,7 +264,7 @@
 			for (i = 0, l = vs.length; i < l; i++) {
 				for (key in vs[i].dataset) {
 					if (key.indexOf('tie') === 0) {
-						p = pathToNodes(vs[i].dataset[key]);
+						p = rules.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
 						if (isPathStartsWith(path, p)) {
 							updateView(vs[i], key, p);
 						}
@@ -305,18 +343,23 @@
 		var vpn = '___vs___', vs = {};
 
 		function add(view) {
-			var key, path, va;
+			var key, path, va, rule;
 			for (key in view.dataset) {
 				if (key.indexOf('tie') !== 0) continue;
-				path = pathToNodes(view.dataset[key]);
-				path.push(vpn);
-				va = getPath(vs, path);
-				if (!va) setPath(vs, path, (va = []));
-				if (va.indexOf(view) < 0) {
-					va.push(view);
-					path.pop();
-					updateView(view, key, path);
-					addChangeListener(view);
+				rule = rules.get(key, view);
+				if (rule) {
+					path = rule.resolvePath(view.dataset[key]);
+					path.push(vpn);
+					va = getPath(vs, path);
+					if (!va) setPath(vs, path, (va = []));
+					if (va.indexOf(view) < 0) {
+						va.push(view);
+						path.pop();
+						updateView(view, key, path);
+						addChangeListener(view);
+					}
+				} else {
+					//	put to nonlocated list
 				}
 			}
 		}
@@ -390,16 +433,12 @@
 	views = new ViewsManager();
 
 	function Tie(namespace, data) {
-		var rules = new RulesSet();
 		Object.defineProperties(this, {
 			namespace: { get: function () { return namespace; } },
 			data: {
 				get: function () { return dataRoot[namespace]; },
 				set: function (value) { if (typeof value === 'object') dataRoot[namespace] = value; }
-			},
-			addRule: { value: rules.add },
-			getRule: { value: rules.get },
-			delRule: { value: rules.del }
+			}
 		});
 		ties[namespace] = this;
 		dataRoot[namespace] = data;
@@ -455,7 +494,8 @@
 
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
-		tieData: {
+		Rules: { value: rules },
+		setTie: {
 			value: function (namespace, data) {
 				if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
 				if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
