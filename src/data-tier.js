@@ -1,19 +1,10 @@
-//	Below is the final wanted example
-//	<div data-tie="users...">
-//		<div data-tie="users..[0]">
-//			<span data-tie-value="users..name"></span>
-//			<span data-tie-color="users..active"></span>
-//			<span data-tie-bdate="users[0].birthday"></span>
-//		</div>
-//	</div>
-//
 //	Lists API
 //
 //	Principal solution as of now: there will be no composite paths!!! In the only case where there is an automatic tying full pathes will be generated.
 //	
-//	<div id="container" data-tie-list="users">
+//	<div id="container" data-tie-list="users foreach user">
 //		<template>
-//			<span data-tie="name"></span>
+//			<span data-tie="user.name"></span>
 //		</template>
 //	</div>
 //
@@ -180,6 +171,7 @@
 				itd = setup.inputToData;
 			}
 			Object.defineProperties(this, {
+				id: { value: id },
 				resolvePath: { value: vpr },
 				dataToView: { value: dtv },
 				inputToData: { value: itd }
@@ -232,7 +224,9 @@
 					if (!id || !setup) throw new Error('bad parameters; f(string, string|function) expected');
 					if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
 					if (rs.hasOwnProperty(id)) throw new Error('rule with id "' + id + '" already exists');
-					return rs[id] = new Rule(id, setup);
+					rs[id] = new Rule(id, setup);
+					views.relocateByRule(rs[id]);
+					return rs[id];
 				}
 			},
 			get: {
@@ -340,7 +334,7 @@
 	observers = new ObserversManager();
 
 	function ViewsManager() {
-		var vpn = '___vs___', vs = {};
+		var vpn = '___vs___', vs = {}, nlvs = {};
 
 		function add(view) {
 			var key, path, va, rule;
@@ -359,7 +353,8 @@
 						addChangeListener(view);
 					}
 				} else {
-					//	put to nonlocated list
+					if (!nlvs.key) nlvs[key] = [];
+					nlvs.push(view);
 				}
 			}
 		}
@@ -380,6 +375,12 @@
 			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
 			l.forEach(add);
+		}
+
+		function relocateByRule(rule) {
+			if (nlvs[rule.id]) {
+				nlvs[rule.id].forEach(add);
+			}
 		}
 
 		function discard(rootElement) {
@@ -423,6 +424,7 @@
 
 		Object.defineProperties(this, {
 			collect: { value: collect },
+			relocateByRule: { value: relocateByRule },
 			discard: { value: discard },
 			move: { value: move },
 			get: { value: get }
