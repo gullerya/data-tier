@@ -4,7 +4,7 @@
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing model changes' }),
 		user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } };
 
-	window.Utils.DataTier.setTie('userA', user);
+	window.Utils.DataTier.Ties.create('userA', user);
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('div');
@@ -48,7 +48,7 @@
 	});
 
 	suite.addTest({ name: 'full model replace (to null)' }, function (pass, fail) {
-		var t = window.Utils.DataTier.getTie('userA');
+		var t = window.Utils.DataTier.Ties.obtain('userA');
 		t.data = null;
 		setTimeout(function () {
 			if (s1.textContent !== '') fail(new Error('expected the content to be emptied'));
@@ -60,7 +60,7 @@
 	});
 
 	suite.addTest({ name: 'full model replace (to new data)' }, function (pass, fail) {
-		var t = window.Utils.DataTier.getTie('userA');
+		var t = window.Utils.DataTier.Ties.obtain('userA');
 		t.data = { name: 'something else', age: 6 };
 		setTimeout(function () {
 			if (s1.textContent !== 'something else') fail(new Error('expected the content to be "something else"'));
@@ -72,7 +72,7 @@
 	});
 
 	suite.addTest({ name: 'binding view to object' }, function (pass, fail) {
-		var t = window.Utils.DataTier.getTie('userA');
+		var t = window.Utils.DataTier.Ties.obtain('userA');
 		s3.dataset.tie = 'userA.address';
 		setTimeout(function () {
 			if (s3.textContent !== '') fail(new Error('expected the content to be empty'));

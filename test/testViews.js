@@ -4,7 +4,7 @@
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing views changes' }),
 		user = { name: 'some name', age: 7, address: { street: 'str', apt: 9 } };
 
-	window.Utils.DataTier.setTie('userB', user);
+	window.Utils.DataTier.Ties.create('userB', user);
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('div');
