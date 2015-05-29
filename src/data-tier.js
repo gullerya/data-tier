@@ -372,7 +372,7 @@
 
 		function discard(rootElement) {
 			var l, e, key, path, va, i;
-			if (!rootElement.getElementsByTagName) return;
+			if (!rootElement || !rootElement.getElementsByTagName) return;
 			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
 			l.forEach(function (e) {
