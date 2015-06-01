@@ -106,14 +106,15 @@
 		t = ties.obtain(p.shift());
 		if (!t) { log.error('tie not found'); return; }
 
-		//	insert here invocation of dataChangeHandler/s
-		//	can impact:
-		//		would the change happen or not
-		//		data itself
 		if (t.modelChangePreprocessor) {
-			t.modelChangePreprocessor()
+			//	TODO: add timing out...
+			t.modelChangePreprocessor({
+				data: t.data,
+				path: p,
+				view: v
+			})
 				.then(function (result) {
-					setPath(t.data, p, v.value);
+					setPath(t.data, p, result.value);
 				})
 				.catch(function () {
 					log.info('change was rejected');
@@ -159,6 +160,7 @@
 					var d;
 					if (s) {
 						d = s.data;
+						d = typeof d === 'undefined' || d === null ? '' : d;
 						setPath(e, setup, d);
 					}
 				};

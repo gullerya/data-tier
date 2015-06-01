@@ -7,7 +7,7 @@
 	window.Utils.DataTier.Ties.create('userA', user);
 
 	var s1, s2, s3, s4;
-	s1 = document.createElement('div');
+	s1 = document.createElement('input');
 	s1.dataset.tie = 'userA.name';
 	document.body.appendChild(s1);
 	s2 = document.createElement('div');
@@ -22,7 +22,7 @@
 
 	suite.addTest({ name: 'new model bound' }, function (pass, fail) {
 		setTimeout(function () {
-			if (s1.textContent !== user.name) fail(new Error('expected the content to be updated'));
+			if (s1.value !== user.name) fail(new Error('expected the content to be updated'));
 			if (s2.textContent != user.age) fail(new Error('expected the content to be updated'));
 			if (s3.textContent !== user.address.street) fail(new Error('expected the content to be updated'));
 			if (s4.textContent != user.address.apt) fail(new Error('expected the content to be updated'));
@@ -31,10 +31,10 @@
 	});
 
 	suite.addTest({ name: 'primitive model changes' }, function (pass, fail) {
-		if (s1.textContent !== user.name) fail(new Error('preliminary check failed'));
+		if (s1.value !== user.name) fail(new Error('preliminary check failed'));
 		user.name = 'other';
 		setTimeout(function () {
-			if (s1.textContent !== user.name) fail(new Error('expected the content to be "other"'));
+			if (s1.value !== user.name) fail(new Error('expected the content to be "other"'));
 			pass();
 		}, 0);
 	});
@@ -51,7 +51,7 @@
 		var t = window.Utils.DataTier.Ties.obtain('userA');
 		t.data = null;
 		setTimeout(function () {
-			if (s1.textContent !== '') fail(new Error('expected the content to be emptied'));
+			if (s1.value !== '') fail(new Error('expected the content to be emptied'));
 			if (s2.textContent !== '') fail(new Error('expected the content to be emptied'));
 			if (s3.textContent !== '') fail(new Error('expected the content to be emptied'));
 			if (s4.textContent !== '') fail(new Error('expected the content to be emptied'));
@@ -63,7 +63,7 @@
 		var t = window.Utils.DataTier.Ties.obtain('userA');
 		t.data = { name: 'something else', age: 6 };
 		setTimeout(function () {
-			if (s1.textContent !== 'something else') fail(new Error('expected the content to be "something else"'));
+			if (s1.value !== 'something else') fail(new Error('expected the content to be "something else"'));
 			if (s2.textContent !== '6') fail(new Error('expected the content to be "6"'));
 			if (s3.textContent !== '') fail(new Error('expected the content to be emptied'));
 			if (s4.textContent !== '') fail(new Error('expected the content to be emptied'));
