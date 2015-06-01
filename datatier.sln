@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "datatier-js", "http://localhost:63293", "{70EFA0C5-0FA7-4BFF-ACB8-57F192BAE46C}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "datatier", "http://localhost:63293", "{70EFA0C5-0FA7-4BFF-ACB8-57F192BAE46C}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_63293"
-		Debug.AspNetCompiler.PhysicalPath = "..\datatier-js\"
+		Debug.AspNetCompiler.PhysicalPath = "..\datatier\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_63293\"
 		Debug.AspNetCompiler.Updateable = "true"
 		Debug.AspNetCompiler.ForceOverwrite = "true"
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.VirtualPath = "/localhost_63293"
-		Release.AspNetCompiler.PhysicalPath = "..\datatier-js\"
+		Release.AspNetCompiler.PhysicalPath = "..\datatier\"
 		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_63293\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		SlnRelativePath = "..\datatier-js\"
+		SlnRelativePath = "..\datatier\"
 	EndProjectSection
 EndProject
 Global

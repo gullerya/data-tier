@@ -100,9 +100,25 @@
 		} else {
 			p = v.dataset.tie;
 		}
-		if (p) {
-			p = pathToNodes(p);
-			t = ties.obtain(p.shift());
+		if (!p) { log.error('path to data not available'); return; }
+		p = pathToNodes(p);
+		if (!p) { log.error('path to data is invalid'); return; }
+		t = ties.obtain(p.shift());
+		if (!t) { log.error('tie not found'); return; }
+
+		//	insert here invocation of dataChangeHandler/s
+		//	can impact:
+		//		would the change happen or not
+		//		data itself
+		if (t.modelChangePreprocessor) {
+			t.modelChangePreprocessor()
+				.then(function (result) {
+					setPath(t.data, p, v.value);
+				})
+				.catch(function () {
+					log.info('change was rejected');
+				});
+		} else {
 			setPath(t.data, p, v.value);
 		}
 	}
@@ -126,7 +142,6 @@
 			r.dataToView(view, { data: data });
 		}
 	}
-
 
 	function RulesManager() {
 		var rs;
@@ -425,11 +440,20 @@
 		var ts = {};
 
 		function Tie(namespace, data) {
+			var mChangePrep, vChangePrep;
 			Object.defineProperties(this, {
 				namespace: { get: function () { return namespace; } },
 				data: {
 					get: function () { return dataRoot[namespace]; },
-					set: function (value) { if (typeof value === 'object') dataRoot[namespace] = value; }
+					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
+				},
+				modelChangePreprocessor: {
+					get: function () { return mChangePrep; },
+					set: function (v) { if (typeof v === 'function') mChangePrep = v; }
+				},
+				viewChangePreprocessor: {
+					get: function () { return vChangePrep; },
+					set: function (v) { if (typeof v === 'function') vChangePrep = v; }
 				}
 			});
 			dataRoot[namespace] = data;
