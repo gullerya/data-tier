@@ -196,7 +196,11 @@
 			},
 			dataToView: function (view, tieValue) {
 				var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
-				if (view.childElementCount - 1 < tieValue.data.length) {
+				if (!tieValue.data) {
+					while (view.childElementCount > 1) {
+						view.removeChild(view.lastChild);
+					}
+				} else if (view.childElementCount - 1 < tieValue.data.length) {
 					ruleData = view.dataset.tieList.trim().split(/\s+/);
 					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 						log.error('invalid parameter for TieList rule specified');
