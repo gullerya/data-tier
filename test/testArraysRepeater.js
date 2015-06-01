@@ -10,7 +10,7 @@
 	e1 = document.createElement('span');
 	e2 = document.createElement('span');
 	e3 = document.createElement('span');
-	c.dataset.tieList = 'usersA foreach user';
+	c.dataset.tieList = 'usersA => user';
 	e1.dataset.tie = 'user.name';
 	e2.dataset.tie = 'user.age';
 	e3.dataset.tie = 'user.address.street';

@@ -197,21 +197,25 @@
 			dataToView: function (view, tieValue) {
 				var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
 				if (view.childElementCount - 1 < tieValue.data.length) {
-					ruleData = view.dataset.tieList.split(' ');			//	TODO: verify the syntax here
-					itemId = ruleData[ruleData.length - 1];
-					rulePath = ruleData[0];
-					tmpDF = document.createDocumentFragment();
-					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
-						nv = t.content.cloneNode(true);
-						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
-						vs.forEach(function (v) {
-							Object.keys(v.dataset).forEach(function (key) {
-								if (v.dataset[key].indexOf(itemId) === 0) {
-									v.dataset[key] = v.dataset[key].replace(itemId, rulePath + '[' + i + ']');
-								}
+					ruleData = view.dataset.tieList.trim().split(/\s+/);
+					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
+						log.error('invalid parameter for TieList rule specified');
+					} else {
+						rulePath = ruleData[0];
+						itemId = ruleData[2];
+						tmpDF = document.createDocumentFragment();
+						for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
+							nv = t.content.cloneNode(true);
+							vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
+							vs.forEach(function (v) {
+								Object.keys(v.dataset).forEach(function (key) {
+									if (v.dataset[key].indexOf(itemId) === 0) {
+										v.dataset[key] = v.dataset[key].replace(itemId, rulePath + '[' + i + ']');
+									}
+								});
 							});
-						});
-						tmpDF.appendChild(nv);
+							tmpDF.appendChild(nv);
+						}
 					}
 					view.appendChild(tmpDF);
 				} else if (view.childElementCount - 1 > tieValue.data.length) {
