@@ -413,7 +413,8 @@
 						i = va && va.indexOf(e);
 						if (i >= 0) {
 							va.splice(i, 1);
-							removeEventListener(e);
+							delChangeListener(e);
+							vcnt--;
 						}
 					}
 				};
