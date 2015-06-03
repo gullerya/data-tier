@@ -346,7 +346,7 @@
 	observers = new ObserversManager();
 
 	function ViewsManager() {
-		var vpn = '___vs___', vs = {}, nlvs = {};
+		var vpn = '___vs___', vs = {}, nlvs = {}, vcnt = 0;
 
 		function add(view) {
 			var key, path, va, rule;
@@ -363,6 +363,7 @@
 						path.pop();
 						updateView(view, key, path);
 						addChangeListener(view);
+						vcnt++;
 					}
 				} else {
 					if (!nlvs.key) nlvs[key] = [];
@@ -387,12 +388,14 @@
 			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
 			l.forEach(add);
+			log.info('collected views, current total: ' + vcnt);
 		}
 
 		function relocateByRule(rule) {
 			if (nlvs[rule.id]) {
 				nlvs[rule.id].forEach(add);
 			}
+			log.info('relocated views, current total: ' + vcnt);
 		}
 
 		function discard(rootElement) {
@@ -415,6 +418,7 @@
 					}
 				};
 			});
+			log.info('discarded views, current total: ' + vcnt);
 		}
 
 		function move(view, dataKey, oldPath, newPath) {
