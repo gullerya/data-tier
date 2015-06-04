@@ -433,7 +433,7 @@
 		function collect(rootElement) {
 			var l;
 			if (!rootElement.getElementsByTagName) return;
-			if (rootElement.nodeName === 'IFRAME') Array.prototype.splice.call(rootElement.contentDocument.getElementsByTagName('*'), 0);
+			if (rootElement.nodeName === 'IFRAME') l = Array.prototype.splice.call(rootElement.contentDocument.getElementsByTagName('*'), 0);
 			else l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
 			l.forEach(add);
