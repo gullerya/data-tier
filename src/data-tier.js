@@ -407,23 +407,24 @@
 				collect(view.contentDocument);
 			} else {
 				for (key in view.dataset) {
-					if (key.indexOf('tie') !== 0) continue;
-					rule = rules.get(key, view);
-					if (rule) {
-						path = rule.resolvePath(view.dataset[key]);
-						path.push(vpn);
-						va = getPath(vs, path);
-						if (!va) setPath(vs, path, (va = []));
-						if (va.indexOf(view) < 0) {
-							va.push(view);
-							path.pop();
-							updateView(view, key, path);
-							addChangeListener(view);
-							vcnt++;
+					if (key.indexOf('tie') === 0) {
+						rule = rules.get(key, view);
+						if (rule) {
+							path = rule.resolvePath(view.dataset[key]);
+							path.push(vpn);
+							va = getPath(vs, path);
+							if (!va) setPath(vs, path, (va = []));
+							if (va.indexOf(view) < 0) {
+								va.push(view);
+								path.pop();
+								updateView(view, key, path);
+								addChangeListener(view);
+								vcnt++;
+							}
+						} else {
+							if (!nlvs.key) nlvs[key] = [];
+							nlvs.push(view);
 						}
-					} else {
-						if (!nlvs.key) nlvs[key] = [];
-						nlvs.push(view);
 					}
 				}
 			}
@@ -459,7 +460,7 @@
 		}
 
 		function discard(rootElement) {
-			var l, e, key, path, va, i;
+			var l, e, key, rule, path, va, i;
 			if (!rootElement || !rootElement.getElementsByTagName) return;
 			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
@@ -467,6 +468,7 @@
 				for (key in e.dataset) {
 					i = -1;
 					if (key.indexOf('tie') === 0) {
+						rule = rules.get(key, e);
 						path = rule.resolvePath(e.dataset[key]);
 						path.push(vpn);
 						va = getPath(vs, path);
