@@ -300,7 +300,7 @@
 				if (nv && typeof nv === 'object') { create(nv, p + (i + change.index)); }
 				publishDataChange(nv, p);
 			}
-			//publishDataChange(change.object, p);
+			publishDataChange(change.object, p);
 		};
 
 		function create(data, namespace) {
