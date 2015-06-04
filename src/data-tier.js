@@ -467,7 +467,7 @@
 				for (key in e.dataset) {
 					i = -1;
 					if (key.indexOf('tie') === 0) {
-						path = pathToNodes(e.dataset[key]);
+						path = rule.resolvePath(e.dataset[key]);
 						path.push(vpn);
 						va = getPath(vs, path);
 						i = va && va.indexOf(e);
