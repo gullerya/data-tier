@@ -345,6 +345,54 @@
 	}
 	observers = new ObserversManager();
 
+	function TiesManager() {
+		var ts = {};
+
+		function Tie(namespace, data) {
+			var mChangePrep, vChangePrep;
+			Object.defineProperties(this, {
+				namespace: { get: function () { return namespace; } },
+				data: {
+					get: function () { return dataRoot[namespace]; },
+					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
+				},
+				modelChangePreprocessor: {
+					get: function () { return mChangePrep; },
+					set: function (v) { if (typeof v === 'function') mChangePrep = v; }
+				},
+				viewChangePreprocessor: {
+					get: function () { return vChangePrep; },
+					set: function (v) { if (typeof v === 'function') vChangePrep = v; }
+				}
+			});
+			dataRoot[namespace] = data;
+		}
+
+		function create(namespace, data) {
+			if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
+			if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
+			if (ts[namespace]) throw new Error('namespace "' + namespace + '" already exists');
+			if (data && typeof data !== 'object') throw new Error('data (second param) MUST be a non null object');
+			if (!data) data = null;
+			return ts[namespace] = new Tie(namespace, data);
+		}
+
+		function remove(namespace) {
+			console.error('to be implemented');
+		}
+
+		function obtain(namespace) {
+			return ts[namespace];
+		}
+
+		Object.defineProperties(this, {
+			create: { value: create },
+			obtain: { value: obtain },
+			remove: { value: remove }
+		});
+	}
+	ties = new TiesManager();
+
 	function ViewsManager() {
 		var vpn = '___vs___', vs = {}, nlvs = {}, vcnt = 0;
 
@@ -450,54 +498,6 @@
 		collect(document);
 	}
 	views = new ViewsManager();
-
-	function TiesManager() {
-		var ts = {};
-
-		function Tie(namespace, data) {
-			var mChangePrep, vChangePrep;
-			Object.defineProperties(this, {
-				namespace: { get: function () { return namespace; } },
-				data: {
-					get: function () { return dataRoot[namespace]; },
-					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
-				},
-				modelChangePreprocessor: {
-					get: function () { return mChangePrep; },
-					set: function (v) { if (typeof v === 'function') mChangePrep = v; }
-				},
-				viewChangePreprocessor: {
-					get: function () { return vChangePrep; },
-					set: function (v) { if (typeof v === 'function') vChangePrep = v; }
-				}
-			});
-			dataRoot[namespace] = data;
-		}
-
-		function create(namespace, data) {
-			if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
-			if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
-			if (ts[namespace]) throw new Error('namespace "' + namespace + '" already exists');
-			if (data && typeof data !== 'object') throw new Error('data (second param) MUST be a non null object');
-			if (!data) data = null;
-			return ts[namespace] = new Tie(namespace, data);
-		}
-
-		function remove(namespace) {
-			console.error('to be implemented');
-		}
-
-		function obtain(namespace) {
-			return ts[namespace];
-		}
-
-		Object.defineProperties(this, {
-			create: { value: create },
-			obtain: { value: obtain },
-			remove: { value: remove }
-		});
-	}
-	ties = new TiesManager();
 
 	function initDomObserver(d) {
 		function processDomChanges(changes) {
