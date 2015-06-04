@@ -398,26 +398,36 @@
 
 		function add(view) {
 			var key, path, va, rule;
-			for (key in view.dataset) {
-				if (key.indexOf('tie') !== 0) continue;
-				rule = rules.get(key, view);
-				if (rule) {
-					path = rule.resolvePath(view.dataset[key]);
-					path.push(vpn);
-					va = getPath(vs, path);
-					if (!va) setPath(vs, path, (va = []));
-					if (va.indexOf(view) < 0) {
-						va.push(view);
-						path.pop();
-						updateView(view, key, path);
-						addChangeListener(view);
-						vcnt++;
+			if (view.nodeName === 'IFRAME') {
+				initDomObserver(view.contentDocument);
+				view.addEventListener('load', function () {
+					initDomObserver(this.contentDocument);
+					collect(this.contentDocument);
+				});
+				collect(view.contentDocument);
+			} else {
+				for (key in view.dataset) {
+					if (key.indexOf('tie') !== 0) continue;
+					rule = rules.get(key, view);
+					if (rule) {
+						path = rule.resolvePath(view.dataset[key]);
+						path.push(vpn);
+						va = getPath(vs, path);
+						if (!va) setPath(vs, path, (va = []));
+						if (va.indexOf(view) < 0) {
+							va.push(view);
+							path.pop();
+							updateView(view, key, path);
+							addChangeListener(view);
+							vcnt++;
+						}
+					} else {
+						if (!nlvs.key) nlvs[key] = [];
+						nlvs.push(view);
 					}
-				} else {
-					if (!nlvs.key) nlvs[key] = [];
-					nlvs.push(view);
 				}
 			}
+
 		}
 
 		function get(path) {
