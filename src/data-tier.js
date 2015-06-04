@@ -49,6 +49,32 @@
 		return r;
 	}
 
+	function copyObject(o) {
+		var r, i;
+		if (typeof o !== 'object') throw new Error('object parameter expected');
+		if (o === null) return null;
+		if (Array.isArray(o)) {
+			r = [];
+			for (i = 0; i < o.length; i++) {
+				if (typeof o[i] === 'object') {
+					r[i] = copyObject(o[i])
+				} else if (typeof o[i] !== 'function') {
+					r[i] = o[i];
+				}
+			}
+		} else {
+			r = {};
+			Object.getOwnPropertyNames(o).forEach(function (p) {
+				if (typeof o[p] === 'object') {
+					r[p] = copyObject(o[p])
+				} else if (typeof o[p] !== 'function') {
+					r[p] = o[p];
+				}
+			});
+		}
+		return r;
+	}
+
 	function setPath(ref, path, value) {
 		var list = pathToNodes(path), i;
 		for (i = 0; i < list.length - 1; i++) {
@@ -567,5 +593,12 @@
 	Object.defineProperties(options.namespace.DataTier, {
 		Rules: { value: rules },
 		Ties: { value: ties }
+	});
+	Object.defineProperty(options.namespace.DataTier, 'Utils', { value: {} });
+	Object.defineProperties(options.namespace.DataTier.Utils, {
+		copyObject: { value: copyObject },
+		setPath: { value: setPath },
+		getPath: { value: getPath },
+		cutPath: { value: cutPath }
 	});
 })((typeof arguments === 'object' ? arguments[0] : undefined));
