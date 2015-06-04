@@ -125,7 +125,9 @@
 	}
 
 	function addChangeListener(v) {
-		v.addEventListener('change', changeListener);
+		if (v.nodeName === 'INPUT' || v.nodeName === 'SELECT') {
+			v.addEventListener('change', changeListener);
+		}
 	}
 
 	function delChangeListener(v) {
