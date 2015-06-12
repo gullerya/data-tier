@@ -139,13 +139,12 @@
 				data: t.data,
 				path: p,
 				view: v
-			})
-				.then(function (result) {
-					setPath(t.data, p, result.value);
-				})
-				.catch(function () {
-					log.info('change was rejected');
-				});
+			}).then(function (result) {
+				setPath(t.data, p, result.value);
+			}).catch(function () {
+				log.info('change was rejected');
+				log.error('rollback to the view to be done here');
+			});
 		} else {
 			setPath(t.data, p, v.value);
 		}
