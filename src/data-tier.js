@@ -1,12 +1,13 @@
 (function (options) {
 	'use strict';
 
+	const DEFAULT_NAMESPACE = 'Modules';
 	var domObserver, dataRoot = {}, observers, ties, views, rules, log = {};
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
-		if (typeof window.Utils !== 'object') Object.defineProperty(window, 'Utils', { value: {} });
-		options.namespace = window.Utils;
+		if (typeof window[DEFAULT_NAMESPACE] !== 'object') Object.defineProperty(window, DEFAULT_NAMESPACE, { value: {} });
+		options.namespace = window[DEFAULT_NAMESPACE];
 	}
 
 	Object.defineProperties(log, {

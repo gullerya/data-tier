@@ -2,7 +2,7 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays with Repeaters' }), users = [];
-	window.Utils.DataTier.Ties.create('usersA', users);
+	window.Modules.DataTier.Ties.create('usersA', users);
 
 	var c = document.createElement('div'), t, c1, e1, e2, e3;
 	t = document.createElement('template');
@@ -39,7 +39,7 @@
 	});
 
 	suite.addTest({ name: 'array binding - bulk update' }, function (pass, fail) {
-		window.Utils.DataTier.Ties.obtain('usersA').data = [
+		window.Modules.DataTier.Ties.obtain('usersA').data = [
 			{
 				name: 'A',
 				age: 5,
@@ -81,7 +81,7 @@
 				address: { street: 'some street 1' }
 			});
 		}
-		window.Utils.DataTier.Ties.obtain('usersA').data = a;
+		window.Modules.DataTier.Ties.obtain('usersA').data = a;
 		setTimeout(function () {
 			//	TODO: do the verification of the generated content here
 			pass();

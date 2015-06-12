@@ -2,7 +2,7 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays' }), users = [];
-	window.Utils.DataTier.Ties.create('users', users);
+	window.Modules.DataTier.Ties.create('users', users);
 
 	var d = document.createElement('div'), e1, e2, e3;
 	e1 = document.createElement('div');
