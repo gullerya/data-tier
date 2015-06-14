@@ -1,0 +1,32 @@
+{
+	"name": "data-tier",
+	"version": "0.5.0",
+	"homepage": "https://github.com/gullerya/datatier-js",
+	"authors": [
+		"Guller Yuri <gullerya@gmail.com>"
+	],
+	"description": "Tiny and fast two way (MV-VM) data binding framework implemented in pure JS for browser environments.",
+	"main": "data-tier.js",
+	"keywords": [
+		"two",
+		"way",
+		"data",
+		"binding",
+		"tie",
+		"model",
+		"view",
+		"native",
+		"javascript",
+		"object",
+		"mutation",
+		"observe"
+	],
+	"license": "MIT",
+	"ignore": [
+		"**/.*",
+		"**/*.sln",
+		"node_modules",
+		"bower_components",
+		"test"
+	]
+}

@@ -175,9 +175,7 @@
 	function RulesManager() {
 		var rs;
 
-		function dfltResolvePath(tieValue) {
-			return pathToNodes(tieValue);
-		}
+		function dfltResolvePath(tieValue) { return pathToNodes(tieValue); }
 
 		function Rule(id, setup) {
 			var vpr, dtv, itd;
@@ -373,11 +371,12 @@
 	}
 	observers = new ObserversManager();
 
+	//	TODO: view to model change flow needs further design
 	function TiesManager() {
 		var ts = {};
 
 		function Tie(namespace, data) {
-			var mChangePrep, vChangePrep;
+			var mChangePrep;
 			Object.defineProperties(this, {
 				namespace: { get: function () { return namespace; } },
 				data: {
@@ -387,10 +386,6 @@
 				modelChangePreprocessor: {
 					get: function () { return mChangePrep; },
 					set: function (v) { if (typeof v === 'function') mChangePrep = v; }
-				},
-				viewChangePreprocessor: {
-					get: function () { return vChangePrep; },
-					set: function (v) { if (typeof v === 'function') vChangePrep = v; }
 				}
 			});
 			dataRoot[namespace] = data;
@@ -591,14 +586,15 @@
 
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
+		Ties: { value: ties },
 		Rules: { value: rules },
-		Ties: { value: ties }
-	});
-	Object.defineProperty(options.namespace.DataTier, 'Utils', { value: {} });
-	Object.defineProperties(options.namespace.DataTier.Utils, {
-		copyObject: { value: copyObject },
-		setPath: { value: setPath },
-		getPath: { value: getPath },
-		cutPath: { value: cutPath }
+		Utils: {
+			value: {
+				get copyObject() { return copyObject; },
+				get setPath() { return setPath; },
+				get getPath() { return getPath; },
+				get cutPath() { return cutPath; }
+			}
+		}
 	});
 })((typeof arguments === 'object' ? arguments[0] : undefined));
