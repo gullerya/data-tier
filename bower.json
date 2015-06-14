@@ -24,7 +24,9 @@
 	"license": "MIT",
 	"ignore": [
 		"**/.*",
-		"**/*.sln",
+		"*.sln",
+		"*.md",
+		"bower.json",
 		"node_modules",
 		"bower_components",
 		"test"
