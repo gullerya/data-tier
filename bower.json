@@ -24,12 +24,10 @@
 	"license": "MIT",
 	"ignore": [
 		"**/.*",
-		"**/*.sln",
-		"**/*.md",
-		"**/gruntfile.js",
-		"**/package.json",
-		"**/bower.json",
-		"**/README.md",
+		"*.sln",
+		"package.json",
+		"bower.json",
+		"README.md",
 		"node_modules",
 		"bower_components",
 		"test"

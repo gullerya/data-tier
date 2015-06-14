@@ -1,22 +1,37 @@
 {
-  "name": "data-tier",
-  "version": "0.5.1",
-  "description": "Tiny and fast two way (MV-VM) data binding framework implemented in pure JS for browser environments.",
-  "main": "src/data-tier.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/gullerya/data-tier"
-  },
-  "author": "Guller Yuri <gullerya@gmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/gullerya/data-tier/issues"
-  },
-  "homepage": "https://github.com/gullerya/data-tier"
+	"name": "data-tier",
+	"version": "0.5.1",
+	"homepage": "https://github.com/gullerya/data-tier",
+	"author": {
+		"name": "Guller Yuri",
+		"email": "gullerya@gmail.com"
+	},
+	"description": "Tiny and fast two way (MV-VM) data binding framework implemented in pure JS for browser environments.",
+	"main": "data-tier.js",
+	"keywords": [
+		"two",
+		"way",
+		"data",
+		"binding",
+		"tie",
+		"model",
+		"view",
+		"native",
+		"javascript",
+		"object",
+		"mutation",
+		"observe"
+	],
+	"license": "MIT",
+	"files": [
+		"src/data-tier.js"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gullerya/data-tier"
+	},
+	"bugs": {
+		"url": "https://github.com/gullerya/data-tier/issues",
+		"email": "gullerya@gmail.com"
+	}
 }
