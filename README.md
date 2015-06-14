@@ -50,5 +50,7 @@ Once two contracts exemplified above are done, you have the following:
 	<li>Adding new data to the namespace or registering new namespaces with data will invode update of all the view waiting for that data</li>
 </ul>
 
-Going deeper - Concepts
-=======================
+Diving deeper - Concepts
+========================
+
+to be done...
