@@ -215,6 +215,16 @@
 		RulesSet.prototype.tiePlaceholder = new Rule('tiePlaceholder', 'placeholder');
 		RulesSet.prototype.tieTooltip = new Rule('tieTooltip', 'title');
 		RulesSet.prototype.tieImage = new Rule('tieImage', 'scr');
+		RulesSet.prototype.tieDateValue = new Rule('tieDateValue', {
+			dataToView: function (view, tieValue) {
+				view.value = tieValue.data.toLocaleString();
+			}
+		});
+		RulesSet.prototype.tieDateText = new Rule('tieDateText', {
+			dataToView: function (view, tieValue) {
+				view.textContent = tieValue.data.toLocaleString();
+			}
+		});
 		RulesSet.prototype.tieList = new Rule('tieList', {
 			resolvePath: function (tieValue) {
 				var ruleData = tieValue.split(' ');
