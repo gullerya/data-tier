@@ -301,7 +301,7 @@
 	function ObserversManager() {
 		var os = {};
 
-		function publishDataChange(data, path) {
+		function publishDataChange(newData, oldData, path) {
 			var vs = views.get(path), i, l, key, p;
 			for (i = 0, l = vs.length; i < l; i++) {
 				for (key in vs[i].dataset) {
@@ -321,7 +321,7 @@
 				p = (ns ? ns + '.' : '') + change.name;
 			if (ov && typeof ov === 'object') { remove(ov, p); }
 			if (nv && typeof nv === 'object') { create(nv, p); }
-			publishDataChange(nv, p);
+			publishDataChange(nv, ov, p);
 		}
 
 		function s(change, ns) {
@@ -329,14 +329,14 @@
 			for (i = 0; i < change.removed.length; i++) {
 				ov = change.removed[i];
 				if (ov && typeof ov === 'object') { remove(ov, p + (i + change.index)); }
-				publishDataChange(null, p);
+				publishDataChange(null,null, p);
 			}
 			for (i = 0; i < change.addedCount; i++) {
 				nv = change.object[i + change.index];
 				if (nv && typeof nv === 'object') { create(nv, p + (i + change.index)); }
-				publishDataChange(nv, p);
+				publishDataChange(nv, null, p);
 			}
-			publishDataChange(change.object, p);
+			publishDataChange(change.object, change.oldValue, p);
 		};
 
 		function create(data, namespace) {
