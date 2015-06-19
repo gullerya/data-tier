@@ -2,7 +2,7 @@
 	'use strict';
 
 	const DEFAULT_NAMESPACE = 'Modules';
-	var domObserver, dataRoot = {}, observers, ties, views, rules, log = {};
+	var domObserver, dataRoot = {}, observersService, tiesService, viewsService, rulesService, log = {};
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -11,7 +11,7 @@
 	}
 
 	Object.defineProperties(log, {
-		info: { value: function (m) { console.info('DT: ' + m); }, },
+		info: { value: function (m) { console.info('DT: ' + m); } },
 		warn: { value: function (m) { console.warn('DT: ' + m); } },
 		error: { value: function (m) { console.error('DT: ' + m); } }
 	});
@@ -127,10 +127,11 @@
 		} else {
 			p = v.dataset.tie;
 		}
+		//	TODO: the following condition is not always error state, need to decide regarding the cardinality of the value suppliers
 		if (!p) { log.error('path to data not available'); return; }
 		p = pathToNodes(p);
 		if (!p) { log.error('path to data is invalid'); return; }
-		t = ties.obtain(p.shift());
+		t = tiesService.obtain(p.shift());
 		if (!t) { log.error('tie not found'); return; }
 
 		if (t.modelChangePreprocessor) {
@@ -160,20 +161,20 @@
 		v.removeEventListener('change', changeListener);
 	}
 
-	//	TODO: decide if encapsulate into ViewsManager and expose as API
+	//	TODO: decide if encapsulate into ViewsService and expose as API
 	function updateView(view, ruleId, path) {
 		var ns, t, r, data;
 		ns = path.shift();
-		t = ties.obtain(ns);
-		r = rules.get(ruleId, view);
+		t = tiesService.obtain(ns);
+		r = rulesService.get(ruleId, view);
 		if (t && r) {
 			data = getPath(t.data, path);
 			r.dataToView(view, { data: data });
 		}
 	}
 
-	function RulesManager() {
-		var rs;
+	rulesService = new (function RulesService() {
+		var rules = {};
 
 		function dfltResolvePath(tieValue) { return pathToNodes(tieValue); }
 
@@ -203,112 +204,57 @@
 			Object.defineProperties(this, {
 				id: { value: id },
 				resolvePath: { value: vpr },
-				dataToView: { value: dtv },
+				dataToView: { value: dtv, writable: true },
 				inputToData: { value: itd }
 			});
 		}
-
-		function RulesSet() { }
-		rs = new RulesSet();
-		RulesSet.prototype.tieValue = new Rule('tieValue', 'value');
-		RulesSet.prototype.tieText = new Rule('tieText', 'textContent');
-		RulesSet.prototype.tiePlaceholder = new Rule('tiePlaceholder', 'placeholder');
-		RulesSet.prototype.tieTooltip = new Rule('tieTooltip', 'title');
-		RulesSet.prototype.tieImage = new Rule('tieImage', 'scr');
-		RulesSet.prototype.tieDateValue = new Rule('tieDateValue', {
-			dataToView: function (view, tieValue) {
-				view.value = tieValue.data.toLocaleString();
-			}
-		});
-		RulesSet.prototype.tieDateText = new Rule('tieDateText', {
-			dataToView: function (view, tieValue) {
-				view.textContent = tieValue.data.toLocaleString();
-			}
-		});
-		RulesSet.prototype.tieList = new Rule('tieList', {
-			resolvePath: function (tieValue) {
-				var ruleData = tieValue.split(' ');
-				return pathToNodes(ruleData[0]);
-			},
-			dataToView: function (view, tieValue) {
-				var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
-				//	TODO: may think of better contract to specify the template element
-				if (!t) return;
-				if (!tieValue.data) {
-					while (view.childElementCount > 1) {
-						view.removeChild(view.lastChild);
-					}
-				} else if (view.childElementCount - 1 < tieValue.data.length) {
-					ruleData = view.dataset.tieList.trim().split(/\s+/);
-					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
-						log.error('invalid parameter for TieList rule specified');
-					} else {
-						rulePath = ruleData[0];
-						itemId = ruleData[2];
-						tmpDF = document.createDocumentFragment();
-						for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
-							nv = t.content.cloneNode(true);
-							vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
-							vs.forEach(function (v) {
-								Object.keys(v.dataset).forEach(function (key) {
-									if (v.dataset[key].indexOf(itemId) === 0) {
-										v.dataset[key] = v.dataset[key].replace(itemId, rulePath + '[' + i + ']');
-									}
-								});
-							});
-							tmpDF.appendChild(nv);
-						}
-					}
-					view.appendChild(tmpDF);
-				} else if (view.childElementCount - 1 > tieValue.data.length) {
-					while (view.childElementCount - 1 > tieValue.data.length) {
-						view.removeChild(view.lastChild);
-					}
-				}
-			}
-		});
 
 		Object.defineProperties(this, {
 			add: {
 				value: function (id, setup) {
 					if (!id || !setup) throw new Error('bad parameters; f(string, string|function) expected');
 					if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
-					if (rs.hasOwnProperty(id)) throw new Error('rule with id "' + id + '" already exists');
-					rs[id] = new Rule(id, setup);
-					views.relocateByRule(rs[id]);
-					return rs[id];
+					if (id in rules) throw new Error('rule with id "' + id + '" already exists');
+					rules[id] = new Rule(id, setup);
+					viewsService.relocateByRule(rules[id]);
+					return rules[id];
 				}
 			},
 			get: {
 				value: function (id, e) {
-					var r = rs[id];
-					if (!r && id === 'tie') {
-						if (!e) throw new Error('rule "' + id + '" not found, supply DOM element to get the default view');
-						if (e.nodeName === 'INPUT' || e.nodeName === 'SELECT') return rs['tieValue'];
-						else if (e.nodeName === 'IMAGE') return rs['tieImage'];
-						else return rs['tieText'];
+					var r;
+					if (id.indexOf('tie')) {
+						log.error('invalid tie id supplied');
+					} else if (id in rules) {
+						r = rules[id];
+					} else {
+						if (id === 'tie') {
+							if (!e || !e.nodeName) throw new Error('rule "' + id + '" not found, therefore valid DOM element MUST be supplied to grasp the default rule');
+							if (e.nodeName === 'INPUT' || e.nodeName === 'SELECT') return rules['tieValue'];
+							else if (e.nodeName === 'IMAGE') return rules['tieImage'];
+							else return rules['tieText'];
+						}
 					}
 					return r;
 				}
 			},
 			del: {
 				value: function (id) {
-					return delete rs[id];
+					return delete rules[id];
 				}
 			}
 		});
-	};
-	rules = new RulesManager();
+	})();
 
-	function ObserversManager() {
+	observersService = new (function ObserversManager() {
 		var os = {};
 
 		function publishDataChange(newData, oldData, path) {
-			var vs = views.get(path), i, l, key, p;
+			var vs = viewsService.get(path), i, l, key, p;
 			for (i = 0, l = vs.length; i < l; i++) {
 				for (key in vs[i].dataset) {
 					if (key.indexOf('tie') === 0) {
-						p = rules.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
+						p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
 						if (isPathStartsWith(path, p)) {
 							updateView(vs[i], key, p);
 						}
@@ -380,21 +326,21 @@
 		}
 
 		create(dataRoot, '');
-	}
-	observers = new ObserversManager();
+	})();
 
-	//	TODO: view to model change flow needs further design
-	function TiesManager() {
+	tiesService = new (function TiesManager() {
 		var ts = {};
 
 		function Tie(namespace, data) {
-			var mChangePrep;
-			Object.defineProperties(this, {
+			var self, mChangePrep;
+			self = this;
+			Object.defineProperties(self, {
 				namespace: { get: function () { return namespace; } },
 				data: {
 					get: function () { return dataRoot[namespace]; },
 					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
 				},
+				//	TODO: this one's design should be revised
 				modelChangePreprocessor: {
 					get: function () { return mChangePrep; },
 					set: function (v) { if (typeof v === 'function') mChangePrep = v; }
@@ -412,12 +358,16 @@
 			return ts[namespace] = new Tie(namespace, data);
 		}
 
-		function remove(namespace) {
-			console.error('to be implemented');
+		function obtain(path) {
+			//	TODO: add validations
+			path = pathToNodes(path);
+			return ts[path[0]];
 		}
 
-		function obtain(namespace) {
-			return ts[namespace];
+		function remove(path) {
+			//	TODO: add validations
+			//	TODO: add implementation
+			path = pathToNodes(path);
 		}
 
 		Object.defineProperties(this, {
@@ -425,10 +375,9 @@
 			obtain: { value: obtain },
 			remove: { value: remove }
 		});
-	}
-	ties = new TiesManager();
+	})();
 
-	function ViewsManager() {
+	viewsService = new (function ViewsService() {
 		var vpn = '___vs___', vs = {}, nlvs = {}, vcnt = 0;
 
 		function add(view) {
@@ -443,7 +392,7 @@
 			} else {
 				for (key in view.dataset) {
 					if (key.indexOf('tie') === 0) {
-						rule = rules.get(key, view);
+						rule = rulesService.get(key, view);
 						if (rule) {
 							path = rule.resolvePath(view.dataset[key]);
 							path.push(vpn);
@@ -503,7 +452,7 @@
 				for (key in e.dataset) {
 					i = -1;
 					if (key.indexOf('tie') === 0) {
-						rule = rules.get(key, e);
+						rule = rulesService.get(key, e);
 						path = rule.resolvePath(e.dataset[key]);
 						path.push(vpn);
 						va = getPath(vs, path);
@@ -524,15 +473,15 @@
 
 			//	delete old path
 			if (oldPath) {
-				pathViews = getPath(views, oldPath);
+				pathViews = getPath(viewsService, oldPath);
 				if (pathViews) i = pathViews.indexOf(view);
 				if (i >= 0) pathViews.splice(i, 1);
 			}
 
 			//	add new path
 			npn = pathToNodes(newPath);
-			if (!getPath(views, npn)) setPath(views, npn, []);
-			getPath(views, npn).push(view);
+			if (!getPath(viewsService, npn)) setPath(viewsService, npn, []);
+			getPath(viewsService, npn).push(view);
 			updateView(view, dataKey, npn)
 		}
 
@@ -545,38 +494,37 @@
 		});
 
 		collect(document);
-	}
-	views = new ViewsManager();
+	})();
 
 	function initDomObserver(d) {
 		function processDomChanges(changes) {
 			changes.forEach(function (change) {
 				var tp = change.type, tr = change.target, an = change.attributeName, i, l;
 				if (tp === 'attributes' && an.indexOf('data-tie') == 0) {
-					views.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
+					viewsService.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
 				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
-					views.discard(tr.contentDocument);
+					viewsService.discard(tr.contentDocument);
 				} else if (tp === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							if (change.addedNodes[i].nodeName === 'IFRAME') {
 								initDomObserver(change.addedNodes[i].contentDocument);
-								views.collect(change.addedNodes[i].contentDocument);
+								viewsService.collect(change.addedNodes[i].contentDocument);
 								change.addedNodes[i].addEventListener('load', function () {
 									initDomObserver(this.contentDocument);
-									views.collect(this.contentDocument);
+									viewsService.collect(this.contentDocument);
 								});
 							} else {
-								views.collect(change.addedNodes[i]);
+								viewsService.collect(change.addedNodes[i]);
 							}
 						}
 					}
 					if (change.removedNodes.length) {
 						for (i = 0, l = change.removedNodes.length; i < l; i++) {
 							if (change.removedNodes[i].nodeName === 'IFRAME') {
-								views.discard(change.removedNodes[i].contentDocument);
+								viewsService.discard(change.removedNodes[i].contentDocument);
 							} else {
-								views.discard(change.removedNodes[i]);
+								viewsService.discard(change.removedNodes[i]);
 							}
 						}
 					}
@@ -596,10 +544,68 @@
 	};
 	initDomObserver(document);
 
+	rulesService.add('tieValue', 'value');
+	rulesService.add('tieText', 'textContent');
+	rulesService.add('tiePlaceholder', 'placeholder');
+	rulesService.add('tieTooltip', 'title');
+	rulesService.add('tieImage', 'scr');
+	rulesService.add('tieDateValue', {
+		dataToView: function (view, tieValue) {
+			view.value = tieValue.data.toLocaleString();
+		}
+	});
+	rulesService.add('tieDateText', {
+		dataToView: function (view, tieValue) {
+			view.textContent = tieValue.data.toLocaleString();
+		}
+	});
+	rulesService.add('tieList', {
+		resolvePath: function (tieValue) {
+			var ruleData = tieValue.split(' ');
+			return pathToNodes(ruleData[0]);
+		},
+		dataToView: function (view, tieValue) {
+			var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
+			//	TODO: may think of better contract to specify the template element
+			if (!t) return;
+			if (!tieValue.data) {
+				while (view.childElementCount > 1) {
+					view.removeChild(view.lastChild);
+				}
+			} else if (view.childElementCount - 1 < tieValue.data.length) {
+				ruleData = view.dataset.tieList.trim().split(/\s+/);
+				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
+					log.error('invalid parameter for TieList rule specified');
+				} else {
+					rulePath = ruleData[0];
+					itemId = ruleData[2];
+					tmpDF = document.createDocumentFragment();
+					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
+						nv = t.content.cloneNode(true);
+						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
+						vs.forEach(function (v) {
+							Object.keys(v.dataset).forEach(function (key) {
+								if (v.dataset[key].indexOf(itemId) === 0) {
+									v.dataset[key] = v.dataset[key].replace(itemId, rulePath + '[' + i + ']');
+								}
+							});
+						});
+						tmpDF.appendChild(nv);
+					}
+				}
+				view.appendChild(tmpDF);
+			} else if (view.childElementCount - 1 > tieValue.data.length) {
+				while (view.childElementCount - 1 > tieValue.data.length) {
+					view.removeChild(view.lastChild);
+				}
+			}
+		}
+	});
+
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
-		Ties: { value: ties },
-		Rules: { value: rules },
+		Ties: { value: tiesService },
+		Rules: { value: rulesService },
 		Utils: {
 			value: {
 				get copyObject() { return copyObject; },
@@ -609,4 +615,5 @@
 			}
 		}
 	});
+
 })((typeof arguments === 'object' ? arguments[0] : undefined));

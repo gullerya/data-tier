@@ -32,8 +32,8 @@
 			address: { street: 'some street' }
 		});
 		setTimeout(function () {
-			if (e1.textContent !== '') fail('expected textContent of the template to be empty');
-			//	TODO: check the inflated content
+			if (c.childElementCount < 2) fail('expected child elements of repeater to be more than 1, found: ' + c.childElementCount);
+			//	TODO: ensure the content of the repeated child is as expected
 			pass();
 		}, 0);
 	});
