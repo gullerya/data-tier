@@ -232,6 +232,8 @@
 			},
 			dataToView: function (view, tieValue) {
 				var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
+				//	TODO: may think of better contract to specify the template element
+				if (!t) return;
 				if (!tieValue.data) {
 					while (view.childElementCount > 1) {
 						view.removeChild(view.lastChild);
@@ -329,7 +331,7 @@
 			for (i = 0; i < change.removed.length; i++) {
 				ov = change.removed[i];
 				if (ov && typeof ov === 'object') { remove(ov, p + (i + change.index)); }
-				publishDataChange(null,null, p);
+				publishDataChange(null, null, p);
 			}
 			for (i = 0; i < change.addedCount; i++) {
 				nv = change.object[i + change.index];
