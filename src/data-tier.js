@@ -406,8 +406,8 @@
 								vcnt++;
 							}
 						} else {
-							if (!nlvs.key) nlvs[key] = [];
-							nlvs.push(view);
+							if (!nlvs[key]) nlvs[key] = [];
+							nlvs[key].push(view);
 						}
 					}
 				}
