@@ -565,7 +565,8 @@
 			return pathToNodes(ruleData[0]);
 		},
 		dataToView: function (view, tieValue) {
-			var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, tmpDF;
+			var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, d, tmpDF;
+
 			//	TODO: may think of better contract to specify the template element
 			if (!t) return;
 			if (!tieValue.data) {
@@ -579,7 +580,10 @@
 				} else {
 					rulePath = ruleData[0];
 					itemId = ruleData[2];
-					tmpDF = document.createDocumentFragment();
+					d = view;
+					while (d && d.nodeType !== 9) d = d.parentNode;
+
+					tmpDF = d.createDocumentFragment();
 					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
 						nv = t.content.cloneNode(true);
 						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
