@@ -584,7 +584,7 @@
 					//while (d && d.nodeType !== 9) d = d.parentNode;
 					tmpDF = document.createDocumentFragment();
 					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
-						nv = d.importNode(t.content, true);
+						nv = document.importNode(t.content, true);
 						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
 						vs.forEach(function (v) {
 							Object.keys(v.dataset).forEach(function (key) {
