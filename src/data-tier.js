@@ -580,9 +580,9 @@
 				} else {
 					rulePath = ruleData[0];
 					itemId = ruleData[2];
-					d = view;
-					while (d && d.nodeType !== 9) d = d.parentNode;
-					tmpDF = d.createDocumentFragment();
+					//d = view;
+					//while (d && d.nodeType !== 9) d = d.parentNode;
+					tmpDF = document.createDocumentFragment();
 					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
 						nv = d.importNode(t.content, true);
 						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
