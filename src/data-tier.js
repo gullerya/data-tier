@@ -230,7 +230,7 @@
 					} else {
 						if (id === 'tie') {
 							if (!e || !e.nodeName) throw new Error('rule "' + id + '" not found, therefore valid DOM element MUST be supplied to grasp the default rule');
-							if (e.nodeName === 'INPUT' || e.nodeName === 'SELECT') return rules['tieValue'];
+							if (e instanceof HTMLInputElement || e.nodeName === 'SELECT') return rules['tieValue'];
 							else if (e.nodeName === 'IMAGE') return rules['tieImage'];
 							else return rules['tieText'];
 						}
@@ -582,10 +582,9 @@
 					itemId = ruleData[2];
 					d = view;
 					while (d && d.nodeType !== 9) d = d.parentNode;
-
 					tmpDF = d.createDocumentFragment();
 					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
-						nv = t.content.cloneNode(true);
+						nv = d.importNode(t.content, true);
 						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
 						vs.forEach(function (v) {
 							Object.keys(v.dataset).forEach(function (key) {
