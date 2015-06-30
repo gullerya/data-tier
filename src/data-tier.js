@@ -565,7 +565,7 @@
 			return pathToNodes(ruleData[0]);
 		},
 		dataToView: function (view, tieValue) {
-			var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, d, tmpDF;
+			var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, d, df;
 
 			//	TODO: may think of better contract to specify the template element
 			if (!t) return;
@@ -582,7 +582,7 @@
 					itemId = ruleData[2];
 					d = view;
 					while (d && d.nodeType !== 9) d = d.parentNode;
-					tmpDF = d.createDocumentFragment();
+					df = d.createDocumentFragment();
 					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
 						nv = d.importNode(t.content, true);
 						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
@@ -593,10 +593,10 @@
 								}
 							});
 						});
-						tmpDF.appendChild(nv);
+						df.appendChild(nv);
 					}
+					view.appendChild(df);
 				}
-				view.appendChild(tmpDF);
 			} else if (view.childElementCount - 1 > tieValue.data.length) {
 				while (view.childElementCount - 1 > tieValue.data.length) {
 					view.removeChild(view.lastChild);
