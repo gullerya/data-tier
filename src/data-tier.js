@@ -152,7 +152,8 @@
 	}
 
 	function addChangeListener(v) {
-		if (v.nodeName === 'INPUT' || v.nodeName === 'SELECT') {
+		var ow = v.ownerDocument.defaultView;
+		if (v instanceof ow.HTMLInputElement || v instanceof ow.HTMLSelectElement) {
 			v.addEventListener('change', changeListener);
 		}
 	}
@@ -223,7 +224,7 @@
 			get: {
 				value: function (id, e) {
 					var r, p;
-					if (id.indexOf('tie')) {
+					if (id.indexOf('tie') !== 0) {
 						log.error('invalid tie id supplied');
 					} else if (id in rules) {
 						r = rules[id];
@@ -494,8 +495,6 @@
 			move: { value: move },
 			get: { value: get }
 		});
-
-		collect(document);
 	})();
 
 	function initDomObserver(d) {
@@ -504,12 +503,12 @@
 				var tp = change.type, tr = change.target, an = change.attributeName, i, l;
 				if (tp === 'attributes' && an.indexOf('data-tie') == 0) {
 					viewsService.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
-				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
+				} else if (tp === 'attributes' && an === 'src' && tr instanceof tr.ownerDocument.defaultView.HTMLIFrameElement) {
 					viewsService.discard(tr.contentDocument);
 				} else if (tp === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
-							if (change.addedNodes[i].nodeName === 'IFRAME') {
+							if (change.addedNodes[i] instanceof change.addedNodes[i].ownerDocument.defaultView.HTMLIFrameElement) {
 								initDomObserver(change.addedNodes[i].contentDocument);
 								viewsService.collect(change.addedNodes[i].contentDocument);
 								change.addedNodes[i].addEventListener('load', function () {
@@ -523,7 +522,7 @@
 					}
 					if (change.removedNodes.length) {
 						for (i = 0, l = change.removedNodes.length; i < l; i++) {
-							if (change.removedNodes[i].nodeName === 'IFRAME') {
+							if (change.removedNodes[i] instanceof change.removedNodes[i].ownerDocument.defaultView.HTMLIFrameElement) {
 								viewsService.discard(change.removedNodes[i].contentDocument);
 							} else {
 								viewsService.discard(change.removedNodes[i]);
@@ -605,6 +604,8 @@
 			}
 		}
 	});
+
+	viewsService.collect(document);
 
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
