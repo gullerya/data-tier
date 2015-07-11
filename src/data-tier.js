@@ -222,16 +222,18 @@
 			},
 			get: {
 				value: function (id, e) {
-					var r;
+					var r, p;
 					if (id.indexOf('tie')) {
 						log.error('invalid tie id supplied');
 					} else if (id in rules) {
 						r = rules[id];
 					} else {
 						if (id === 'tie') {
+							p = e.ownerDocument.defaultView;
 							if (!e || !e.nodeName) throw new Error('rule "' + id + '" not found, therefore valid DOM element MUST be supplied to grasp the default rule');
-							if (e instanceof HTMLInputElement || e.nodeName === 'SELECT') return rules['tieValue'];
-							else if (e.nodeName === 'IMAGE') return rules['tieImage'];
+							if (e instanceof p.HTMLInputElement ||
+								e instanceof p.HTMLSelectElement) return rules['tieValue'];
+							else if (e instanceof p.HTMLImageElement) return rules['tieImage'];
 							else return rules['tieText'];
 						}
 					}
@@ -580,8 +582,7 @@
 				} else {
 					rulePath = ruleData[0];
 					itemId = ruleData[2];
-					d = view;
-					while (d && d.nodeType !== 9) d = d.parentNode;
+					d = view.ownerDocument;
 					df = d.createDocumentFragment();
 					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
 						nv = d.importNode(t.content, true);
