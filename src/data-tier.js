@@ -134,21 +134,11 @@
 		t = tiesService.obtain(p.shift());
 		if (!t) { log.error('tie not found'); return; }
 
-		if (t.modelChangePreprocessor) {
-			//	TODO: add timing out...
-			t.modelChangePreprocessor({
-				data: t.data,
-				path: p,
-				view: v
-			}).then(function (result) {
-				setPath(t.data, p, result.value);
-			}).catch(function () {
-				log.info('change was rejected');
-				log.error('rollback to the view to be done here');
-			});
-		} else {
-			setPath(t.data, p, v.value);
-		}
+		t.viewToDataProcessor({
+			data: t.data,
+			path: p,
+			view: v
+		});
 	}
 
 	function addChangeListener(v) {
@@ -334,21 +324,27 @@
 	tiesService = new (function TiesManager() {
 		var ts = {};
 
-		function Tie(namespace, data) {
-			var self, mChangePrep;
-			self = this;
-			Object.defineProperties(self, {
+		function dfltVTDProcessor(input) {
+			setPath(input.data, input.path, input.view.value);
+		}
+
+		function Tie(namespace, data, options) {
+			var vtdProc;
+			options = options || {};
+			vtdProc = typeof options.viewToDataProcessor === 'function' ? options.viewToDataProcessor : null;
+
+			Object.defineProperties(this, {
 				namespace: { get: function () { return namespace; } },
 				data: {
 					get: function () { return dataRoot[namespace]; },
 					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
 				},
-				//	TODO: this one's design should be revised
-				modelChangePreprocessor: {
-					get: function () { return mChangePrep; },
-					set: function (v) { if (typeof v === 'function') mChangePrep = v; }
+				viewToDataProcessor: {
+					get: function () { return vtdProc instanceof 'function' ? vtdProc : dfltVTDProcessor; },
+					set: function (v) { if (typeof v === 'function') vtdProc = v; }
 				}
 			});
+
 			dataRoot[namespace] = data;
 		}
 
