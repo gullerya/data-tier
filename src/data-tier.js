@@ -340,7 +340,7 @@
 					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
 				},
 				viewToDataProcessor: {
-					get: function () { return vtdProc instanceof 'function' ? vtdProc : dfltVTDProcessor; },
+					get: function () { return typeof vtdProc === 'function' ? vtdProc : dfltVTDProcessor; },
 					set: function (v) { if (typeof v === 'function') vtdProc = v; }
 				}
 			});
@@ -348,13 +348,12 @@
 			dataRoot[namespace] = data;
 		}
 
-		function create(namespace, data) {
+		function create(namespace, data, options) {
 			if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
 			if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
 			if (ts[namespace]) throw new Error('namespace "' + namespace + '" already exists');
 			if (data && typeof data !== 'object') throw new Error('data (second param) MUST be a non null object');
-			if (!data) data = null;
-			return ts[namespace] = new Tie(namespace, data);
+			return ts[namespace] = new Tie(namespace, data, options);
 		}
 
 		function obtain(path) {
