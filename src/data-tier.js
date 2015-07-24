@@ -2,7 +2,7 @@
 	'use strict';
 
 	const DEFAULT_NAMESPACE = 'Modules';
-	var domObserver, dataRoot = {}, observersService, tiesService, viewsService, rulesService, log = {};
+	var domObserver, dataRoot = {}, observersService, tiesService, viewsService, rulesService, logger;
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -10,11 +10,37 @@
 		options.namespace = window[DEFAULT_NAMESPACE];
 	}
 
-	Object.defineProperties(log, {
-		info: { value: function (m) { console.info('DT: ' + m); } },
-		warn: { value: function (m) { console.warn('DT: ' + m); } },
-		error: { value: function (m) { console.error('DT: ' + m); } }
-	});
+	logger = new (function DTLogger() {
+		var mode = 'error';
+
+		Object.defineProperties(this, {
+			mode: {
+				get: function () { return mode; },
+				set: function (v) {
+					if (/^(info|warn|error)$/.test(v)) mode = v;
+					else console.error('DTLogger: mode "' + v + '" is not supported');
+				}
+			},
+			info: {
+				value: function (m) {
+					if (mode !== 'info') return;
+					console.info('DT: ' + m);
+				}
+			},
+			warn: {
+				value: function (m) {
+					if (mode !== 'info' && mode !== 'warn') return;
+					console.warn('DT: ' + m);
+				}
+			},
+			error: {
+				value: function (m) {
+					console.error('DT: ' + m);
+				}
+			}
+		});
+	})();
+
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -128,11 +154,11 @@
 			p = v.dataset.tie;
 		}
 		//	TODO: the following condition is not always error state, need to decide regarding the cardinality of the value suppliers
-		if (!p) { log.error('path to data not available'); return; }
+		if (!p) { logger.error('path to data not available'); return; }
 		p = pathToNodes(p);
-		if (!p) { log.error('path to data is invalid'); return; }
+		if (!p) { logger.error('path to data is invalid'); return; }
 		t = tiesService.obtain(p.shift());
-		if (!t) { log.error('tie not found'); return; }
+		if (!t) { logger.error('tie not found'); return; }
 
 		t.viewToDataProcessor({
 			data: t.data,
@@ -215,7 +241,7 @@
 				value: function (id, e) {
 					var r, p;
 					if (id.indexOf('tie') !== 0) {
-						log.error('invalid tie id supplied');
+						logger.error('invalid tie id supplied');
 					} else if (id in rules) {
 						r = rules[id];
 					} else {
@@ -431,14 +457,14 @@
 				l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
 			l.forEach(add);
-			log.info('collected views, current total: ' + vcnt);
+			logger.info('collected views, current total: ' + vcnt);
 		}
 
 		function relocateByRule(rule) {
 			if (nlvs[rule.id]) {
 				nlvs[rule.id].forEach(add);
 			}
-			log.info('relocated views, current total: ' + vcnt);
+			logger.info('relocated views, current total: ' + vcnt);
 		}
 
 		function discard(rootElement) {
@@ -463,7 +489,7 @@
 					}
 				};
 			});
-			log.info('discarded views, current total: ' + vcnt);
+			logger.info('discarded views, current total: ' + vcnt);
 		}
 
 		function move(view, dataKey, oldPath, newPath) {
@@ -572,7 +598,7 @@
 			} else if (view.childElementCount - 1 < tieValue.data.length) {
 				ruleData = view.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
-					log.error('invalid parameter for TieList rule specified');
+					logger.error('invalid parameter for TieList rule specified');
 				} else {
 					rulePath = ruleData[0];
 					itemId = ruleData[2];
@@ -608,6 +634,7 @@
 		Rules: { value: rulesService },
 		Utils: {
 			value: {
+				get logger() { return logger; },
 				get copyObject() { return copyObject; },
 				get setPath() { return setPath; },
 				get getPath() { return getPath; },
