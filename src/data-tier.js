@@ -453,8 +453,8 @@
 			var l;
 			if (!rootElement.getElementsByTagName) return;
 			l = rootElement.nodeName === 'IFRAME' ?
-				l = Array.prototype.splice.call(rootElement.contentDocument.getElementsByTagName('*'), 0) :
-				l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
+				l = Array.prototype.slice.call(rootElement.contentDocument.getElementsByTagName('*'), 0) :
+				l = Array.prototype.slice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
 			l.forEach(add);
 			logger.info('collected views, current total: ' + vcnt);
@@ -470,7 +470,7 @@
 		function discard(rootElement) {
 			var l, e, key, rule, path, va, i;
 			if (!rootElement || !rootElement.getElementsByTagName) return;
-			l = Array.prototype.splice.call(rootElement.getElementsByTagName('*'), 0);
+			l = Array.prototype.slice.call(rootElement.getElementsByTagName('*'), 0);
 			l.push(rootElement);
 			l.forEach(function (e) {
 				for (key in e.dataset) {
@@ -606,7 +606,7 @@
 					df = d.createDocumentFragment();
 					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
 						nv = d.importNode(t.content, true);
-						vs = Array.prototype.splice.call(nv.querySelectorAll('*'), 0);
+						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
 						vs.forEach(function (v) {
 							Object.keys(v.dataset).forEach(function (key) {
 								if (v.dataset[key].indexOf(itemId) === 0) {

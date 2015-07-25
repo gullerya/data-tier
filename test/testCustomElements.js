@@ -50,7 +50,7 @@
 		c.appendChild(t);
 		document.body.appendChild(c);
 		setTimeout(function () {
-			Array.prototype.splice.call(c.getElementsByTagName('custom-element'), 0).forEach(function (item, index) {
+			Array.prototype.slice.call(c.getElementsByTagName('custom-element'), 0).forEach(function (item, index) {
 				if (item.textContent !== tie.data[index].text.toUpperCase()) fail('value of the element expected to be ' + tie.data[index].text.toUpperCase() + ', found: ' + item.textContent);
 			});
 			pass();
