@@ -17,4 +17,5 @@ The <b>consumption</b> of the DataTier library begins from it's loading and init
 Example: getting DataTier in a basic way
 ----------------------------------------
 
-Put a script tag inside you HTML file referring to the location of data-tier.js (your local copy)
+Put a script tag inside you HTML file referring to the location of data-tier.js (replace the below path with your local copy's one):
+<code><script src="../libs/data-tier.js"></script></code>
