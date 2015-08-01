@@ -12,14 +12,15 @@ The **consumption** of the DataTier library begins from it's loading and initiat
 
 ###### Example A: getting DataTier in a *basic* way
 
-Put a script tag inside you HTML file referring to the location of data-tier.js (replace the below path with your local copy's one):<br>
-<code>&lt;script src="../libs/data-tier.js"&gt;&lt;/script&gt;</code><br>
+Put a script tag inside you HTML file referring to the location of data-tier.js (replace the below path with your local copy's one):
+
+<code>&lt;script src="../libs/data-tier.js"&gt;&lt;/script&gt;</code>
 
 Use the APIs in any place in application (main window):<br>
-<code>var userTie = window.Modules.DataTier.Ties.create('user', {});</code><br>
+<code>var userTie = window.Modules.DataTier.Ties.create('user', {});</code>
 
 Use the APIs in any place in application (iFrame window):<br>
-<code>var userTie = parentWindow.Modules.DataTier.Ties.create('user', {});</code><br>
+<code>var userTie = parentWindow.Modules.DataTier.Ties.create('user', {});</code>
 
 ###### Example B: getting DataTier in an *advanced* way
 
