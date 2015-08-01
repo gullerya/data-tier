@@ -25,8 +25,7 @@ Use the APIs in any place in application (iframe window):<br>
 ###### Example B: getting DataTier in an *advanced* way
 
 Let's review the following snippet:
-<pre><code>
-		var xhr = new XMLHttpRequest(),
+<pre><code>var xhr = new XMLHttpRequest(),
 			namespace = {};
 		xhr.open('get', '../libs/data-tier.js');
 		xhr.onload = function () {
@@ -34,5 +33,5 @@ Let's review the following snippet:
 			//	DataTier is initialized in the specified namespace object
 			var userTie = namespace.DataTier.Ties.create('user', {});
 		}
-		xhr.send();
-</code></pre>
+		xhr.send();</code></pre>
+
