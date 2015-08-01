@@ -19,8 +19,20 @@ Put a script tag inside you HTML file referring to the location of data-tier.js 
 Use the APIs in any place in application (main window):<br>
 <code>var userTie = window.Modules.DataTier.Ties.create('user', {});</code>
 
-Use the APIs in any place in application (iFrame window):<br>
+Use the APIs in any place in application (iframe window):<br>
 <code>var userTie = parentWindow.Modules.DataTier.Ties.create('user', {});</code>
 
 ###### Example B: getting DataTier in an *advanced* way
 
+Let's review the following snippet:
+<pre><code>
+		var xhr = new XMLHttpRequest(),
+			namespace = {};
+		xhr.open('get', '../libs/data-tier.js');
+		xhr.onload = function () {
+			new Function(xhr.responseText)({ namespace: namespace });
+			//	DataTier is initialized in the specified namespace object
+			var userTie = namespace.DataTier.Ties.create('user', {});
+		}
+		xhr.send();
+</code></pre>
