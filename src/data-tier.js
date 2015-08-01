@@ -640,6 +640,17 @@
 				get getPath() { return getPath; },
 				get cutPath() { return cutPath; }
 			}
+		},
+		About: {
+			value: {
+				get version() { return '0.5.3'; },
+				get author() {
+					return {
+						get name() { return 'Guller Yuri'; },
+						get email() { return 'gullerya@gmail.com'; }
+					};
+				}
+			}
 		}
 	});
 
