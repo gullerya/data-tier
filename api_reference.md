@@ -18,4 +18,4 @@ Example: getting DataTier in a basic way
 ----------------------------------------
 
 Put a script tag inside you HTML file referring to the location of data-tier.js (replace the below path with your local copy's one):
-<code><script src="../libs/data-tier.js"></script></code>
+<code>&lt;script src="../libs/data-tier.js"&gt;&lt;/script&gt;</code>
