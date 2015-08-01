@@ -11,7 +11,7 @@ Basic examples
 ==============
 
 Let's assume you have and object that holds user info and you want to bind it to it's view in HTML. This splits into the <b>declaration in the HTML</b> and <b>functional part in the Javascript</b>.<br>
-In Javascript you'll need to tell to DataTier that the object 'user' is to be tied to it's views and watched for changes. This is done using API as in the following example (let's assume that you've got the reference to the library in 'dataTier' variable; obtaining the library described in [API Reference](api_reference.md)):
+In Javascript you'll need to tell to DataTier that the object 'user' is to be tied to it's views and watched for changes. This is done using API as in the following example (let's assume that you've got the reference to the library in 'dataTier' variable; see full description in [API Reference](api_reference.md)):
 
 <pre><code>var user = {
 	name: 'User Name',
