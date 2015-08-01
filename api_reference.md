@@ -35,8 +35,8 @@ xhr.onload = function () {
 }
 xhr.send();</code></pre>
 
-Actually, this one is quite straght forward as well. We're just loading the code of the library as a text file and then executing it via <code>new Function(<string>)</code> syntaxt providing that options object.
+Actually, this one is quite straght forward as well. We're just loading the code of the library as a text file and then executing it via <code>new Function(<string>)</code> syntax providing it with an options object.
 
 Options object currently have only one supported property <code>namespace</code> which MUST be an object, that will hold the reference to the library. If no options object supplied, or it doesn't have a <code>namespace</code> property or the <code>namespace</code> property is not an object or <code>null</code> - DataTier will be initialized in the default namespace.
 
-* Please pay attention, that <code>new Function()</code> syntax is effectively the same as <code>eval()</code> syntax, so if you can not assure the source of 'data-tier.js' it may potentially become a security breach.
+* Please pay attention, that <code>new Function()</code> syntax is effectively the same as <code>eval()</code> syntax. Since some hold strong opinions against using these (not myself, though), I'm explicitly noting this here.
