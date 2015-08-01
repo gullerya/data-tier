@@ -14,8 +14,18 @@ The <b>consumption</b> of the DataTier library begins from it's loading and init
 	<li><b>advanced</b> flavor requires custom loading and execution (see an example below), yet allows to specify the namespace you'd like the DataTier to be 'installed'</li>
 </ul>
 
-Example: getting DataTier in a basic way
+Example A: getting DataTier in a <b>basic</b> way
 ----------------------------------------
 
-Put a script tag inside you HTML file referring to the location of data-tier.js (replace the below path with your local copy's one):
-<code>&lt;script src="../libs/data-tier.js"&gt;&lt;/script&gt;</code>
+Put a script tag inside you HTML file referring to the location of data-tier.js (replace the below path with your local copy's one):<br>
+<code>&lt;script src="../libs/data-tier.js"&gt;&lt;/script&gt;</code><br>
+
+Use the APIs in any place in application (main window):<br>
+<code>var userTie = window.Modules.DataTier.Ties.create('user', {});</code><br>
+
+Use the APIs in any place in application (iFrame window):<br>
+<code>var userTie = parentWindow.Modules.DataTier.Ties.create('user', {});</code><br>
+
+Example B: getting DataTier in an <b>advanced</b> way
+----------------------------------------
+
