@@ -570,7 +570,7 @@
 	rulesService.add('tieText', 'textContent');
 	rulesService.add('tiePlaceholder', 'placeholder');
 	rulesService.add('tieTooltip', 'title');
-	rulesService.add('tieImage', 'scr');
+	rulesService.add('tieImage', 'src');
 	rulesService.add('tieDateValue', {
 		dataToView: function (view, tieValue) {
 			view.value = tieValue.data.toLocaleString();
