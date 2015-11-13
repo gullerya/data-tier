@@ -525,12 +525,12 @@
 				var tp = change.type, tr = change.target, an = change.attributeName, i, l;
 				if (tp === 'attributes' && an.indexOf('data-tie') == 0) {
 					viewsService.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
-				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
+				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'iframe') {
 					viewsService.discard(tr.contentDocument);
 				} else if (tp === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
-							if (change.addedNodes[i].nodeName === 'IFRAME') {
+							if (change.addedNodes[i].nodeName === 'iframe') {
 								if (change.addedNodes[i].contentDocument) {
 									initDomObserver(change.addedNodes[i].contentDocument);
 									viewsService.collect(change.addedNodes[i].contentDocument);
@@ -546,7 +546,7 @@
 					}
 					if (change.removedNodes.length) {
 						for (i = 0, l = change.removedNodes.length; i < l; i++) {
-							if (change.removedNodes[i].nodeName === 'IFRAME') {
+							if (change.removedNodes[i].nodeName === 'iframe') {
 								viewsService.discard(change.removedNodes[i].contentDocument);
 							} else {
 								viewsService.discard(change.removedNodes[i]);
