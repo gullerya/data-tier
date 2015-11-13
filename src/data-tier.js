@@ -531,7 +531,9 @@
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							if (change.addedNodes[i] instanceof change.addedNodes[i].ownerDocument.defaultView.HTMLIFrameElement) {
 								//initDomObserver(change.addedNodes[i].contentDocument);
-								viewsService.collect(change.addedNodes[i].contentDocument);
+								if (change.addedNodes[i].contentDocument) {
+									viewsService.collect(change.addedNodes[i].contentDocument);
+								}
 								change.addedNodes[i].addEventListener('load', function () {
 									initDomObserver(this.contentDocument);
 									viewsService.collect(this.contentDocument);
