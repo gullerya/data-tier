@@ -531,8 +531,8 @@
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							if (change.addedNodes[i].nodeName === 'IFRAME') {
-								//initDomObserver(change.addedNodes[i].contentDocument);
 								if (change.addedNodes[i].contentDocument) {
+									initDomObserver(change.addedNodes[i].contentDocument);
 									viewsService.collect(change.addedNodes[i].contentDocument);
 								}
 								change.addedNodes[i].addEventListener('load', function () {
