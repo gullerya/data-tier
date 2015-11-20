@@ -11,9 +11,9 @@
 	e2 = document.createElement('span');
 	e3 = document.createElement('span');
 	c.dataset.tieList = 'usersA => user';
-	e1.dataset.tie = 'user.name';
-	e2.dataset.tie = 'user.age';
-	e3.dataset.tie = 'user.address.street';
+	e1.dataset.tieText = 'user.name';
+	e2.dataset.tieText = 'user.age';
+	e3.dataset.tieText = 'user.address.street';
 	c1.appendChild(e1);
 	c1.appendChild(e2);
 	c1.appendChild(e3);
@@ -26,19 +26,31 @@
 		if (e1.textContent !== '') fail('preliminary check failed');
 		if (e2.textContent !== '') fail('preliminary check failed');
 		if (e3.textContent !== '') fail('preliminary check failed');
+
+		function onViewUpdate(e) {
+			if (c.childElementCount !== 2) fail('expected child elements of repeater to be 2, found: ' + c.childElementCount);
+			//	TODO: ensure the content of the repeated child is as expected
+			c.removeEventListener('viewupdate', onViewUpdate);
+			pass();
+		}
+		c.addEventListener('viewupdate', onViewUpdate);
+
 		users.push({
 			name: 'A',
 			age: 5,
 			address: { street: 'some street' }
 		});
-		setTimeout(function () {
-			if (c.childElementCount < 2) fail('expected child elements of repeater to be more than 1, found: ' + c.childElementCount);
-			//	TODO: ensure the content of the repeated child is as expected
-			pass();
-		}, 0);
 	});
 
 	suite.addTest({ name: 'array binding - bulk update' }, function (pass, fail) {
+		function onViewUpdate(e) {
+			if (c.childElementCount !== 6) fail('expected child elements of repeater to be 6, found: ' + c.childElementCount);
+			//	TODO: ensure the content of the repeated child is as expected
+			c.removeEventListener('viewupdate', onViewUpdate);
+			pass();
+		}
+		c.addEventListener('viewupdate', onViewUpdate);
+
 		window.Modules.DataTier.Ties.obtain('usersA').data = [
 			{
 				name: 'A',
@@ -66,14 +78,19 @@
 				address: { street: 'some street 5' }
 			}
 		];
-		setTimeout(function () {
-			//	TODO: do the verification of the generated content here
-			pass();
-		}, 0);
 	});
 
 	suite.addTest({ name: 'array binding - huge bulk update (2000 rows)' }, function (pass, fail) {
 		var a = [], i;
+
+		function onViewUpdate(e) {
+			if (c.childElementCount !== 2001) fail('expected child elements of repeater to be 2001, found: ' + c.childElementCount);
+			//	TODO: ensure the content of the repeated child is as expected
+			c.removeEventListener('viewupdate', onViewUpdate);
+			pass();
+		}
+		c.addEventListener('viewupdate', onViewUpdate);
+
 		for (i = 0; i < 2000; i++) {
 			a.push({
 				name: 'A',
@@ -82,10 +99,6 @@
 			});
 		}
 		window.Modules.DataTier.Ties.obtain('usersA').data = a;
-		setTimeout(function () {
-			//	TODO: do the verification of the generated content here
-			pass();
-		}, 0);
 	});
 
 	suite.run();

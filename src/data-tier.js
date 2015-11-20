@@ -1,8 +1,21 @@
 (function (options) {
 	'use strict';
 
-	const DEFAULT_NAMESPACE = 'Modules';
-	var domObserver, dataRoot = {}, observersService, tiesService, viewsService, rulesService, logger;
+	const
+		DEFAULT_NAMESPACE = 'Modules',
+		VIEW_UPDATE_EVENT = 'viewupdate',
+		ERROR_LOG_MODE = 'error',
+		DEBUG_LOG_MODE = 'debug',
+		INFO_LOG_MODE = 'info';
+
+	var
+		domObserver,
+		dataRoot = {},
+		observersService,
+		tiesService,
+		viewsService,
+		rulesService,
+		logger;
 
 	if (typeof options !== 'object') { options = {}; }
 	if (typeof options.namespace !== 'object') {
@@ -11,26 +24,26 @@
 	}
 
 	logger = new (function DTLogger() {
-		var mode = 'error';
+		var mode = ERROR_LOG_MODE;
 
 		Object.defineProperties(this, {
 			mode: {
 				get: function () { return mode; },
 				set: function (v) {
-					if (/^(info|warn|error)$/.test(v)) mode = v;
+					if (v === ERROR_LOG_MODE || v === DEBUG_LOG_MODE || v === INFO_LOG_MODE) mode = v;
 					else console.error('DTLogger: mode "' + v + '" is not supported');
 				}
 			},
 			info: {
 				value: function (m) {
-					if (mode !== 'info') return;
+					if (mode !== INFO_LOG_MODE) return;
 					console.info('DT: ' + m);
 				}
 			},
-			warn: {
+			debug: {
 				value: function (m) {
-					if (mode !== 'info' && mode !== 'warn') return;
-					console.warn('DT: ' + m);
+					if (mode !== INFO_LOG_MODE && mode !== DEBUG_LOG_MODE) return;
+					console.debug('DT: ' + m);
 				}
 			},
 			error: {
@@ -146,12 +159,12 @@
 	}
 
 	function changeListener(ev) {
-		var v = ev.target, p, tn, t;
+		var view = ev.target, p, tn, t;
 
-		if (v.dataset.tieValue) {
-			p = v.dataset.tieValue;
+		if (view.dataset.tieValue) {
+			p = view.dataset.tieValue;
 		} else {
-			p = v.dataset.tie;
+			p = view.dataset.tie;
 		}
 		//	TODO: the following condition is not always error state, need to decide regarding the cardinality of the value suppliers
 		if (!p) { logger.error('path to data not available'); return; }
@@ -161,11 +174,7 @@
 		t = tiesService.obtain(tn);
 		if (!t) { logger.error('tie "' + tn + '" not found'); return; }
 
-		t.viewToDataProcessor({
-			data: t.data,
-			path: p,
-			view: v
-		});
+		t.viewToDataProcessor({ data: t.data, path: p, view: view });
 	}
 
 	function addChangeListener(v) {
@@ -177,18 +186,6 @@
 
 	function delChangeListener(v) {
 		v.removeEventListener('change', changeListener);
-	}
-
-	//	TODO: decide if encapsulate into ViewsService and expose as API
-	function updateView(view, ruleId, path) {
-		var ns, t, r, data;
-		ns = path.shift();
-		t = tiesService.obtain(ns);
-		r = rulesService.get(ruleId, view);
-		if (t && r) {
-			data = getPath(t.data, path);
-			r.dataToView(view, { data: data });
-		}
 	}
 
 	rulesService = new (function RulesService() {
@@ -276,7 +273,7 @@
 					if (key.indexOf('tie') === 0) {
 						p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
 						if (isPathStartsWith(path, p)) {
-							updateView(vs[i], key, p);
+							viewsService.update(vs[i], key, p);
 						}
 					}
 				}
@@ -426,7 +423,7 @@
 							if (va.indexOf(view) < 0) {
 								va.push(view);
 								path.pop();
-								updateView(view, key, path);
+								update(view, key, path);
 								addChangeListener(view);
 								vcnt++;
 							}
@@ -448,6 +445,23 @@
 				else Array.prototype.push.apply(r, get(path + '.' + key));
 			});
 			return r;
+		}
+
+		function dispatchViewUpdateEvent(view, detail) {
+			var e = new view.ownerDocument.defaultView.CustomEvent(VIEW_UPDATE_EVENT, { detail: detail });
+			view.dispatchEvent(e);
+		}
+
+		function update(view, ruleId, path) {
+			var ns, t, r, data;
+			ns = path.shift();
+			t = tiesService.obtain(ns);
+			r = rulesService.get(ruleId, view);
+			if (t && r) {
+				data = getPath(t.data, path);
+				r.dataToView(view, { data: data });
+				dispatchViewUpdateEvent(view, { ruleId: ruleId });
+			}
 		}
 
 		function collect(rootElement) {
@@ -510,11 +524,12 @@
 			npn = pathToNodes(newPath);
 			if (!getPath(viewsService, npn)) setPath(viewsService, npn, []);
 			getPath(viewsService, npn).push(view);
-			updateView(view, dataKey, npn)
+			update(view, dataKey, npn)
 		}
 
 		Object.defineProperties(this, {
 			collect: { value: collect },
+			update: { value: update },
 			relocateByRule: { value: relocateByRule },
 			discard: { value: discard },
 			move: { value: move },
