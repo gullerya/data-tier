@@ -26,7 +26,7 @@
 
 	suite.addTest({ name: 'testing basic rules: binding value of custom element' }, function (pass, fail) {
 		var e = document.createElement('custom-element');
-		e.dataset.tie = 'testCustomsA.text';
+		e.dataset.tieValue = 'testCustomsA.text';
 		if (e.value !== '') fail('precondition of the test failed');
 		document.body.appendChild(e);
 		setTimeout(function () {
@@ -44,8 +44,8 @@
 			{ text: 'some' },
 			{ text: 'more' }
 		]);
-		c.dataset.tieList = 'repeaterWithCustomEls => item';
-		e.dataset.tie = 'item.text';
+		t.dataset.tieList = 'repeaterWithCustomEls => item';
+		e.dataset.tieValue = 'item.text';
 		t.content.appendChild(e);
 		c.appendChild(t);
 		document.body.appendChild(c);

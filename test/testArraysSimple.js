@@ -8,9 +8,9 @@
 	e1 = document.createElement('div');
 	e2 = document.createElement('div');
 	e3 = document.createElement('div');
-	e1.dataset.tie = 'users[0].name';
-	e2.dataset.tie = 'users[1].name';
-	e3.dataset.tie = 'users[1].address.street';
+	e1.dataset.tieText = 'users[0].name';
+	e2.dataset.tieText = 'users[1].name';
+	e3.dataset.tieText = 'users[1].address.street';
 	d.appendChild(e1);
 	d.appendChild(e2);
 	d.appendChild(e3);

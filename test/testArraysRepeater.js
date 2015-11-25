@@ -10,7 +10,7 @@
 	e1 = document.createElement('span');
 	e2 = document.createElement('span');
 	e3 = document.createElement('span');
-	c.dataset.tieList = 'usersA => user';
+	t.dataset.tieList = 'usersA => user';
 	e1.dataset.tieText = 'user.name';
 	e2.dataset.tieText = 'user.age';
 	e3.dataset.tieText = 'user.address.street';
@@ -33,7 +33,7 @@
 			c.removeEventListener('viewupdate', onViewUpdate);
 			pass();
 		}
-		c.addEventListener('viewupdate', onViewUpdate);
+		t.addEventListener('viewupdate', onViewUpdate);
 
 		users.push({
 			name: 'A',
@@ -49,7 +49,7 @@
 			c.removeEventListener('viewupdate', onViewUpdate);
 			pass();
 		}
-		c.addEventListener('viewupdate', onViewUpdate);
+		t.addEventListener('viewupdate', onViewUpdate);
 
 		window.Modules.DataTier.Ties.obtain('usersA').data = [
 			{
@@ -89,7 +89,7 @@
 			c.removeEventListener('viewupdate', onViewUpdate);
 			pass();
 		}
-		c.addEventListener('viewupdate', onViewUpdate);
+		t.addEventListener('viewupdate', onViewUpdate);
 
 		for (i = 0; i < 2000; i++) {
 			a.push({

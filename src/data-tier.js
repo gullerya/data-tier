@@ -588,60 +588,74 @@
 	initDomObserver(document);
 
 	rulesService.add('tieValue', 'value');
+
 	rulesService.add('tieText', 'textContent');
+
 	rulesService.add('tiePlaceholder', 'placeholder');
+
 	rulesService.add('tieTooltip', 'title');
+
 	rulesService.add('tieImage', 'src');
+
 	rulesService.add('tieDateValue', {
 		dataToView: function (view, tieValue) {
 			view.value = tieValue.data.toLocaleString();
 		}
 	});
+
 	rulesService.add('tieDateText', {
 		dataToView: function (view, tieValue) {
 			view.textContent = tieValue.data.toLocaleString();
 		}
 	});
+
 	rulesService.add('tieList', {
 		resolvePath: function (tieValue) {
 			var ruleData = tieValue.split(' ');
 			return pathToNodes(ruleData[0]);
 		},
-		dataToView: function (view, tieValue) {
-			var t = view.getElementsByTagName('template')[0], i, l, nv, ruleData, itemId, rulePath, vs, d, df;
+		dataToView: function (template, tieValue) {
+			var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
 
-			//	TODO: may think of better contract to specify the template element
-			if (!t) return;
-			if (!tieValue.data) {
-				while (view.childElementCount > 1) {
-					view.removeChild(view.lastChild);
+			function shortenListTo(cnt, aid) {
+				var a = Array.prototype.slice.call(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'), 0);
+				while (a.length > cnt) {
+					container.removeChild(a.pop());
 				}
-			} else if (view.childElementCount - 1 < tieValue.data.length) {
-				ruleData = view.dataset.tieList.trim().split(/\s+/);
+				return a.length;
+			}
+
+			//	TODO: this check should be moved to earlier phase of processing, this requires enhancement of rule API in general
+			if (template.nodeName !== 'TEMPLATE') {
+				throw new Error('tieList may be defined on template elements only');
+			}
+			if (!template.dataset.listSourceAid) {
+				template.dataset.listSourceAid = new Date().getTime();
+			}
+			i = shortenListTo(tieValue.data ? tieValue.data.length : 0, template.dataset.listSourceAid);
+			if (i < tieValue.data.length) {
+				ruleData = template.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 					logger.error('invalid parameter for TieList rule specified');
 				} else {
 					rulePath = ruleData[0];
 					itemId = ruleData[2];
-					d = view.ownerDocument;
+					d = template.ownerDocument;
 					df = d.createDocumentFragment();
-					for (i = view.childElementCount - 1; i < tieValue.data.length; i++) {
-						nv = d.importNode(t.content, true);
+					for (; i < tieValue.data.length; i++) {
+						nv = d.importNode(template.content, true);
 						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
 						vs.forEach(function (v) {
 							Object.keys(v.dataset).forEach(function (key) {
-								if (v.dataset[key].indexOf(itemId) === 0) {
+								if (v.dataset[key].indexOf(itemId + '.') === 0) {
 									v.dataset[key] = v.dataset[key].replace(itemId, rulePath + '[' + i + ']');
 								}
 							});
 						});
 						df.appendChild(nv);
+						df.lastChild.dataset.listItemAid = template.dataset.listSourceAid;
 					}
-					view.appendChild(df);
-				}
-			} else if (view.childElementCount - 1 > tieValue.data.length) {
-				while (view.childElementCount - 1 > tieValue.data.length) {
-					view.removeChild(view.lastChild);
+					container.appendChild(df);
 				}
 			}
 		}
