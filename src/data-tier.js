@@ -26,6 +26,14 @@
 	logger = new (function DTLogger() {
 		var mode = ERROR_LOG_MODE;
 
+		function mProc(m) {
+			if (typeof (m) === 'object') {
+				return JSON.stringify(m);
+			} else {
+				return m;
+			}
+		}
+
 		Object.defineProperties(this, {
 			mode: {
 				get: function () { return mode; },
@@ -37,18 +45,18 @@
 			info: {
 				value: function (m) {
 					if (mode !== INFO_LOG_MODE) return;
-					console.info('DT: ' + m);
+					console.info('DT: ' + mProc(m));
 				}
 			},
 			debug: {
 				value: function (m) {
 					if (mode !== INFO_LOG_MODE && mode !== DEBUG_LOG_MODE) return;
-					console.debug('DT: ' + m);
+					console.debug('DT: ' + mProc(m));
 				}
 			},
 			error: {
 				value: function (m) {
-					console.error('DT: ' + m);
+					console.error('DT: ' + mProc(m));
 				}
 			}
 		});
@@ -261,6 +269,8 @@
 				}
 			}
 		});
+
+		Object.seal(this);
 	})();
 
 	observersService = new (function ObserversManager() {
@@ -343,6 +353,8 @@
 		}
 
 		create(dataRoot, '');
+
+		Object.seal(this);
 	})();
 
 	tiesService = new (function TiesManager() {
@@ -397,6 +409,8 @@
 			obtain: { value: obtain },
 			remove: { value: remove }
 		});
+
+		Object.seal(this);
 	})();
 
 	viewsService = new (function ViewsService() {
@@ -511,19 +525,23 @@
 		}
 
 		function move(view, dataKey, oldPath, newPath) {
-			var pathViews, i = -1, npn;
+			var pathViews, i = -1, opn, npn;
 
 			//	delete old path
 			if (oldPath) {
-				pathViews = getPath(viewsService, oldPath);
+				opn = pathToNodes(oldPath);
+				opn.push(vpn);
+				pathViews = getPath(vs, opn);
 				if (pathViews) i = pathViews.indexOf(view);
 				if (i >= 0) pathViews.splice(i, 1);
 			}
 
 			//	add new path
 			npn = pathToNodes(newPath);
-			if (!getPath(viewsService, npn)) setPath(viewsService, npn, []);
-			getPath(viewsService, npn).push(view);
+			npn.push(vpn);
+			if (!getPath(vs, npn)) setPath(vs, npn, []);
+			getPath(vs, npn).push(view);
+			npn.pop();
 			update(view, dataKey, npn)
 		}
 
@@ -535,6 +553,8 @@
 			move: { value: move },
 			get: { value: get }
 		});
+
+		Object.seal(this);
 	})();
 
 	function initDomObserver(d) {

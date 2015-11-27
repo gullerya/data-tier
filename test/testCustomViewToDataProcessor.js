@@ -22,7 +22,7 @@
 			viewToDataProcessor: customVTDProc
 		});
 
-		ie.dataset.tie = 'testCustomVTDA.text';
+		ie.dataset.tieValue = 'testCustomVTDA.text';
 		document.body.appendChild(ie);
 
 		setTimeout(function () {
