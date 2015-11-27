@@ -9,7 +9,6 @@
 		INFO_LOG_MODE = 'info';
 
 	var
-		domObserver,
 		dataRoot = {},
 		observersService,
 		tiesService,
@@ -557,6 +556,8 @@
 		Object.seal(this);
 	})();
 
+	//	TODO: push the below logic into domObserversService
+	var domObservers = [];
 	function initDomObserver(d) {
 		function processDomChanges(changes) {
 			changes.forEach(function (change) {
@@ -595,7 +596,7 @@
 			});
 		};
 
-		domObserver = new MutationObserver(processDomChanges);
+		var domObserver = new MutationObserver(processDomChanges);
 		domObserver.observe(d, {
 			childList: true,
 			subtree: true,
@@ -604,6 +605,7 @@
 			characterData: false,
 			characterDataOldValue: false
 		});
+		domObservers.push(domObserver);
 	};
 	initDomObserver(document);
 
@@ -683,8 +685,18 @@
 
 	viewsService.collect(document);
 
+	function dispose() {
+		domObservers.forEach(o => o.disconnect());
+		viewsService.discard(document);
+
+		tiesService = null;
+		rulesService = null;
+		viewsService = null;
+	}
+
 	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
 	Object.defineProperties(options.namespace.DataTier, {
+		dispose: { value: dispose },
 		Ties: { value: tiesService },
 		Rules: { value: rulesService },
 		Utils: {

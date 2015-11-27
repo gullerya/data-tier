@@ -15,6 +15,7 @@
 		xhr.onload = function () {
 			new Function(xhr.responseText)({ namespace: namespace });
 			if (!namespace.DataTier || !namespace.DataTier.Ties) fail('expected the library to exists in specified namespace');
+			namespace.DataTier.dispose();
 			pass();
 		}
 		xhr.send();
