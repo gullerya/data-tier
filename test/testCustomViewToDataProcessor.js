@@ -11,14 +11,14 @@
 		var ie = document.createElement('input'), tie, e;
 
 		function customVTDProc(input) {
-			window.Modules.DataTier.Utils.setPath(
+			window.modules.dataTier.Utils.setPath(
 				input.data,
 				input.path,
 				input.view.value.toUpperCase()
 			);
 		}
 
-		tie = window.Modules.DataTier.Ties.create('testCustomVTDA', data, {
+		tie = window.modules.dataTier.Ties.create('testCustomVTDA', data, {
 			viewToDataProcessor: customVTDProc
 		});
 

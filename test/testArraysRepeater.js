@@ -2,7 +2,7 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays with Repeaters' }), users = [];
-	window.Modules.DataTier.Ties.create('usersA', users);
+	window.modules.dataTier.Ties.create('usersA', users);
 
 	var c = document.createElement('div'), t, c1, e1, e2, e3;
 	t = document.createElement('template');
@@ -51,7 +51,7 @@
 		}
 		t.addEventListener('viewupdate', onViewUpdate);
 
-		window.Modules.DataTier.Ties.obtain('usersA').data = [
+		window.modules.dataTier.Ties.obtain('usersA').data = [
 			{
 				name: 'A',
 				age: 5,
@@ -98,7 +98,7 @@
 				address: { street: 'some street 1' }
 			});
 		}
-		window.Modules.DataTier.Ties.obtain('usersA').data = a;
+		window.modules.dataTier.Ties.obtain('usersA').data = a;
 	});
 
 	suite.run();

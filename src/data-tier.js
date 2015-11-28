@@ -2,7 +2,8 @@
 	'use strict';
 
 	const
-		DEFAULT_NAMESPACE = 'Modules',
+		MODULES_NAMESPACE = 'modules',
+		MODULE_NAME = 'dataTier',
 		VIEW_UPDATE_EVENT = 'viewupdate',
 		ERROR_LOG_MODE = 'error',
 		DEBUG_LOG_MODE = 'debug',
@@ -17,10 +18,6 @@
 		logger;
 
 	if (typeof options !== 'object') { options = {}; }
-	if (typeof options.namespace !== 'object') {
-		if (typeof window[DEFAULT_NAMESPACE] !== 'object') Object.defineProperty(window, DEFAULT_NAMESPACE, { value: {} });
-		options.namespace = window[DEFAULT_NAMESPACE];
-	}
 
 	logger = new (function DTLogger() {
 		var mode = ERROR_LOG_MODE;
@@ -694,8 +691,9 @@
 		viewsService = null;
 	}
 
-	Object.defineProperty(options.namespace, 'DataTier', { value: {} });
-	Object.defineProperties(options.namespace.DataTier, {
+	if (typeof window[MODULES_NAMESPACE] !== 'object') {Object.defineProperty(window, MODULES_NAMESPACE, { value: {} });}
+	Object.defineProperty(window[MODULES_NAMESPACE], MODULE_NAME, { value: {} });
+	Object.defineProperties(window[MODULES_NAMESPACE][MODULE_NAME], {
 		dispose: { value: dispose },
 		Ties: { value: tiesService },
 		Rules: { value: rulesService },
