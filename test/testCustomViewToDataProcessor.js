@@ -18,7 +18,7 @@
 			);
 		}
 
-		tie = window.modules.dataTier.Ties.create('testCustomVTDA', data, {
+		tie = window.modules.dataTier.Ties.obtain('testCustomVTDA', data, {
 			viewToDataProcessor: customVTDProc
 		});
 

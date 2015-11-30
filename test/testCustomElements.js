@@ -6,8 +6,8 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testTieCustomElementsA = window.modules.dataTier.Ties.create('testCustomsA', data),
-		testTieCustomElementsB = window.modules.dataTier.Ties.create('testCustomsB', data);
+		testTieCustomElementsA = window.modules.dataTier.Ties.obtain('testCustomsA', data),
+		testTieCustomElementsB = window.modules.dataTier.Ties.obtain('testCustomsB', data);
 
 	document.registerElement('custom-element', {
 		prototype: Object.create(HTMLInputElement.prototype, {
@@ -40,7 +40,7 @@
 			t = document.createElement('template'),
 			e = document.createElement('custom-element'),
 			tie;
-		tie = window.modules.dataTier.Ties.create('repeaterWithCustomEls', [
+		tie = window.modules.dataTier.Ties.obtain('repeaterWithCustomEls', [
 			{ text: 'some' },
 			{ text: 'more' }
 		]);

@@ -6,8 +6,8 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testRulesTieA = window.modules.dataTier.Ties.create('testRulesA', data),
-		testRulesTieB = window.modules.dataTier.Ties.create('testRulesB', data);
+		testRulesTieA = window.modules.dataTier.Ties.obtain('testRulesA', data),
+		testRulesTieB = window.modules.dataTier.Ties.obtain('testRulesB', data);
 
 	suite.addTest({ name: 'testing basic rules: text content' }, function (pass, fail) {
 		var e = document.createElement('div');

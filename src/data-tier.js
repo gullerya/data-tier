@@ -279,7 +279,7 @@
 					if (key.indexOf('tie') === 0) {
 						p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
 						if (isPathStartsWith(path, p)) {
-							viewsService.update(vs[i], key, p);
+							viewsService.update(vs[i], key);
 						}
 					}
 				}
@@ -380,28 +380,28 @@
 			dataRoot[namespace] = data;
 		}
 
-		function create(namespace, data, options) {
+		function obtain(namespace, data, options) {
 			if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
 			if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
-			if (ts[namespace]) throw new Error('namespace "' + namespace + '" already exists');
-			if (data && typeof data !== 'object') throw new Error('data (second param) MUST be a non null object');
-			return ts[namespace] = new Tie(namespace, data, options);
+			if (!ts[namespace]) {
+				if (typeof data === 'undefined' || data === null) {
+					data = {};
+				} else if (typeof data !== 'object') {
+					throw new Error('data (second param) MUST be a non null object');
+				}
+				ts[namespace] = new Tie(namespace, data, options);
+			}
+
+			return ts[namespace];
 		}
 
-		function obtain(path) {
-			//	TODO: add validations
-			path = pathToNodes(path);
-			return ts[path[0]];
-		}
-
-		function remove(path) {
-			//	TODO: add validations
-			//	TODO: add implementation
-			path = pathToNodes(path);
+		function remove(namespace) {
+			if (ts[namespace]) {
+				delete ts[namespace];
+			}
 		}
 
 		Object.defineProperties(this, {
-			create: { value: create },
 			obtain: { value: obtain },
 			remove: { value: remove }
 		});
@@ -433,7 +433,7 @@
 							if (va.indexOf(view) < 0) {
 								va.push(view);
 								path.pop();
-								update(view, key, path);
+								update(view, key);
 								addChangeListener(view);
 								vcnt++;
 							}
@@ -462,13 +462,13 @@
 			view.dispatchEvent(e);
 		}
 
-		function update(view, ruleId, path) {
-			var ns, t, r, data;
-			ns = path.shift();
-			t = tiesService.obtain(ns);
+		function update(view, ruleId) {
+			var r, p, t, data;
 			r = rulesService.get(ruleId, view);
+			p = r.resolvePath(view.dataset[ruleId]);
+			t = tiesService.obtain(p.shift());
 			if (t && r) {
-				data = getPath(t.data, path);
+				data = getPath(t.data, p);
 				r.dataToView(view, { data: data });
 				dispatchViewUpdateEvent(view, { ruleId: ruleId });
 			}
@@ -520,7 +520,7 @@
 			logger.info('discarded views, current total: ' + vcnt);
 		}
 
-		function move(view, dataKey, oldPath, newPath) {
+		function move(view, ruleId, oldPath, newPath) {
 			var pathViews, i = -1, opn, npn;
 
 			//	delete old path
@@ -538,7 +538,7 @@
 			if (!getPath(vs, npn)) setPath(vs, npn, []);
 			getPath(vs, npn).push(view);
 			npn.pop();
-			update(view, dataKey, npn)
+			update(view, ruleId)
 		}
 
 		Object.defineProperties(this, {
@@ -664,10 +664,11 @@
 					for (; i < tieValue.data.length; i++) {
 						nv = d.importNode(template.content, true);
 						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
-						vs.forEach(function (v) {
-							Object.keys(v.dataset).forEach(function (key) {
-								if (v.dataset[key].indexOf(itemId + '.') === 0) {
-									v.dataset[key] = v.dataset[key].replace(itemId, rulePath + '[' + i + ']');
+						vs.forEach(function (view) {
+							Object.keys(view.dataset).forEach(function (key) {
+								if (view.dataset[key].indexOf(itemId + '.') === 0) {
+									view.dataset[key] = view.dataset[key].replace(itemId, rulePath + '[' + i + ']');
+									viewsService.update(view, key);
 								}
 							});
 						});
