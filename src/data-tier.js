@@ -633,7 +633,7 @@
 			var ruleData = tieValue.split(' ');
 			return pathToNodes(ruleData[0]);
 		},
-		dataToView: function (template, tieValue) {
+		dataToView: function (template, tiedValue) {
 			var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
 
 			function shortenListTo(cnt, aid) {
@@ -651,8 +651,8 @@
 			if (!template.dataset.listSourceAid) {
 				template.dataset.listSourceAid = new Date().getTime();
 			}
-			i = shortenListTo(tieValue.data ? tieValue.data.length : 0, template.dataset.listSourceAid);
-			if (i < tieValue.data.length) {
+			i = shortenListTo(tiedValue.data ? tiedValue.data.length : 0, template.dataset.listSourceAid);
+			if (tiedValue.data && i < tiedValue.data.length) {
 				ruleData = template.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 					logger.error('invalid parameter for TieList rule specified');
@@ -661,7 +661,7 @@
 					itemId = ruleData[2];
 					d = template.ownerDocument;
 					df = d.createDocumentFragment();
-					for (; i < tieValue.data.length; i++) {
+					for (; i < tiedValue.data.length; i++) {
 						nv = d.importNode(template.content, true);
 						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
 						vs.forEach(function (view) {
