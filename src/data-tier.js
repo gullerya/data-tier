@@ -360,10 +360,8 @@
 			setPath(input.data, input.path, input.view.value);
 		}
 
-		function Tie(namespace, data, options) {
+		function Tie(namespace) {
 			var vtdProc;
-			options = options || {};
-			vtdProc = typeof options.viewToDataProcessor === 'function' ? options.viewToDataProcessor : null;
 
 			Object.defineProperties(this, {
 				namespace: { get: function () { return namespace; } },
@@ -376,20 +374,13 @@
 					set: function (v) { if (typeof v === 'function') vtdProc = v; }
 				}
 			});
-
-			dataRoot[namespace] = data;
 		}
 
-		function obtain(namespace, data, options) {
+		function obtain(namespace) {
 			if (!namespace || typeof namespace !== 'string') throw new Error('namespace (first param) MUST be a non empty string');
 			if (/\W/.test(namespace)) throw new Error('namespace (first param) MUST consist of alphanumeric non uppercase characters only');
 			if (!ts[namespace]) {
-				if (typeof data === 'undefined' || data === null) {
-					data = {};
-				} else if (typeof data !== 'object') {
-					throw new Error('data (second param) MUST be a non null object');
-				}
-				ts[namespace] = new Tie(namespace, data, options);
+				ts[namespace] = new Tie(namespace);
 			}
 
 			return ts[namespace];
@@ -684,7 +675,7 @@
 	viewsService.collect(document);
 
 	function dispose() {
-		domObservers.forEach(o => o.disconnect());
+		domObservers.forEach(function (o) { o.disconnect(); });
 		viewsService.discard(document);
 
 		tiesService = null;
@@ -692,7 +683,7 @@
 		viewsService = null;
 	}
 
-	if (typeof window[MODULES_NAMESPACE] !== 'object') {Object.defineProperty(window, MODULES_NAMESPACE, { value: {} });}
+	if (typeof window[MODULES_NAMESPACE] !== 'object') { Object.defineProperty(window, MODULES_NAMESPACE, { value: {} }); }
 	Object.defineProperty(window[MODULES_NAMESPACE], MODULE_NAME, { value: {} });
 	Object.defineProperties(window[MODULES_NAMESPACE][MODULE_NAME], {
 		dispose: { value: dispose },

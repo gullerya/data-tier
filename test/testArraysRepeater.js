@@ -2,7 +2,7 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays with Repeaters' }), users = [];
-	window.modules.dataTier.Ties.obtain('usersA', users);
+	window.modules.dataTier.Ties.obtain('usersA').data = users;
 
 	var c = document.createElement('div'), t, c1, e1, e2, e3;
 	t = document.createElement('template');

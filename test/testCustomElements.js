@@ -6,8 +6,11 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testTieCustomElementsA = window.modules.dataTier.Ties.obtain('testCustomsA', data),
-		testTieCustomElementsB = window.modules.dataTier.Ties.obtain('testCustomsB', data);
+		testTieCustomElementsA = window.modules.dataTier.Ties.obtain('testCustomsA'),
+		testTieCustomElementsB = window.modules.dataTier.Ties.obtain('testCustomsB');
+
+	testTieCustomElementsA.data = data;
+	testTieCustomElementsB.data = data;
 
 	document.registerElement('custom-element', {
 		prototype: Object.create(HTMLInputElement.prototype, {
@@ -40,10 +43,11 @@
 			t = document.createElement('template'),
 			e = document.createElement('custom-element'),
 			tie;
-		tie = window.modules.dataTier.Ties.obtain('repeaterWithCustomEls', [
+		tie = window.modules.dataTier.Ties.obtain('repeaterWithCustomEls');
+		tie.data = [
 			{ text: 'some' },
 			{ text: 'more' }
-		]);
+		];
 		t.dataset.tieList = 'repeaterWithCustomEls => item';
 		e.dataset.tieValue = 'item.text';
 		t.content.appendChild(e);

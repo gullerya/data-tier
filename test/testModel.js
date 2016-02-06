@@ -4,7 +4,7 @@
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing model changes' }),
 		user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } };
 
-	window.modules.dataTier.Ties.obtain('userA', user);
+	window.modules.dataTier.Ties.obtain('userA').data = user;
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('input');
