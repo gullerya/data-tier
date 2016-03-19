@@ -7,7 +7,7 @@
 
 	<div id="test" data-some.broken-thing.inproperty="anything"></div>
 
-	<script src="../src/data-tier.js"></script>
+	<script src="../lib/data-tier.js"></script>
 
 	<script src="https://rawgit.com/gullerya/just-test-js/master/src/just-test.js"></script>
 
@@ -31,6 +31,12 @@
 			set: function (tar, key, val) {
 				console.log(key);
 				return tar[key] = val;
+			},
+			defineProperty: function () {
+				console.log('define');
+			},
+			deleteProperty: function () {
+				console.log('delete');
 			}
 		});
 

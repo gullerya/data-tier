@@ -24,7 +24,7 @@
 	],
 	"license": "MIT",
 	"files": [
-		"src/data-tier.js"
+		"lib/data-tier.js"
 	],
 	"repository": {
 		"type": "git",
