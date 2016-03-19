@@ -20,5 +20,21 @@
 	<script src="testArraysRepeater.js"></script>
 	<script src="testCustomElements.js"></script>
 	<script src="testCustomViewToDataProcessor.js"></script>
+
+	<script>
+		window.a = [];
+
+		window.pa = new Proxy(a, {
+			get: function (tar, key) {
+				if (typeof tar[key] === 'function') return tar[key];
+			},
+			set: function (tar, key, val) {
+				console.log(key);
+				return tar[key] = val;
+			}
+		});
+
+
+	</script>
 </body>
 </html>
