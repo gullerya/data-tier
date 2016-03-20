@@ -7,10 +7,16 @@
 
 	<div id="test" data-some.broken-thing.inproperty="anything"></div>
 
-	<script src="../lib/data-tier.js"></script>
+	<!--TMP-->
+	<script src="../src/data-observer.js"></script>
+	<!--TMP-->
+
+	<script src="../src/data-tier.js"></script>
+
 
 	<script src="https://rawgit.com/gullerya/just-test-js/master/src/just-test.js"></script>
 
+	<script src="testObjectObserver.js"></script>
 	<script src="testLoadInit.js"></script>
 	<script src="testAPIs.js"></script>
 	<script src="testModel.js"></script>
@@ -20,27 +26,5 @@
 	<script src="testArraysRepeater.js"></script>
 	<script src="testCustomElements.js"></script>
 	<script src="testCustomViewToDataProcessor.js"></script>
-
-	<script>
-		window.a = [];
-
-		window.pa = new Proxy(a, {
-			get: function (tar, key) {
-				if (typeof tar[key] === 'function') return tar[key];
-			},
-			set: function (tar, key, val) {
-				console.log(key);
-				return tar[key] = val;
-			},
-			defineProperty: function () {
-				console.log('define');
-			},
-			deleteProperty: function () {
-				console.log('delete');
-			}
-		});
-
-
-	</script>
 </body>
 </html>

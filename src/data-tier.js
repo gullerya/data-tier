@@ -10,6 +10,7 @@
 		INFO_LOG_MODE = 'info';
 
 	var
+		dataObserver = new DataObserver(),
 		dataRoot = {},
 		observersService,
 		tiesService,
@@ -269,6 +270,7 @@
 		Object.seal(this);
 	})();
 
+	//	deprecated
 	observersService = new (function ObserversManager() {
 		var os = {};
 
@@ -286,6 +288,7 @@
 			}
 		}
 
+		//	deprecated
 		function h(change, ns) {
 			var ov = change.oldValue,
 				nv = change.object[change.name],
@@ -295,6 +298,7 @@
 			publishDataChange(nv, ov, p);
 		}
 
+		//	deprecated
 		function s(change, ns) {
 			var ov, nv, p = (ns ? ns + '.' : ''), i;
 			for (i = 0; i < change.removed.length; i++) {
@@ -310,29 +314,35 @@
 			publishDataChange(change.object, change.oldValue, p);
 		};
 
-		function create(data, namespace) {
-			if (typeof data !== 'object') return;
-			function oo(changes) {
-				changes.forEach(function (change) { h(change, namespace); });
-			}
-			function ao(changes) {
-				changes.forEach(function (change) {
-					if (change.type === 'splice') s(change, namespace); else h(change, namespace);
-				});
-			}
-			if (Array.isArray(data)) {
-				//	deprecated, to be rewritten
-				//Array.observe(data, ao, ['add', 'update', 'delete', 'splice']);
-				//os[namespace] = ao;
-			} else {
-				Object.observe(data, oo, ['add', 'update', 'delete']);
-				os[namespace] = oo;
-			}
-			Object.keys(data).forEach(function (key) {
-				if (data[key] && typeof data[key] === 'object') create(data[key], namespace + '.' + key);
-			});
+		function changeHandler(path, value, oldValue) {
+			publishDataChange(value, oldValue, path);
 		}
 
+		function create(data, namespace) {
+			return dataObserver.observe(data, changeHandler);
+
+			//if (typeof data !== 'object') return;
+			//function oo(changes) {
+			//	changes.forEach(function (change) { h(change, namespace); });
+			//}
+			//function ao(changes) {
+			//	changes.forEach(function (change) {
+			//		if (change.type === 'splice') s(change, namespace); else h(change, namespace);
+			//	});
+			//}
+			//if (Array.isArray(data)) {
+			//	Array.observe(data, ao, ['add', 'update', 'delete', 'splice']);
+			//	os[namespace] = ao;
+			//} else {
+			//	Object.observe(data, oo, ['add', 'update', 'delete']);
+			//	os[namespace] = oo;
+			//}
+			//Object.keys(data).forEach(function (key) {
+			//	if (data[key] && typeof data[key] === 'object') create(data[key], namespace + '.' + key);
+			//});
+		}
+
+		//	deprecated
 		function remove(data, namespace) {
 			var o;
 			Object.keys(os).forEach(function (key) {
