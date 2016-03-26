@@ -1,7 +1,7 @@
 ﻿function DataObserver() {
 	'use strict';
 
-	var proxiesMap = new WeakMap();
+	var pathsMap = new WeakMap();
 
 	function observe(target, callback) {
 		if (!target || typeof target !== 'object') {
@@ -14,25 +14,28 @@
 		return Proxy.revocable(target, {
 			set: function (target, key, value) {
 				var oldValue = target[key],
-					result;
+					result,
+					path;
 
 				result = Reflect.set(target, key, value);
-
+				path = pathsMap.has(target) ? [pathsMap.get(target), key].join('.') : key;
 				if (result) {
 					if (typeof oldValue === 'object' && oldValue) {
 						//	remove old proxy
 					}
 					if (typeof value === 'object' && value) {
-						//	create new proxy
+						pathsMap.set(value, path);
+						Reflect.set(target, key, observe(value, callback));
 					}
-					callback([key].join('.'), value, oldValue);
+					callback(path, value, oldValue);
 				}
 
 				return result;
 			},
 			deleteProperty: function (target, key) {
 				var oldValue = target[key],
-					result;
+					result,
+					path;
 
 				result = Reflect.deleteProperty(target, key);
 
@@ -41,7 +44,8 @@
 						proxiesMap.get(oldValue).revoke();
 						proxiesMap.delete(oldValue);
 					}
-					callback([key].join('.'), undefined, oldValue);
+					path = pathsMap.has(target) ? [pathsMap.get(target), key].join('.') : key;
+					callback(path, undefined, oldValue);
 				}
 
 				return result;
@@ -50,4 +54,9 @@
 	}
 
 	Reflect.defineProperty(this, 'observe', { value: observe });
+	Reflect.defineProperty(this, 'details', {
+		value: {
+			description: 'Proxy driven data observer implementation'
+		}
+	});
 }
