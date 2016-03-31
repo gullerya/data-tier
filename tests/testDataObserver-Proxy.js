@@ -3,6 +3,11 @@
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing DataObserver' }), observer = new DataObserver();
 
+	if (observer.details.description.indexOf('Proxy') < 0) {
+		console.info('data observer not of a Proxy implementation - skipping non relevant tests');
+		return;
+	}
+
 	suite.addTest({ name: 'test A - plain object operations' }, function (pass, fail) {
 		var o = {
 			name: 'name',
