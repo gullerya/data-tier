@@ -88,8 +88,9 @@
 		var flat;
 
 		flat = flatten(data);
-
 		console.dir(flat);
+
+		//	TODO: add assertions
 
 		pass();
 	});
@@ -100,10 +101,10 @@
 		while (counter--) {
 			dataArray.push(data);
 		}
-
 		flat = flatten(dataArray);
-
 		console.dir(flat);
+
+		//	TODO: add assertions
 
 		pass();
 	});
