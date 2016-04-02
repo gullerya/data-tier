@@ -60,6 +60,7 @@
 				set: function proxiedSet(target, key, value) {
 					var oldValue = target[key],
 						result,
+						changes = [],
 						path;
 
 					result = Reflect.set(target, key, value);
@@ -72,6 +73,7 @@
 							pathsMap.set(value, path);
 							Reflect.set(target, key, observe(value, callback));
 						}
+						//	instead of simple callback below, an array of changes should be delivered
 						callback(path, value, oldValue);
 					}
 					return result;
@@ -79,16 +81,23 @@
 				deleteProperty: function proxiedDelete(target, key) {
 					var oldValue = target[key],
 						result,
+						changes = [],
 						path;
 
 					result = Reflect.deleteProperty(target, key);
 					if (result) {
 						if (typeof oldValue === 'object' && oldValue) {
-							proxiesMap.get(oldValue).revoke();
-							proxiesMap.delete(oldValue);
+							pathsMap.get(oldValue).revoke();
+							pathsMap.delete(oldValue);
+							//	calc flat paths and build an array of changes
+						} else {
+							path = pathsMap.has(target) ? [pathsMap.get(target), key].join('.') : key;
+							changes.push({
+								path: path,
+								oldValue: oldValue
+							});
 						}
-						path = pathsMap.has(target) ? [pathsMap.get(target), key].join('.') : key;
-						callback(path, undefined, oldValue);
+						changes.forEach(callback);
 					}
 					return result;
 				}

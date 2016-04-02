@@ -280,18 +280,23 @@
 		throw new Error('no DataObserver implementation available');
 	} else {
 		dataObserver = new DataObserver();
-		//	todo: the following callback probably turn to accept array
-		dataRoot = dataObserver.getObserved({}, function (path, newValue, oldValue) {
-			var vs = viewsService.get(path), i, l, key, p;
-			for (i = 0, l = vs.length; i < l; i++) {
-				for (key in vs[i].dataset) {
-					if (key.indexOf('tie') === 0) {
-						p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
-						if (isPathStartsWith(path, p)) {
-							viewsService.update(vs[i], key);
+		dataRoot = dataObserver.getObserved({}, function (changes) {
+			if (changes) {
+				changes.forEach(function (change) {
+					var vs = viewsService.get(change.path), i, l, key, p;
+					for (i = 0, l = vs.length; i < l; i++) {
+						for (key in vs[i].dataset) {
+							if (key.indexOf('tie') === 0) {
+								p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
+								if (isPathStartsWith(change.path, p)) {
+									//	TODO: use the knowledge of old value and new value here
+									//	TODO: yet, myst pass via the formatters/vizualizers of Rule/Tie
+									viewsService.update(vs[i], key);
+								}
+							}
 						}
 					}
-				}
+				});
 			}
 		});
 		logger.info('DataObserver details: ', dataObserver.details);
