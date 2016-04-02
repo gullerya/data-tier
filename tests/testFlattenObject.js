@@ -90,7 +90,24 @@
 		flat = flatten(data);
 		console.dir(flat);
 
-		//	TODO: add assertions
+		if (flat['string'] !== 'some') fail();
+		if (flat['number'] !== 669847) fail();
+		if (flat['boolean'] !== true) fail();
+		if (flat['nullified'] !== null) fail();
+		if (flat['objectLevel1.string'] !== 'some') fail();
+		if (flat['objectLevel1.number'] !== 669847) fail();
+		if (flat['objectLevel1.boolean'] !== true) fail();
+		if (flat['objectLevel1.nullified'] !== null) fail();
+		if (flat['objectLevel1.objectLevel2.string'] !== 'some') fail();
+		if (flat['objectLevel1.objectLevel2.number'] !== 669847) fail();
+		if (flat['objectLevel1.objectLevel2.boolean'] !== true) fail();
+		if (flat['objectLevel1.objectLevel2.nullified'] !== null) fail();
+		if (flat['objectLevel1.objectLevel2.objectLevel3..string'] !== 'some') fail();
+		if (flat['objectLevel1.objectLevel2.objectLevel3..number'] !== 669847) fail();
+		if (flat['objectLevel1.objectLevel2.objectLevel3..boolean'] !== true) fail();
+		if (flat['objectLevel1.objectLevel2.objectLevel3..nullified'] !== null) fail();
+
+		//	TODO: add assertions for array
 
 		pass();
 	});
