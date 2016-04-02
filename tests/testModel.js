@@ -2,9 +2,10 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing model changes' }),
-		user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } };
+		user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } },
+		userModel;
 
-	window.modules.dataTier.Ties.obtain('userA').data = user;
+	userModel = window.modules.dataTier.Ties.obtain('userA').setModel(user);
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('input');
@@ -22,27 +23,27 @@
 
 	suite.addTest({ name: 'new model bound' }, function (pass, fail) {
 		setTimeout(function () {
-			if (s1.value !== user.name) fail(new Error('expected the content to be updated'));
-			if (s2.textContent != user.age) fail(new Error('expected the content to be updated'));
-			if (s3.textContent !== user.address.street) fail(new Error('expected the content to be updated'));
-			if (s4.textContent != user.address.apt) fail(new Error('expected the content to be updated'));
+			if (s1.value !== userModel.name) fail(new Error('expected the content to be updated'));
+			if (s2.textContent != userModel.age) fail(new Error('expected the content to be updated'));
+			if (s3.textContent !== userModel.address.street) fail(new Error('expected the content to be updated'));
+			if (s4.textContent != userModel.address.apt) fail(new Error('expected the content to be updated'));
 			pass();
 		}, 0)
 	});
 
 	suite.addTest({ name: 'primitive model changes' }, function (pass, fail) {
-		if (s1.value !== user.name) fail(new Error('preliminary check failed'));
-		user.name = 'other';
+		if (s1.value !== userModel.name) fail(new Error('preliminary check failed'));
+		userModel.name = 'other';
 		setTimeout(function () {
-			if (s1.value !== user.name) fail(new Error('expected the content to be "other"'));
+			if (s1.value !== userModel.name) fail(new Error('expected the content to be "other"'));
 			pass();
 		}, 0);
 	});
 
 	suite.addTest({ name: 'deep model changes (graph replace)' }, function (pass, fail) {
-		user.address.street = 'Street';
+		userModel.address.street = 'Street';
 		setTimeout(function () {
-			if (s3.textContent !== user.address.street) fail(new Error('expected the content to be "Street"'));
+			if (s3.textContent !== userModel.address.street) fail(new Error('expected the content to be "Street"'));
 			pass();
 		}, 0);
 	});

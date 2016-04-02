@@ -280,6 +280,7 @@
 		throw new Error('no DataObserver implementation available');
 	} else {
 		dataObserver = new DataObserver();
+		//	todo: the following callback probably turn to accept array
 		dataRoot = dataObserver.getObserved({}, function (path, newValue, oldValue) {
 			var vs = viewsService.get(path), i, l, key, p;
 			for (i = 0, l = vs.length; i < l; i++) {
@@ -308,10 +309,16 @@
 
 			Object.defineProperties(this, {
 				namespace: { get: function () { return namespace; } },
-				data: {
-					get: function () { return dataRoot[namespace]; },
-					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
+				setModel: {
+					value: function (model) {
+						if (typeof model !== 'object') {
+							throw new TypeError('model MUST be an object');
+						}
+						dataRoot[namespace] = model;
+						return dataRoot[namespace];
+					}
 				},
+				getObservedModel: { value: function () { return dataRoot[namespace]; } },
 				viewToDataProcessor: {
 					get: function () { return typeof vtdProc === 'function' ? vtdProc : dfltVTDProcessor; },
 					set: function (v) { if (typeof v === 'function') vtdProc = v; }
@@ -402,7 +409,7 @@
 			p = r.resolvePath(view.dataset[ruleId]);
 			t = tiesService.obtain(p.shift());
 			if (t && r) {
-				data = getPath(t.data, p);
+				data = getPath(t.getObservedModel(), p);
 				r.dataToView(view, { data: data });
 				dispatchViewUpdateEvent(view, { ruleId: ruleId });
 			}
