@@ -10,7 +10,8 @@
 		INFO_LOG_MODE = 'info';
 
 	var
-		dataRoot = {},
+		dataObserver,
+		dataRoot,
 		observersService,
 		tiesService,
 		viewsService,
@@ -22,12 +23,17 @@
 	logger = new (function DTLogger() {
 		var mode = ERROR_LOG_MODE;
 
-		function mProc(m) {
-			if (typeof (m) === 'object') {
-				return JSON.stringify(m);
-			} else {
-				return m;
-			}
+		function mProc(args) {
+			var tmp = [];
+			args = Array.from(args);
+			args.forEach(function (one) {
+				if (typeof one === 'object') {
+					tmp.push(JSON.stringify(one));
+				} else {
+					tmp.push(one);
+				}
+			});
+			return tmp.join(' ');
 		}
 
 		Object.defineProperties(this, {
@@ -39,25 +45,26 @@
 				}
 			},
 			info: {
-				value: function (m) {
-					if (mode !== INFO_LOG_MODE) return;
-					console.info('DT: ' + mProc(m));
+				value: function () {
+					if (mode === INFO_LOG_MODE || mode === ERROR_LOG_MODE) {
+						console.info('DT: ' + mProc(arguments));
+					}
 				}
 			},
 			debug: {
-				value: function (m) {
-					if (mode !== INFO_LOG_MODE && mode !== DEBUG_LOG_MODE) return;
-					console.debug('DT: ' + mProc(m));
+				value: function () {
+					if (mode === INFO_LOG_MODE || mode === ERROR_LOG_MODE || mode === DEBUG_LOG_MODE) {
+						console.debug('DT: ' + mProc(arguments));
+					}
 				}
 			},
 			error: {
-				value: function (m) {
-					console.error('DT: ' + mProc(m));
+				value: function () {
+					console.error('DT: ' + mProc(arguments));
 				}
 			}
 		});
 	})();
-
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -269,89 +276,31 @@
 		Object.seal(this);
 	})();
 
-	observersService = new (function ObserversManager() {
-		var os = {};
-
-		function publishDataChange(newData, oldData, path) {
-			var vs = viewsService.get(path), i, l, key, p;
-			for (i = 0, l = vs.length; i < l; i++) {
-				for (key in vs[i].dataset) {
-					if (key.indexOf('tie') === 0) {
-						p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
-						if (isPathStartsWith(path, p)) {
-							viewsService.update(vs[i], key);
+	if (typeof DataObserver !== 'function') {
+		throw new Error('no DataObserver implementation available');
+	} else {
+		dataObserver = new DataObserver();
+		dataRoot = dataObserver.getObserved({}, function (changes) {
+			if (changes) {
+				changes.forEach(function (change) {
+					var vs = viewsService.get(change.path), i, l, key, p;
+					for (i = 0, l = vs.length; i < l; i++) {
+						for (key in vs[i].dataset) {
+							if (key.indexOf('tie') === 0) {
+								p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
+								if (isPathStartsWith(change.path, p)) {
+									//	TODO: use the knowledge of old value and new value here
+									//	TODO: yet, myst pass via the formatters/vizualizers of Rule/Tie
+									viewsService.update(vs[i], key);
+								}
+							}
 						}
 					}
-				}
-			}
-		}
-
-		function h(change, ns) {
-			var ov = change.oldValue,
-				nv = change.object[change.name],
-				p = (ns ? ns + '.' : '') + change.name;
-			if (ov && typeof ov === 'object') { remove(ov, p); }
-			if (nv && typeof nv === 'object') { create(nv, p); }
-			publishDataChange(nv, ov, p);
-		}
-
-		function s(change, ns) {
-			var ov, nv, p = (ns ? ns + '.' : ''), i;
-			for (i = 0; i < change.removed.length; i++) {
-				ov = change.removed[i];
-				if (ov && typeof ov === 'object') { remove(ov, p + (i + change.index)); }
-				publishDataChange(null, null, p);
-			}
-			for (i = 0; i < change.addedCount; i++) {
-				nv = change.object[i + change.index];
-				if (nv && typeof nv === 'object') { create(nv, p + (i + change.index)); }
-				publishDataChange(nv, null, p);
-			}
-			publishDataChange(change.object, change.oldValue, p);
-		};
-
-		function create(data, namespace) {
-			if (typeof data !== 'object') return;
-			function oo(changes) {
-				changes.forEach(function (change) { h(change, namespace); });
-			}
-			function ao(changes) {
-				changes.forEach(function (change) {
-					if (change.type === 'splice') s(change, namespace); else h(change, namespace);
 				});
 			}
-			if (Array.isArray(data)) {
-				Array.observe(data, ao, ['add', 'update', 'delete', 'splice']);
-				os[namespace] = ao;
-			} else {
-				Object.observe(data, oo, ['add', 'update', 'delete']);
-				os[namespace] = oo;
-			}
-			Object.keys(data).forEach(function (key) {
-				if (data[key] && typeof data[key] === 'object') create(data[key], namespace + '.' + key);
-			});
-		}
-
-		function remove(data, namespace) {
-			var o;
-			Object.keys(os).forEach(function (key) {
-				if (key !== '') {
-					if (key === namespace) o = data;
-					else if (key.indexOf(namespace) === 0) o = getPath(data, key.replace(namespace + '.', ''));
-					else o = null;
-					if (o) {
-						if (Array.isArray(o)) Array.unobserve(o, os[key]);
-						else Object.unobserve(o, os[key]);
-						delete os[key];
-					}
-				}
-			});
-		}
-
-		create(dataRoot, '');
-
-		Object.seal(this);
-	})();
+		});
+		logger.info('DataObserver details: ', dataObserver.details);
+	}
 
 	tiesService = new (function TiesManager() {
 		var ts = {};
@@ -365,10 +314,16 @@
 
 			Object.defineProperties(this, {
 				namespace: { get: function () { return namespace; } },
-				data: {
-					get: function () { return dataRoot[namespace]; },
-					set: function (v) { if (typeof v === 'object') dataRoot[namespace] = v; }
+				setModel: {
+					value: function (model) {
+						if (typeof model !== 'object') {
+							throw new TypeError('model MUST be an object');
+						}
+						dataRoot[namespace] = model;
+						return dataRoot[namespace];
+					}
 				},
+				getObservedModel: { value: function () { return dataRoot[namespace]; } },
 				viewToDataProcessor: {
 					get: function () { return typeof vtdProc === 'function' ? vtdProc : dfltVTDProcessor; },
 					set: function (v) { if (typeof v === 'function') vtdProc = v; }
@@ -459,7 +414,7 @@
 			p = r.resolvePath(view.dataset[ruleId]);
 			t = tiesService.obtain(p.shift());
 			if (t && r) {
-				data = getPath(t.data, p);
+				data = getPath(t.getObservedModel(), p);
 				r.dataToView(view, { data: data });
 				dispatchViewUpdateEvent(view, { ruleId: ruleId });
 			}
