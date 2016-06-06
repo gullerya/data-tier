@@ -1,6 +1,6 @@
 {
 	"name": "data-tier",
-	"version": "0.5.4",
+	"version": "0.5.41",
 	"homepage": "https://github.com/gullerya/data-tier",
 	"author": {
 		"name": "Guller Yuri",
@@ -8,20 +8,23 @@
 	},
 	"description": "Tiny and fast two way (MV-VM) data binding framework implemented in pure JS for browser environments.",
 	"main": "data-tier.js",
-	"keywords": [
-		"two",
-		"way",
-		"data",
-		"binding",
-		"tie",
-		"model",
-		"view",
-		"native",
-		"javascript",
-		"object",
-		"mutation",
-		"observe"
-	],
+  "keywords": [
+    "two",
+    "way",
+    "data",
+    "binding",
+    "tie",
+    "model",
+    "view",
+    "native",
+    "javascript",
+    "object",
+    "mutation",
+    "observe"
+  ],
+  "devDependencies": {
+    "object-observer": "~0.1.1"
+  },
 	"license": "MIT",
 	"files": [
 		"lib/data-tier.js"
