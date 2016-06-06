@@ -1,10 +1,13 @@
+[![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
+[![Build Status](https://travis-ci.org/gullerya/data-tier-js.svg?branch=master)](https://travis-ci.org/gullerya/data-tier-js)
+
 Temporary Suspension notice
 =================
 The current implementation is fully based on Object.observe functionality that was part a a proposed spec and available in Chrome environment up till v. 50.
 The proposal was recently removed and from Crome v. 50 this feature is not supported amymore.
 I have a very strong opinion, that Object.observe is a MUST HAVE funtionality to be available on the native level, and i truly believe that it will make it's way back in a future.
 Meanwhile, I'm completely refactoring the observing part of this module implementing it via Proxy facilities (observation module will be published as a separate module in npm soon) and once this is availalbe - DataTier module will become functional again.
-ETA for the DataTier is end of June 2016 (ObjectObserver https://github.com/gullerya/object-observer-js is considered to be good enough to start re-writing this library on top of it now).
+ETA for the DataTier is end of June 2016 (object-observer)[https://github.com/gullerya/object-observer-js] is considered to be good enough to start re-writing this library on top of it now).
 APIs - current APIs will mostly not be changed, except the observing syntax.
 Feedback - any early feedback from anyone who had a chance to try this out is welcome.
 
