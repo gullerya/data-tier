@@ -1,4 +1,4 @@
-﻿var fs = require('fs');
+﻿var build = require('./tools/build.js');
 
 module.exports = function (grunt) {
     grunt.initConfig({
@@ -8,7 +8,7 @@ module.exports = function (grunt) {
                     esversion: 6
                 }
             },
-            files: ['Gruntfile.js', 'src/**/*.js']
+            files: ['Gruntfile.js', 'src/**/*.js', 'tools/**/*.js']
         },
         uglify: {
             build: {
@@ -27,11 +27,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask('test', ['jshint']);
 
-    grunt.registerTask('build', 'Customized build', function () {
-        grunt.log.writeln('Copy to "bin"');
-        fs.writeFileSync('dist/data-tier.js', fs.readFileSync('src/data-tier.js'));
-        grunt.log.ok();
-
+    grunt.registerTask('build', 'Build', function () {
+        build(grunt);
         grunt.task.run('uglify:build');
     });
 
@@ -39,4 +36,5 @@ module.exports = function (grunt) {
         grunt.task.run('build');
         //grunt.task.run('test');
     });
+
 };
