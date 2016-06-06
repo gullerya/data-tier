@@ -1,5 +1,5 @@
 [![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
-[![Build Status](https://travis-ci.org/gullerya/data-tier-js.svg?branch=master)](https://travis-ci.org/gullerya/data-tier-js)
+[![Build Status](https://travis-ci.org/gullerya/data-tier.svg?branch=master)](https://travis-ci.org/gullerya/data-tier)
 
 Temporary Suspension notice
 =================
