@@ -1,8 +1,8 @@
 (function (scope, options) {
     'use strict';
 
-    var MODULES_NAMESPACE = 'modules',
-		MODULE_NAME = 'dataTier',
+    var api,
+        MODULE_NAME = 'DataTier',
 		VIEW_UPDATE_EVENT = 'viewupdate',
 		ERROR_LOG_MODE = 'error',
 		DEBUG_LOG_MODE = 'debug',
@@ -15,7 +15,13 @@
 		rulesService,
 		logger;
 
-    if (typeof options !== 'object') { options = {}; }
+    if (typeof scope.Observable !== 'object' || !scope.Observable) {
+        throw new Error('DataTier initialization failed: "Observable" not found');
+    }
+    if (typeof scope.ViewObserver !== 'function') {
+        throw new Error('DataTier initialization failed: "ViewObserver" not found');
+    }
+    if (typeof options !== 'object' || !options) { options = {}; }
 
     logger = new (function DTLogger() {
         var mode = ERROR_LOG_MODE;
@@ -94,32 +100,6 @@
             c++;
         }
         n.length && r.push(n);
-        return r;
-    }
-
-    function copyObject(o) {
-        var r, i;
-        if (typeof o !== 'object') throw new Error('object parameter expected');
-        if (o === null) return null;
-        if (Array.isArray(o)) {
-            r = [];
-            for (i = 0; i < o.length; i++) {
-                if (typeof o[i] === 'object') {
-                    r[i] = copyObject(o[i]);
-                } else if (typeof o[i] !== 'function') {
-                    r[i] = o[i];
-                }
-            }
-        } else {
-            r = {};
-            Object.getOwnPropertyNames(o).forEach(function (p) {
-                if (typeof o[p] === 'object') {
-                    r[p] = copyObject(o[p]);
-                } else if (typeof o[p] !== 'function') {
-                    r[p] = o[p];
-                }
-            });
-        }
         return r;
     }
 
@@ -635,32 +615,21 @@
         viewsService = null;
     }
 
-    if (typeof window[MODULES_NAMESPACE] !== 'object') { Object.defineProperty(window, MODULES_NAMESPACE, { value: {} }); }
-    Object.defineProperty(window[MODULES_NAMESPACE], MODULE_NAME, { value: {} });
-    Object.defineProperties(window[MODULES_NAMESPACE][MODULE_NAME], {
-        dispose: { value: dispose },
-        Ties: { value: tiesService },
-        Rules: { value: rulesService },
-        Utils: {
-            value: {
-                get logger() { return logger; },
-                get copyObject() { return copyObject; },
-                get setPath() { return setPath; },
-                get getPath() { return getPath; },
-                get cutPath() { return cutPath; }
-            }
-        },
-        About: {
-            value: {
-                get version() { return '0.5.3'; },
-                get author() {
-                    return {
-                        get name() { return 'Guller Yuri'; },
-                        get email() { return 'gullerya@gmail.com'; }
-                    };
-                }
-            }
-        }
-    });
+    api = {};
+    Reflect.defineProperty(api, '', {
 
+    });
+    Reflect.defineProperty(scope, MODULE_NAME, { value: api });
+    //Object.defineProperties(window[MODULES_NAMESPACE][MODULE_NAME], {
+    //    dispose: { value: dispose },
+    //    Ties: { value: tiesService },
+    //    Rules: { value: rulesService },
+    //    Utils: {
+    //        value: {
+    //            get setPath() { return setPath; },
+    //            get getPath() { return getPath; },
+    //            get cutPath() { return cutPath; }
+    //        }
+    //    }
+    //});
 })(this, (typeof arguments === 'object' ? arguments[0] : undefined));

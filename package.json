@@ -14,9 +14,10 @@
     "tie",
     "model",
     "view",
-    "native",
     "javascript",
+    "proxy",
     "object",
+    "observer",
     "mutation",
     "observe"
   ],
@@ -31,6 +32,7 @@
   "homepage": "https://github.com/gullerya/data-tier/README.md",
   "devDependencies": {
     "object-observer": "~0.1.1",
+    "uglify-js": "~2.6.2",
     "grunt": "~0.4.5",
     "grunt-cli": "~1.2.0",
     "grunt-contrib-jshint": "~1.0.0",

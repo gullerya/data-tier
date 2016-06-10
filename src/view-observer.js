@@ -1,10 +1,10 @@
-﻿(function () {
-	'use strict';
+﻿(function (scope) {
+    'use strict';
 
-	function ViewObserver() {
-		//	implement the whole logic of View Observation here
-	}
+    function ViewObserver(options) {
 
-	Reflect.defineProperty(this || window, 'ViewObserver', { value: ViewObserver });
-})();
+    }
+
+    Reflect.defineProperty(scope, 'ViewObserver', { value: ViewObserver });
+})(this);
 
