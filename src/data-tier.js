@@ -1,8 +1,7 @@
 (function (scope, options) {
     'use strict';
 
-    var
-		MODULES_NAMESPACE = 'modules',
+    var MODULES_NAMESPACE = 'modules',
 		MODULE_NAME = 'dataTier',
 		VIEW_UPDATE_EVENT = 'viewupdate',
 		ERROR_LOG_MODE = 'error',

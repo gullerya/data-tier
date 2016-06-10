@@ -1,4 +1,4 @@
-﻿var build = require('./tools/build.js');
+﻿var builder = require('./tools/builder.js');
 
 module.exports = function (grunt) {
     grunt.initConfig({
@@ -28,7 +28,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test', ['jshint']);
 
     grunt.registerTask('build', 'Build', function () {
-        build(grunt);
+        builder.concatSources();
         grunt.task.run('uglify:build');
     });
 
