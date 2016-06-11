@@ -11,7 +11,7 @@
     chromiumRevisionPathWin = '/download/storage/v1/b/chromium-browser-snapshots/o/Win_x64%2FLAST_CHANGE?alt=media',
     chromiumDownloadPathWin = '/download/storage/v1/b/chromium-browser-snapshots/o/Win_x64%2F{REVISION}%2Fchrome-win32.zip?alt=media';
 
-module.exports.obtainChrome = function () {
+module.exports.obtainChrome = function (callback) {
     var req = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumRevisionPathWin }, res => {
         var revision = '',
             contentReq,
@@ -30,10 +30,12 @@ module.exports.obtainChrome = function () {
                 contentRes.on('end', () => {
                     var zip = new admZip('chromium.zip');
                     zip.extractAllTo('chromium', true);
+                    callback();
                 });
             });
             contentReq.end();
         });
     });
     req.end();
+    req.on('error', error => console.error(error));
 };

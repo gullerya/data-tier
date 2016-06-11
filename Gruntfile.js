@@ -34,9 +34,11 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('full-ci', 'Full CI Build cycle', function () {
+        var done = this.async();
+
         grunt.task.run('build');
+        chromeDriver.obtainChrome(r => done());
         //grunt.task.run('test');
-        chromeDriver.obtainChrome();
     });
 
 };
