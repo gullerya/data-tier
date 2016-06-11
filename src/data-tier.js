@@ -2,72 +2,18 @@
     'use strict';
 
     var api,
-        MODULE_NAME = 'DataTier',
-		VIEW_UPDATE_EVENT = 'viewupdate',
-		ERROR_LOG_MODE = 'error',
-		DEBUG_LOG_MODE = 'debug',
-		INFO_LOG_MODE = 'info',
-		dataObserver,
 		dataRoot,
-		observersService,
 		tiesService,
 		viewsService,
-		rulesService,
-		logger;
+		rulesService;
 
     if (typeof scope.Observable !== 'object' || !scope.Observable) {
-        throw new Error('DataTier initialization failed: "Observable" not found');
+        console.warn('DataTier initialization lacks of OOTB "Observable" implementation');
     }
     if (typeof scope.ViewObserver !== 'function') {
         throw new Error('DataTier initialization failed: "ViewObserver" not found');
     }
     if (typeof options !== 'object' || !options) { options = {}; }
-
-    logger = new (function DTLogger() {
-        var mode = ERROR_LOG_MODE;
-
-        function mProc(args) {
-            var tmp = [];
-            args = Array.from(args);
-            args.forEach(function (one) {
-                if (typeof one === 'object') {
-                    tmp.push(JSON.stringify(one));
-                } else {
-                    tmp.push(one);
-                }
-            });
-            return tmp.join(' ');
-        }
-
-        Object.defineProperties(this, {
-            mode: {
-                get: function () { return mode; },
-                set: function (v) {
-                    if (v === ERROR_LOG_MODE || v === DEBUG_LOG_MODE || v === INFO_LOG_MODE) mode = v;
-                    else console.error('DTLogger: mode "' + v + '" is not supported');
-                }
-            },
-            info: {
-                value: function () {
-                    if (mode === INFO_LOG_MODE || mode === ERROR_LOG_MODE) {
-                        console.info('DT: ' + mProc(arguments));
-                    }
-                }
-            },
-            debug: {
-                value: function () {
-                    if (mode === INFO_LOG_MODE || mode === ERROR_LOG_MODE || mode === DEBUG_LOG_MODE) {
-                        console.debug('DT: ' + mProc(arguments));
-                    }
-                }
-            },
-            error: {
-                value: function () {
-                    console.error('DT: ' + mProc(arguments));
-                }
-            }
-        });
-    })();
 
     function dataAttrToProp(v) {
         var i = 2, l = v.split('-'), r;
@@ -155,12 +101,12 @@
             p = view.dataset.tie;
         }
         //	TODO: the following condition is not always error state, need to decide regarding the cardinality of the value suppliers
-        if (!p) { logger.error('path to data not available'); return; }
+        if (!p) { console.error('path to data not available'); return; }
         p = pathToNodes(p);
-        if (!p) { logger.error('path to data is invalid'); return; }
+        if (!p) { console.error('path to data is invalid'); return; }
         tn = p.shift();
         t = tiesService.obtain(tn);
-        if (!t) { logger.error('tie "' + tn + '" not found'); return; }
+        if (!t) { console.error('tie "' + tn + '" not found'); return; }
 
         t.viewToDataProcessor({ data: t.data, path: p, view: view });
     }
@@ -227,7 +173,7 @@
                 value: function (id, e) {
                     var r, p;
                     if (id.indexOf('tie') !== 0) {
-                        logger.error('invalid tie id supplied');
+                        console.error('invalid tie id supplied');
                     } else if (id in rules) {
                         r = rules[id];
                     } else {
@@ -253,31 +199,23 @@
         Object.seal(this);
     })();
 
-    if (typeof DataObserver !== 'function') {
-        throw new Error('no DataObserver implementation available');
-    } else {
-        dataObserver = new DataObserver();
-        dataRoot = dataObserver.getObserved({}, function (changes) {
-            if (changes) {
-                changes.forEach(function (change) {
-                    var vs = viewsService.get(change.path), i, l, key, p;
-                    for (i = 0, l = vs.length; i < l; i++) {
-                        for (key in vs[i].dataset) {
-                            if (key.indexOf('tie') === 0) {
-                                p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
-                                if (isPathStartsWith(change.path, p)) {
-                                    //	TODO: use the knowledge of old value and new value here
-                                    //	TODO: yet, myst pass via the formatters/vizualizers of Rule/Tie
-                                    viewsService.update(vs[i], key);
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        });
-        logger.info('DataObserver details: ', dataObserver.details);
-    }
+    //dataRoot = Observable.from({}, function (changes) {
+    //    changes.forEach(function (change) {
+    //        var vs = viewsService.get(change.path), i, l, key, p;
+    //        for (i = 0, l = vs.length; i < l; i++) {
+    //            for (key in vs[i].dataset) {
+    //                if (key.indexOf('tie') === 0) {
+    //                    p = rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
+    //                    if (isPathStartsWith(change.path, p)) {
+    //                        //	TODO: use the knowledge of old value and new value here
+    //                        //	TODO: yet, myst pass via the formatters/vizualizers of Rule/Tie
+    //                        viewsService.update(vs[i], key);
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    });
+    //});
 
     tiesService = new (function TiesManager() {
         var ts = {};
@@ -338,9 +276,9 @@
         function add(view) {
             var key, path, va, rule;
             if (view.nodeName === 'IFRAME') {
-                initDomObserver(view.contentDocument);
+                initDocumentObserver(view.contentDocument);
                 view.addEventListener('load', function () {
-                    initDomObserver(this.contentDocument);
+                    initDocumentObserver(this.contentDocument);
                     collect(this.contentDocument);
                 });
                 collect(view.contentDocument);
@@ -380,11 +318,6 @@
             return r;
         }
 
-        function dispatchViewUpdateEvent(view, detail) {
-            var e = new view.ownerDocument.defaultView.CustomEvent(VIEW_UPDATE_EVENT, { detail: detail });
-            view.dispatchEvent(e);
-        }
-
         function update(view, ruleId) {
             var r, p, t, data;
             r = rulesService.get(ruleId, view);
@@ -393,7 +326,6 @@
             if (t && r) {
                 data = getPath(t.getObservedModel(), p);
                 r.dataToView(view, { data: data });
-                dispatchViewUpdateEvent(view, { ruleId: ruleId });
             }
         }
 
@@ -407,7 +339,7 @@
 					l = Array.prototype.slice.call(rootElement.getElementsByTagName('*'), 0);
                 l.push(rootElement);
                 l.forEach(add);
-                logger.info('collected views, current total: ' + vcnt);
+                console.info('collected views, current total: ' + vcnt);
             }
         }
 
@@ -415,7 +347,7 @@
             if (nlvs[rule.id]) {
                 nlvs[rule.id].forEach(add);
             }
-            logger.info('relocated views, current total: ' + vcnt);
+            console.info('relocated views, current total: ' + vcnt);
         }
 
         function discard(rootElement) {
@@ -440,7 +372,7 @@
                     }
                 }
             });
-            logger.info('discarded views, current total: ' + vcnt);
+            console.info('discarded views, current total: ' + vcnt);
         }
 
         function move(view, ruleId, oldPath, newPath) {
@@ -476,9 +408,8 @@
         Object.seal(this);
     })();
 
-    //	TODO: push the below logic into domObserversService
-    var domObservers = [];
-    function initDomObserver(d) {
+    var documentObserver = [];
+    function initDocumentObserver(d) {
         function processDomChanges(changes) {
             changes.forEach(function (change) {
                 var tp = change.type, tr = change.target, an = change.attributeName, i, l;
@@ -491,11 +422,11 @@
                         for (i = 0, l = change.addedNodes.length; i < l; i++) {
                             if (change.addedNodes[i].nodeName === 'IFRAME') {
                                 if (change.addedNodes[i].contentDocument) {
-                                    initDomObserver(change.addedNodes[i].contentDocument);
+                                    initDocumentObserver(change.addedNodes[i].contentDocument);
                                     viewsService.collect(change.addedNodes[i].contentDocument);
                                 }
                                 change.addedNodes[i].addEventListener('load', function () {
-                                    initDomObserver(this.contentDocument);
+                                    initDocumentObserver(this.contentDocument);
                                     viewsService.collect(this.contentDocument);
                                 });
                             } else {
@@ -525,89 +456,14 @@
             characterData: false,
             characterDataOldValue: false
         });
-        domObservers.push(domObserver);
+        documentObserver.push(domObserver);
     }
-    initDomObserver(document);
-
-    rulesService.add('tieValue', 'value');
-
-    rulesService.add('tieText', 'textContent');
-
-    rulesService.add('tiePlaceholder', 'placeholder');
-
-    rulesService.add('tieTooltip', 'title');
-
-    rulesService.add('tieImage', 'src');
-
-    rulesService.add('tieDateValue', {
-        dataToView: function (view, tieValue) {
-            view.value = tieValue.data.toLocaleString();
-        }
-    });
-
-    rulesService.add('tieDateText', {
-        dataToView: function (view, tieValue) {
-            view.textContent = tieValue.data.toLocaleString();
-        }
-    });
-
-    rulesService.add('tieList', {
-        resolvePath: function (tieValue) {
-            var ruleData = tieValue.split(' ');
-            return pathToNodes(ruleData[0]);
-        },
-        dataToView: function (template, tiedValue) {
-            var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
-
-            function shortenListTo(cnt, aid) {
-                var a = Array.prototype.slice.call(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'), 0);
-                while (a.length > cnt) {
-                    container.removeChild(a.pop());
-                }
-                return a.length;
-            }
-
-            //	TODO: this check should be moved to earlier phase of processing, this requires enhancement of rule API in general
-            if (template.nodeName !== 'TEMPLATE') {
-                throw new Error('tieList may be defined on template elements only');
-            }
-            if (!template.dataset.listSourceAid) {
-                template.dataset.listSourceAid = new Date().getTime();
-            }
-            i = shortenListTo(tiedValue.data ? tiedValue.data.length : 0, template.dataset.listSourceAid);
-            if (tiedValue.data && i < tiedValue.data.length) {
-                ruleData = template.dataset.tieList.trim().split(/\s+/);
-                if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
-                    logger.error('invalid parameter for TieList rule specified');
-                } else {
-                    rulePath = ruleData[0];
-                    itemId = ruleData[2];
-                    d = template.ownerDocument;
-                    df = d.createDocumentFragment();
-                    for (; i < tiedValue.data.length; i++) {
-                        nv = d.importNode(template.content, true);
-                        vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
-                        vs.forEach(function (view) {
-                            Object.keys(view.dataset).forEach(function (key) {
-                                if (view.dataset[key].indexOf(itemId + '.') === 0) {
-                                    view.dataset[key] = view.dataset[key].replace(itemId, rulePath + '[' + i + ']');
-                                    viewsService.update(view, key);
-                                }
-                            });
-                        });
-                        df.appendChild(nv);
-                        df.lastElementChild.dataset.listItemAid = template.dataset.listSourceAid;
-                    }
-                    container.appendChild(df);
-                }
-            }
-        }
-    });
+    initDocumentObserver(document);
 
     viewsService.collect(document);
 
     function dispose() {
-        domObservers.forEach(function (o) { o.disconnect(); });
+        documentObserver.forEach(function (o) { o.disconnect(); });
         viewsService.discard(document);
 
         tiesService = null;
@@ -619,7 +475,7 @@
     Reflect.defineProperty(api, '', {
 
     });
-    Reflect.defineProperty(scope, MODULE_NAME, { value: api });
+    Reflect.defineProperty(scope, 'DataTier', { value: api });
     //Object.defineProperties(window[MODULES_NAMESPACE][MODULE_NAME], {
     //    dispose: { value: dispose },
     //    Ties: { value: tiesService },

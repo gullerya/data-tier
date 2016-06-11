@@ -7,7 +7,8 @@
 sources = [
     path.join('node_modules', 'object-observer', 'dist', 'object-observer.js'),
     path.join('src', 'view-observer.js'),
-    path.join('src', 'data-tier.js')
+    path.join('src', 'data-tier.js'),
+    path.join('src', 'vanilla-rules.js')
 ];
 destination = path.join('dist', 'data-tier.js');
 

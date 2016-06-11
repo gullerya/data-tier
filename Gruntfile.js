@@ -1,4 +1,5 @@
-﻿var builder = require('./tools/builder.js');
+﻿var builder = require('./tools/builder.js'),
+    chromeDriver = require('./tools/chromium-driver.js');
 
 module.exports = function (grunt) {
     grunt.initConfig({
@@ -35,6 +36,7 @@ module.exports = function (grunt) {
     grunt.registerTask('full-ci', 'Full CI Build cycle', function () {
         grunt.task.run('build');
         //grunt.task.run('test');
+        chromeDriver.obtainChrome();
     });
 
 };
