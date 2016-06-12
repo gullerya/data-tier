@@ -24,8 +24,7 @@ module.exports.obtainChrome = function (callback) {
                 contentRes.pipe(destination);
                 contentRes.on('data', chunk => {
                     gotLength += chunk.length;
-                    process.stdout.write(Math.round(gotLength / 1000000) + ' MB');
-                    readline.cursorTo(process.stdout, 40);
+                    process.stdout.write('Downloaded ' + Math.round(gotLength / 1000000) + ' MB');
                 });
                 contentRes.on('end', () => {
                     var zip = new admZip('chromium.zip');
