@@ -23,7 +23,8 @@ module.exports.obtainChrome = function (callback) {
             destination;
         res.on('data', chunk => revision += chunk.toString());
         res.on('end', () => {
-            process.stdout.write('\033[100D\033[32C\033[32m' + revision + '\033[0m' + os.EOL);
+            readline.cursorTo(process.stdout, 40);
+            process.stdout.write('\033[32m' + revision + '\033[0m' + os.EOL);
 
             process.stdout.write('Downloading Chromium...');
             destination = fs.createWriteStream('./tmp/chromium.zip');
@@ -35,8 +36,8 @@ module.exports.obtainChrome = function (callback) {
                     tmpLength += chunk.length;
                     if (Math.round(tmpLength / 1000000) > 1) {
                         totalLength += tmpLength;
-                        //readline.cursorTo(process.stdout, 25);
-                        process.stdout.write('\033[100D\033[32C\033[32m' + Math.round(totalLength / 1000000) + ' MB  ');
+                        readline.cursorTo(process.stdout, 40);
+                        process.stdout.write('\033[32m' + Math.round(totalLength / 1000000) + ' MB  ');
                         tmpLength = 0;
                     }
                 });
@@ -47,11 +48,13 @@ module.exports.obtainChrome = function (callback) {
                     try {
                         var zip = new admZip('./tmp/chromium.zip');
                         zip.extractAllTo('./tmp/chromium', true);
+                        readline.cursorTo(process.stdout, 40);
                         process.stdout.write('\033[32mOK\033[0m' + os.EOL);
                         if (typeof callback === 'function') {
                             callback();
                         }
                     } catch (e) {
+                        readline.cursorTo(process.stdout, 40);
                         process.stdout.write('\033[31m' + e + '\033[0m' + os.EOL);
                     }
                 });
