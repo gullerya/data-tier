@@ -1,6 +1,7 @@
 ﻿const os = require('os'),
     fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    utils = require('./utils.js');
 
 var sources,
     destination;
@@ -13,19 +14,17 @@ sources = [
 ];
 destination = path.join('dist', 'data-tier.js');
 
-fs.mkdirSync('./tmp');
-
 module.exports.concatSources = function concatSources(grunt) {
     var cleanError = null;
 
     //  clean up
     process.stdout.write('Cleaning destination folder...');
     try {
-        removeFolderSync('dist');
+        utils.removeFolderSync('dist');
     } catch (e) {
         cleanError = e;
     }
-    process.stdout.write('\t' + (cleanError === null ? '\x1b[32mOK' : '\x1b[31mFAIL (' + cleanError + ')') + os.EOL);
+    process.stdout.write('\t' + (cleanError === null ? '\033[32mOK' : '\033[31mFAIL (' + cleanError + ')') + os.EOL);
 
     //  create folder
     process.stdout.write('Creating destination folder...');
@@ -34,7 +33,7 @@ module.exports.concatSources = function concatSources(grunt) {
     } catch (e) {
         cleanError = e;
     }
-    process.stdout.write('\t' + (cleanError === null ? '\x1b[32mOK' : '\x1b[31mFAIL (' + cleanError + ')') + os.EOL);
+    process.stdout.write('\t' + (cleanError === null ? '\033[32mOK' : '\033[31mFAIL (' + cleanError + ')') + os.EOL);
 
     //  concat & copy
     process.stdout.write('Concat & copy:' + os.EOL);
@@ -47,27 +46,6 @@ module.exports.concatSources = function concatSources(grunt) {
         } catch (e) {
             error = e;
         }
-        process.stdout.write('\t' + (error === null ? '\x1b[32mOK' : '\x1b[31mFAIL (' + error + ')') + os.EOL);
+        process.stdout.write('\t' + (error === null ? '\033[32mOK' : '\033[31mFAIL (' + error + ')') + os.EOL);
     });
-};
-
-function cleanFolderSync(folder) {
-    if (fs.existsSync(folder) && fs.lstatSync(folder).isDirectory()) {
-        fs.readdirSync(folder).forEach(function (item) {
-            var tmpPath = path.join(folder, item);
-            if (fs.lstatSync(tmpPath).isDirectory()) {
-                cleanFoldeSyncr(tmpPath);
-                fs.rmdirSync(tmpPath);
-            } else {
-                fs.unlinkSync(tmpPath);
-            }
-        });
-    }
-}
-
-function removeFolderSync(folder) {
-    if (fs.existsSync(folder) && fs.lstatSync(folder).isDirectory()) {
-        cleanFolderSync(folder);
-        fs.rmdirSync(folder);
-    }
 };
