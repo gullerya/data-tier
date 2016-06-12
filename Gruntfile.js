@@ -37,7 +37,7 @@ module.exports = function (grunt) {
         var done = this.async();
 
         grunt.task.run('build');
-        //chromeDriver.obtainChrome(r => done());
+        chromeDriver.obtainChrome(r => done());
         //grunt.task.run('test');
     });
 
