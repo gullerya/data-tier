@@ -1,7 +1,8 @@
-﻿var os = require('os'),
+﻿const os = require('os'),
     fs = require('fs'),
-    path = require('path'),
-    sources,
+    path = require('path');
+
+var sources,
     destination;
 
 sources = [
@@ -11,6 +12,8 @@ sources = [
     path.join('src', 'vanilla-rules.js')
 ];
 destination = path.join('dist', 'data-tier.js');
+
+fs.mkdirSync('./tmp');
 
 module.exports.concatSources = function concatSources(grunt) {
     var cleanError = null;
