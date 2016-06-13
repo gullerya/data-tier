@@ -1,10 +1,13 @@
 ﻿(function (scope) {
     'use strict';
 
-    function ViewObserver(options) {
+    if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
+    function ViewObserver(options) {
+        //  TODO: implement it here
     }
 
-    Reflect.defineProperty(scope, 'ViewObserver', { value: ViewObserver });
+    Reflect.defineProperty(scope.DataTier, 'ViewObserver', { value: ViewObserver });
+
 })(this);
 
