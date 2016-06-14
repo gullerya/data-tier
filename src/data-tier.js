@@ -1,4 +1,4 @@
-(function (scope, options) {
+(function DataTier(scope) {
     'use strict';
 
     var api,
@@ -7,13 +7,9 @@
 		viewsService,
 		rulesService;
 
-    if (typeof scope.Observable !== 'object' || !scope.Observable) {
-        console.warn('DataTier initialization lacks of OOTB "Observable" implementation');
-    }
     if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
     if (typeof scope.DataTier.ViewObserver !== 'function') { throw new Error('DataTier initialization failed: "ViewObserver" not found'); }
     if (typeof scope.DataTier.RulesService !== 'function') { throw new Error('DataTier initialization failed: "RulesService" not found'); }
-    if (typeof options !== 'object' || !options) { options = {}; }
 
     function dataAttrToProp(v) {
         var i = 2, l = v.split('-'), r;
@@ -400,7 +396,6 @@
     Reflect.defineProperty(api, '', {
 
     });
-    Reflect.defineProperty(scope, 'DataTier', { value: api });
     //Object.defineProperties(window[MODULES_NAMESPACE][MODULE_NAME], {
     //    dispose: { value: dispose },
     //    Ties: { value: tiesService },
@@ -413,4 +408,4 @@
     //        }
     //    }
     //});
-})(this, (typeof arguments === 'object' ? arguments[0] : undefined));
+})(this);

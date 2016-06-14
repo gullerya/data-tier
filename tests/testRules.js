@@ -6,8 +6,8 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testRulesTieA = window.modules.dataTier.Ties.obtain('testRulesA'),
-		testRulesTieB = window.modules.dataTier.Ties.obtain('testRulesB');
+		testRulesTieA = window.DataTier.Ties.obtain('testRulesA'),
+		testRulesTieB = window.DataTier.Ties.obtain('testRulesB');
 
 	testRulesTieA.data = data;
 	testRulesTieB.data = data;

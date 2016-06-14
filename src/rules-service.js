@@ -1,9 +1,9 @@
-﻿(function (scope) {
+﻿(function RulesService(scope) {
     'use strict';
 
     if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
-    function RulesService() {
+    function constructor(options) {
         var rules = {};
 
         function dfltResolvePath(tieValue) { return pathToNodes(tieValue); }
@@ -80,6 +80,6 @@
         Object.seal(this);
     }
 
-    Reflect.defineProperty(scope.DataTier, 'RulesService', { value: RulesService });
+    Reflect.defineProperty(scope.DataTier, 'RulesService', { value: constructor });
 
 })(this);

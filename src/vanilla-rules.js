@@ -1,4 +1,4 @@
-﻿(function (scope) {
+﻿(function VanillaRules(scope) {
     'use strict';
 
     var rules;

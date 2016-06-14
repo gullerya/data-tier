@@ -6,8 +6,8 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testTieCustomElementsA = window.modules.dataTier.Ties.obtain('testCustomsA'),
-		testTieCustomElementsB = window.modules.dataTier.Ties.obtain('testCustomsB');
+		testTieCustomElementsA = window.DataTier.Ties.obtain('testCustomsA'),
+		testTieCustomElementsB = window.DataTier.Ties.obtain('testCustomsB');
 
 	testTieCustomElementsA.data = data;
 	testTieCustomElementsB.data = data;
@@ -43,7 +43,7 @@
 			t = document.createElement('template'),
 			e = document.createElement('custom-element'),
 			tie;
-		tie = window.modules.dataTier.Ties.obtain('repeaterWithCustomEls');
+		tie = window.DataTier.Ties.obtain('repeaterWithCustomEls');
 		tie.data = [
 			{ text: 'some' },
 			{ text: 'more' }
