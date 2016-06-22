@@ -13,7 +13,7 @@ module.exports.cleanFolderSync = function (folder) {
             }
         });
     }
-}
+};
 
 module.exports.removeFolderSync = function (folder) {
     if (fs.existsSync(folder) && fs.lstatSync(folder).isDirectory()) {

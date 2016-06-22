@@ -1,42 +1,78 @@
-﻿(function VanillaRules(scope) {
+﻿(function (scope) {
     'use strict';
 
-    var rules;
+    const apis = scope.DataTier;
 
-    if (typeof scope.DataTier !== 'object' || !scope.DataTier) {
+    if (typeof apis !== 'object' || !apis) {
         throw new Error('Vanilla rules appliance failed: DataTier library not found');
-    } else {
-        rules = scope.DataTier.Rules;
     }
 
-    rules.add('tieValue', 'value');
-
-    rules.add('tieText', 'textContent');
-
-    rules.add('tiePlaceholder', 'placeholder');
-
-    rules.add('tieTooltip', 'title');
-
-    rules.add('tieImage', 'src');
-
-    rules.add('tieDateValue', {
-        dataToView: function (view, tieValue) {
-            view.value = tieValue.data.toLocaleString();
+    apis.setRule('tie', new apis.Rule({
+        dataToView: function (data, view) {
+            view.textContent = data;
+        },
+        inputToData: function () {
+            throw new Error('to be implemented');
         }
-    });
+    }));
 
-    rules.add('tieDateText', {
-        dataToView: function (view, tieValue) {
-            view.textContent = tieValue.data.toLocaleString();
+    apis.setRule('tieValue', new apis.Rule({
+        dataToView: function (data, view) {
+            view.value = data;
+        },
+        inputToData: function (view) {
+            throw new Error('to be implemented');
         }
-    });
+    }));
 
-    rules.add('tieList', {
+    apis.setRule('tieText', new apis.Rule({
+        dataToView: function (data, view) {
+            view.textContent = data;
+        },
+        inputToData: function () {
+            throw new Error('to be implemented');
+        }
+    }));
+
+    apis.setRule('tiePlaceholder', new apis.Rule({
+        dataToView: function (data, view) {
+            view.placeholder = data;
+        }
+    }));
+
+    apis.setRule('tieTooltip', new apis.Rule({
+        dataToView: function (data, view) {
+            view.title = data;
+        }
+    }));
+
+    apis.setRule('tieImage', new apis.Rule({
+        dataToView: function (data, view) {
+            view.src = data;
+        }
+    }));
+
+    apis.setRule('tieDateValue', new apis.Rule({
+        dataToView: function (data, view) {
+            view.value = data.toLocaleString();
+        },
+        inputToData: function () {
+            throw new Error('to be implemented');
+        }
+    }));
+
+    apis.setRule('tieDateText', new apis.Rule({
+        dataToView: function (data, view) {
+            view.textContent = data.toLocaleString();
+        }
+    }));
+
+    apis.setRule('tieList', new apis.Rule({
         resolvePath: function (tieValue) {
             var ruleData = tieValue.split(' ');
-            return pathToNodes(ruleData[0]);                    //  TODO
+            return pathToNodes(ruleData[0]);
         },
-        dataToView: function (template, tiedValue) {
+        dataToView: function (tiedValue, template) {
             var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
 
             function shortenListTo(cnt, aid) {
@@ -82,6 +118,6 @@
                 }
             }
         }
-    });
+    }));
 
 })(this);

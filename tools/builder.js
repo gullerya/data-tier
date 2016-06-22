@@ -8,7 +8,8 @@ var sources,
 
 sources = [
     path.join('node_modules', 'object-observer', 'dist', 'object-observer.js'),
-    path.join('src', 'view-observer.js'),
+    path.join('src', 'ties-service.js'),
+    path.join('src', 'views-service.js'),
     path.join('src', 'rules-service.js'),
     path.join('src', 'data-tier.js'),
     path.join('src', 'vanilla-rules.js')

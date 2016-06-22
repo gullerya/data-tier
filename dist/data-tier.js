@@ -338,7 +338,7 @@
 
     Reflect.defineProperty(scope, 'Observable', { value: api });
 })(this);
-﻿(function ViewObserver(scope) {
+﻿(function ViewsService(scope) {
     'use strict';
 
     if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
@@ -347,13 +347,16 @@
         //  TODO: implement it here
     }
 
-    Reflect.defineProperty(scope.DataTier, 'ViewObserver', { value: constructor });
+    Reflect.defineProperty(scope.DataTier, 'ViewsService', { value: constructor });
 
 })(this);
-
-
 ﻿(function RulesService(scope) {
     'use strict';
+
+    //  TODO: create rules prototype which will hold the rules on the root level
+    //  this prototype will be as a given rules prototype for each tie, so that each tie will inherit the default rules and may override/add upon them
+
+    const rulesPrototype = {};
 
     if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
@@ -391,6 +394,16 @@
                 dataToView: { value: dtv, writable: true },
                 inputToData: { value: itd }
             });
+        }
+
+        function setRule(name, rule) {
+            //  validate
+            //  add on prototype
+        }
+
+        function removeRule(name) {
+            //  validate
+            //  add on prototype
         }
 
         Object.defineProperties(this, {
@@ -431,7 +444,8 @@
             }
         });
 
-        Object.seal(this);
+        Reflect.defineProperty(this, 'setRule', { value: setRule });
+        Reflect.defineProperty(this, 'removeRule', { value: removeRule });
     }
 
     Reflect.defineProperty(scope.DataTier, 'RulesService', { value: constructor });
@@ -440,14 +454,12 @@
 (function DataTier(scope) {
     'use strict';
 
-    var api,
-		dataRoot,
+    var dataRoot,
 		tiesService,
 		viewsService,
 		rulesService;
 
-    if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
-    if (typeof scope.DataTier.ViewObserver !== 'function') { throw new Error('DataTier initialization failed: "ViewObserver" not found'); }
+    if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
     if (typeof scope.DataTier.RulesService !== 'function') { throw new Error('DataTier initialization failed: "RulesService" not found'); }
 
     function dataAttrToProp(v) {
@@ -822,31 +834,25 @@
 
     viewsService.collect(document);
 
-    function dispose() {
-        documentObserver.forEach(function (o) { o.disconnect(); });
-        viewsService.discard(document);
 
-        tiesService = null;
-        rulesService = null;
-        viewsService = null;
+    function createTie() {
+        throw new Error('to be implemented');
     }
 
-    api = {};
-    Reflect.defineProperty(api, '', {
+    function getTie() {
+        throw new Error('to be implemented');
+    }
 
-    });
-    //Object.defineProperties(window[MODULES_NAMESPACE][MODULE_NAME], {
-    //    dispose: { value: dispose },
-    //    Ties: { value: tiesService },
-    //    Rules: { value: rulesService },
-    //    Utils: {
-    //        value: {
-    //            get setPath() { return setPath; },
-    //            get getPath() { return getPath; },
-    //            get cutPath() { return cutPath; }
-    //        }
-    //    }
-    //});
+    function removeTie() {
+        throw new Error('to be implemented');
+    }
+
+    Reflect.defineProperty(scope.DataTier, 'createTie', { value: createTie });
+    Reflect.defineProperty(scope.DataTier, 'getTie', { value: getTie });
+    Reflect.defineProperty(scope.DataTier, 'removeTie', { value: removeTie });
+    Reflect.defineProperty(scope.DataTier, 'setRule', { value: rulesService.setRule });
+    Reflect.defineProperty(scope.DataTier, 'removeRule', { value: rulesService.removeRule });
+
 })(this);
 ﻿(function VanillaRules(scope) {
     'use strict';
