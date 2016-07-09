@@ -2,9 +2,10 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing views changes' }),
-		user = { name: 'some name', age: 7, address: { street: 'str', apt: 9 } };
+		user = { name: 'some name', age: 7, address: { street: 'str', apt: 9 } },
+		observableUser = window.Observable.from(user);
 
-	window.DataTier.Ties.obtain('userB').data = user;
+	window.DataTier.createTie('userB', observableUser);;
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('div');

@@ -2,7 +2,7 @@
     'use strict';
 
     const ties = {};
-    var apis;
+    var api;
 
     if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
@@ -10,16 +10,18 @@
         var data;
 
         function observer(changes) {
-            changes.forEach(change => {
-                let vs = apis.viewsService.get(change.path), i, l, key, p;
+        	changes.forEach(change => {
+        		let contextedPath = change.path.slice();
+        		contextedPath.unshift(name);
+        		let vs = api.viewsService.get(contextedPath), i, l, key, p;
                 for (i = 0, l = vs.length; i < l; i++) {
                     for (key in vs[i].dataset) {
                         if (key.indexOf('tie') === 0) {
-                            p = apis.rulesService.get(key, vs[i]).resolvePath(vs[i].dataset[key]);
-                            if (isPathStartsWith(change.path, p)) {
+                            p = api.rulesService.getRule(key).parseValue(vs[i]).dataPath;
+                            if (isPathStartsWith(contextedPath, p)) {
                                 //	TODO: use the knowledge of old value and new value here
                                 //	TODO: yet, myst pass via the formatters/vizualizers of Rule/Tie
-                                apis.viewsService.update(vs[i], key);
+                                api.viewsService.update(vs[i], key);
                             }
                         }
                     }
@@ -34,6 +36,7 @@
 
             data = observable;
             observable.observe(observer);
+			//	update all paths
         }
 
         function getData() { return data; }
@@ -85,8 +88,20 @@
         }
     }
 
-    function TiesService(internalAPIs) {
-        apis = internalAPIs;
+	//	TOBE reviewed
+    function isPathStartsWith(p1, p2) {
+    	var i, l;
+    	p1 = api.utils.pathToNodes(p1);
+    	p2 = api.utils.pathToNodes(p2);
+    	l = Math.min(p1.length, p2.length);
+    	for (i = 0; i < l; i++) {
+    		if (p1[i] !== p2[i]) return false;
+    	}
+    	return true;
+    }
+
+    function TiesService(internalAPI) {
+        api = internalAPI;
         Reflect.defineProperty(this, 'getTie', { value: getTie });
         Reflect.defineProperty(this, 'createTie', { value: createTie });
         Reflect.defineProperty(this, 'removeTie', { value: removeTie });

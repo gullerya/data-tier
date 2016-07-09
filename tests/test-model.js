@@ -61,8 +61,9 @@
     });
 
     suite.addTest({ name: 'full model replace (to new data)' }, function (pass, fail) {
-        var t = window.DataTier.getTie('userA');
-        t.data = { name: 'something else', age: 6 };
+    	var t = window.DataTier.getTie('userA'),
+    		obsData = Observable.from({ name: 'something else', age: 6 });
+        t.data = obsData;
         setTimeout(function () {
             if (s1.value !== 'something else') fail(new Error('expected the content to be "something else"'));
             if (s2.textContent !== '6') fail(new Error('expected the content to be "6"'));
