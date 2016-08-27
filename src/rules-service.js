@@ -47,7 +47,7 @@
 	}
 	Rule.prototype.parseValue = function (element) {
 		if (element && element.nodeType === Node.ELEMENT_NODE) {
-			let ruleValue = element.dataset[this.name];
+			var ruleValue = element.dataset[this.name];
 			return {
 				dataPath: api.utils.pathToNodes(ruleValue.split(' ')[0])
 			};
@@ -81,9 +81,9 @@
 	}
 
 	function getApplicableRules(element) {
-		let result = [];
+		var result = [];
 		if (element && element.nodeType === Node.ELEMENT_NODE) {
-			Reflect.ownKeys(element.dataset).forEach(key => {
+			Reflect.ownKeys(element.dataset).forEach(function (key) {
 				if (rules[key]) {
 					result.push(rules[key]);
 				}

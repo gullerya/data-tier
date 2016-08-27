@@ -83,6 +83,7 @@
 		return value;
 	}
 
+	//	TODO: move this to the views service
 	var documentObserver = [];
 	function initDocumentObserver(d) {
 		function processDomChanges(changes) {

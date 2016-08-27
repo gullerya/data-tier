@@ -11,9 +11,6 @@ module.exports = function (grunt) {
         },
         uglify: {
             build: {
-                options: {
-                    screwIE8: true
-                },
                 files: {
                     'dist/data-tier.min.js': ['dist/data-tier.js']
                 }

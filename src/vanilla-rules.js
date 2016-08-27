@@ -9,7 +9,7 @@
 
 	dataTier.addRule(new dataTier.Rule('tie', {
 		dataToView: function (data, view) {
-			let dfltValueElements = ['INPUT', 'TEXTAREA', 'SELECT', 'OPTION', 'PROGRESS', 'METER'];
+			var dfltValueElements = ['INPUT', 'TEXTAREA', 'SELECT', 'OPTION', 'PROGRESS', 'METER'];
 			if (view && view.nodeType === Node.ELEMENT_NODE) {
 				if (dfltValueElements.indexOf(view.tagName) >= 0) {
 					view.value = data;
@@ -67,7 +67,7 @@
 	dataTier.addRule(new dataTier.Rule('tieList', {
 		parseValue: function (element) {
 			if (element && element.nodeType === Node.ELEMENT_NODE) {
-				let ruleValue = element.dataset.tieList;
+				var ruleValue = element.dataset.tieList;
 				return {
 					dataPath: apis.utils.pathToNodes(ruleValue.split(' ')[0])
 				};

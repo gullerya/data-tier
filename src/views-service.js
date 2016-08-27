@@ -98,8 +98,8 @@
 			});
 			collect(view.contentDocument);
 		} else {
-			api.rulesService.getApplicableRules(view).forEach(rule => {
-				let path = rule.parseValue(view).dataPath;
+			api.rulesService.getApplicableRules(view).forEach(function (rule) {
+				var path = rule.parseValue(view).dataPath;
 
 				path.push(vpn);
 				va = getPath(vs, path);
