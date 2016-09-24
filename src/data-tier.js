@@ -2,8 +2,8 @@
 	'use strict';
 
 	const api = {},
-		utils = {},
-        dataRoot = {};
+		utils = {};
+        //dataRoot = {};
 
 	if (typeof scope.DataTier.TiesService !== 'function') { throw new Error('DataTier initialization failed: "TiesService" not found'); }
 	if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
@@ -51,37 +51,37 @@
 	//	TODO: normalize this
 	utils.pathToNodes = pathToNodes;
 
-	function setPath(ref, path, value) {
-		var list = pathToNodes(path), i;
-		for (i = 0; i < list.length - 1; i++) {
-			if (typeof ref[list[i]] === 'object') ref = ref[list[i]];
-			else if (!(list[i] in ref)) ref = (ref[list[i]] = {});
-			else throw new Error('the path is unavailable');
-		}
-		ref[list[i]] = value;
-	}
+	//function setPath(ref, path, value) {
+	//	var list = pathToNodes(path), i;
+	//	for (i = 0; i < list.length - 1; i++) {
+	//		if (typeof ref[list[i]] === 'object') ref = ref[list[i]];
+	//		else if (!(list[i] in ref)) ref = (ref[list[i]] = {});
+	//		else throw new Error('the path is unavailable');
+	//	}
+	//	ref[list[i]] = value;
+	//}
 
-	function getPath(ref, path) {
-		var list, i;
-		if (!ref) return;
-		list = pathToNodes(path);
-		for (i = 0; i < list.length; i++) {
-			ref = ref[list[i]];
-			if (!ref) return;
-		}
-		return ref;
-	}
+	//function getPath(ref, path) {
+	//	var list, i;
+	//	if (!ref) return;
+	//	list = pathToNodes(path);
+	//	for (i = 0; i < list.length; i++) {
+	//		ref = ref[list[i]];
+	//		if (!ref) return;
+	//	}
+	//	return ref;
+	//}
 
-	function cutPath(ref, path) {
-		var list = pathToNodes(path), i = 0, value;
-		for (; i < list.length - 1; i++) {
-			if (list[i] in ref) ref = ref[list[i]];
-			else return;
-		}
-		value = ref[list[i - 1]];
-		delete ref[list[i - 1]];
-		return value;
-	}
+	//function cutPath(ref, path) {
+	//	var list = pathToNodes(path), i = 0, value;
+	//	for (; i < list.length - 1; i++) {
+	//		if (list[i] in ref) ref = ref[list[i]];
+	//		else return;
+	//	}
+	//	value = ref[list[i - 1]];
+	//	delete ref[list[i - 1]];
+	//	return value;
+	//}
 
 	//	TODO: move this to the views service
 	var documentObserver = [];

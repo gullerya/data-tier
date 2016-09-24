@@ -97,7 +97,7 @@
 			if (tiedValue.data && i < tiedValue.data.length) {
 				ruleData = template.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
-					logger.error('invalid parameter for TieList rule specified');
+					console.error('invalid parameter for TieList rule specified');
 				} else {
 					rulePath = ruleData[0];
 					itemId = ruleData[2];

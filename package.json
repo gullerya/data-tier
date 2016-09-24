@@ -31,13 +31,15 @@
   },
   "homepage": "https://github.com/gullerya/data-tier/README.md",
   "devDependencies": {
-    "object-observer": "~0.1.1",
-    "uglify-js": "~2.6.2",
+    "object-observer": "~0.2.0",
     "adm-zip": "~0.4.7",
     "grunt": "~0.4.5",
     "grunt-cli": "~1.2.0",
     "grunt-contrib-jshint": "~1.0.0",
-    "grunt-contrib-uglify": "^2.0.0"
+    "grunt-contrib-uglify": "^2.0.0",
+    "babel-eslint": "6.1.2",
+    "eslint-plugin-react": "6.1.2",
+    "gruntify-eslint": "^3.1.0"
   },
   "license": "MIT",
   "bugs": {
