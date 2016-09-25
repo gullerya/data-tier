@@ -3,7 +3,6 @@
 
 	const api = {},
 		utils = {};
-        //dataRoot = {};
 
 	if (typeof scope.DataTier.TiesService !== 'function') { throw new Error('DataTier initialization failed: "TiesService" not found'); }
 	if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
