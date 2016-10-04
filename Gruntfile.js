@@ -1,4 +1,5 @@
-﻿var builder = require('./tools/builder.js'),
+/// <binding />
+var builder = require('./tools/builder.js'),
     chromeDriver = require('./tools/chromium-driver.js');
 
 module.exports = function (grunt) {

@@ -83,7 +83,6 @@
 	//}
 
 	//	TODO: move this to the views service
-	var documentObserver = [];
 	function initDocumentObserver(d) {
 		function processDomChanges(changes) {
 			changes.forEach(function (change) {
@@ -131,7 +130,6 @@
 			characterData: false,
 			characterDataOldValue: false
 		});
-		documentObserver.push(domObserver);
 	}
 	initDocumentObserver(document);
 

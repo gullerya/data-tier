@@ -971,7 +971,6 @@
 
 	const api = {},
 		utils = {};
-        //dataRoot = {};
 
 	if (typeof scope.DataTier.TiesService !== 'function') { throw new Error('DataTier initialization failed: "TiesService" not found'); }
 	if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
@@ -1052,7 +1051,6 @@
 	//}
 
 	//	TODO: move this to the views service
-	var documentObserver = [];
 	function initDocumentObserver(d) {
 		function processDomChanges(changes) {
 			changes.forEach(function (change) {
@@ -1100,7 +1098,6 @@
 			characterData: false,
 			characterDataOldValue: false
 		});
-		documentObserver.push(domObserver);
 	}
 	initDocumentObserver(document);
 
