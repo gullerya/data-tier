@@ -6,11 +6,8 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testRulesTieA = window.DataTier.Ties.obtain('testRulesA'),
-		testRulesTieB = window.DataTier.Ties.obtain('testRulesB');
-
-	testRulesTieA.data = data;
-	testRulesTieB.data = data;
+		testRulesTieA = window.DataTier.ties.create('testRulesA', Observable.from(data)),
+		testRulesTieB = window.DataTier.ties.create('testRulesB', Observable.from(data));
 
 	suite.addTest({ name: 'testing basic rules: text content' }, function (pass, fail) {
 		var e = document.createElement('div');

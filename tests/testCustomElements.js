@@ -6,11 +6,9 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testTieCustomElementsA = window.DataTier.Ties.obtain('testCustomsA'),
-		testTieCustomElementsB = window.DataTier.Ties.obtain('testCustomsB');
-
-	testTieCustomElementsA.data = data;
-	testTieCustomElementsB.data = data;
+		oData = Observable.from(data),
+		testTieCustomElementsA = window.DataTier.ties.create('testCustomsA', oData),
+		testTieCustomElementsB = window.DataTier.ties.create('testCustomsB', oData);
 
 	document.registerElement('custom-element', {
 		prototype: Object.create(HTMLInputElement.prototype, {
@@ -43,7 +41,7 @@
 			t = document.createElement('template'),
 			e = document.createElement('custom-element'),
 			tie;
-		tie = window.DataTier.Ties.obtain('repeaterWithCustomEls');
+		tie = window.DataTier.ties.get('repeaterWithCustomEls');
 		tie.data = [
 			{ text: 'some' },
 			{ text: 'more' }

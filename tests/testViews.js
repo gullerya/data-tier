@@ -5,7 +5,7 @@
 		user = { name: 'some name', age: 7, address: { street: 'str', apt: 9 } },
 		observableUser = window.Observable.from(user);
 
-	window.DataTier.createTie('userB', observableUser);;
+	window.DataTier.ties.create('userB', observableUser);
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('div');

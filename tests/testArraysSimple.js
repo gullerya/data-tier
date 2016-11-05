@@ -1,8 +1,8 @@
 ﻿(function () {
 	'use strict';
 
-	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays' }), users = [];
-	window.DataTier.Ties.obtain('users').data = users;
+	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays' }), users = [], oUsers = Observable.from(users);
+	window.DataTier.ties.create('users', oUsers);
 
 	var d = document.createElement('div'), e1, e2, e3;
 	e1 = document.createElement('div');
@@ -20,12 +20,12 @@
 		if (e1.textContent !== '') fail('preliminary check failed');
 		if (e2.textContent !== '') fail('preliminary check failed');
 		if (e3.textContent !== '') fail('preliminary check failed');
-		users.push({
+		oUsers.push({
 			name: 'A'
 		});
 		setTimeout(function () {
 			if (e1.textContent !== 'A') fail('expected textContent to be A');
-			users[0].name = 'AA';
+			oUsers[0].name = 'AA';
 			setTimeout(function () {
 				if (e1.textContent !== 'AA') fail('expected textContent to be AA');
 				pass();
@@ -35,7 +35,7 @@
 
 	suite.addTest({ name: 'array binding - replacing element directly' }, function (pass, fail) {
 		if (e1.textContent !== 'AA') fail('preliminary check failed');
-		users[0] = {
+		oUsers[0] = {
 			name: 'B'
 		};
 		setTimeout(function () {
@@ -46,7 +46,7 @@
 
 	suite.addTest({ name: 'array binding - replacing element with splice' }, function (pass, fail) {
 		if (e1.textContent !== 'B') fail('preliminary check failed');
-		users.splice(0, 1, {
+		oUsers.splice(0, 1, {
 			name: 'C'
 		});
 		setTimeout(function () {
@@ -57,7 +57,7 @@
 
 	suite.addTest({ name: 'array binding - removing element via splice' }, function (pass, fail) {
 		if (e1.textContent !== 'C') fail('preliminary check failed');
-		users.splice(0, 1);
+		oUsers.splice(0, 1);
 		setTimeout(function () {
 			if (e1.textContent !== '') fail('expected textContent to be empty');
 			pass();
@@ -66,10 +66,10 @@
 
 	suite.addTest({ name: 'array binding - removing element via pop' }, function (pass, fail) {
 		if (e1.textContent !== '') fail('preliminary check failed');
-		users.push({ name: 'D' });
+		oUsers.push({ name: 'D' });
 		setTimeout(function () {
 			if (e1.textContent !== 'D') fail('expected textContent to be D');
-			users.pop();
+			oUsers.pop();
 			setTimeout(function () {
 				if (e1.textContent !== '') fail('expected textContent to be empty');
 				pass();

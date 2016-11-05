@@ -30,8 +30,10 @@
     "url": "https://github.com/gullerya/data-tier"
   },
   "homepage": "https://github.com/gullerya/data-tier/README.md",
+  "dependencies": {
+    "object-observer": "~0.2.0"
+  },
   "devDependencies": {
-    "object-observer": "~0.2.0",
     "adm-zip": "~0.4.7",
     "grunt": "~0.4.5",
     "grunt-cli": "~1.2.0",

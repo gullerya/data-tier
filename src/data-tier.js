@@ -1,17 +1,18 @@
 (function DataTier(scope) {
 	'use strict';
 
-	const api = {},
+	var config = {},
 		utils = {};
 
+	if (typeof scope.DataTier !== 'object') { throw new Error('DataTier initialization faile: "DataTier" namespace not found'); }
 	if (typeof scope.DataTier.TiesService !== 'function') { throw new Error('DataTier initialization failed: "TiesService" not found'); }
 	if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
 	if (typeof scope.DataTier.RulesService !== 'function') { throw new Error('DataTier initialization failed: "RulesService" not found'); }
 
-	Reflect.defineProperty(api, 'utils', { value: utils });
-	Reflect.defineProperty(api, 'tiesService', { value: new scope.DataTier.TiesService(api) });
-	Reflect.defineProperty(api, 'viewsService', { value: new scope.DataTier.ViewsService(api) });
-	Reflect.defineProperty(api, 'rulesService', { value: new scope.DataTier.RulesService(api) });
+	Reflect.defineProperty(config, 'utils', { value: utils });
+	Reflect.defineProperty(scope.DataTier, 'ties', { value: new scope.DataTier.TiesService(config) });
+	Reflect.defineProperty(scope.DataTier, 'views', { value: new scope.DataTier.ViewsService(config) });
+	Reflect.defineProperty(scope.DataTier, 'rules', { value: new scope.DataTier.RulesService(config) });
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -88,32 +89,32 @@
 			changes.forEach(function (change) {
 				var tp = change.type, tr = change.target, an = change.attributeName, i, l;
 				if (tp === 'attributes' && an.indexOf('data-tie') === 0) {
-					api.viewsService.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
+					config.views.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
 				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
-					api.viewsService.discard(tr.contentDocument);
+					config.views.discard(tr.contentDocument);
 				} else if (tp === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							if (change.addedNodes[i].nodeName === 'IFRAME') {
 								if (change.addedNodes[i].contentDocument) {
 									initDocumentObserver(change.addedNodes[i].contentDocument);
-									api.viewsService.collect(change.addedNodes[i].contentDocument);
+									config.views.collect(change.addedNodes[i].contentDocument);
 								}
 								change.addedNodes[i].addEventListener('load', function () {
 									initDocumentObserver(this.contentDocument);
-									api.viewsService.collect(this.contentDocument);
+									config.views.collect(this.contentDocument);
 								});
 							} else {
-								api.viewsService.collect(change.addedNodes[i]);
+								config.views.collect(change.addedNodes[i]);
 							}
 						}
 					}
 					if (change.removedNodes.length) {
 						for (i = 0, l = change.removedNodes.length; i < l; i++) {
 							if (change.removedNodes[i].nodeName === 'IFRAME') {
-								api.viewsService.discard(change.removedNodes[i].contentDocument);
+								config.views.discard(change.removedNodes[i].contentDocument);
 							} else {
-								api.viewsService.discard(change.removedNodes[i]);
+								config.views.discard(change.removedNodes[i]);
 							}
 						}
 					}
@@ -133,15 +134,8 @@
 	}
 	initDocumentObserver(document);
 
-	api.viewsService.collect(document);
+	scope.DataTier.initVanillaRules(config);
 
-	Reflect.defineProperty(scope.DataTier, 'getTie', { value: api.tiesService.getTie });
-	Reflect.defineProperty(scope.DataTier, 'createTie', { value: api.tiesService.createTie });
-	Reflect.defineProperty(scope.DataTier, 'removeTie', { value: api.tiesService.removeTie });
-
-	Reflect.defineProperty(scope.DataTier, 'Rule', { value: api.rulesService.Rule });
-	Reflect.defineProperty(scope.DataTier, 'addRule', { value: api.rulesService.addRule });
-	Reflect.defineProperty(scope.DataTier, 'getRule', { value: api.rulesService.getRule });
-	Reflect.defineProperty(scope.DataTier, 'removeRule', { value: api.rulesService.removeRule });
+	config.views.collect(document);
 
 })(this);

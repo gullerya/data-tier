@@ -1,14 +1,11 @@
 ﻿(function (scope) {
 	'use strict';
 
-	const rules = {};
-	var api;
+	var internals, rules = {};
 
 	if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
 	function Rule(name, options) {
-		var vpr, dtv, itd;
-
 		if (typeof name !== 'string' || !name) {
 			throw new Error('name MUST be a non-empty string');
 		}
@@ -49,7 +46,7 @@
 		if (element && element.nodeType === Node.ELEMENT_NODE) {
 			var ruleValue = element.dataset[this.name];
 			return {
-				dataPath: api.utils.pathToNodes(ruleValue.split(' ')[0])
+				dataPath: internals.utils.pathToNodes(ruleValue.split(' ')[0])
 			};
 		} else {
 			console.error('valid DOM Element expected, received: ' + element);
@@ -80,7 +77,7 @@
 		return delete rules[name];
 	}
 
-	function getApplicableRules(element) {
+	function getApplicable(element) {
 		var result = [];
 		if (element && element.nodeType === Node.ELEMENT_NODE) {
 			Reflect.ownKeys(element.dataset).forEach(function (key) {
@@ -130,13 +127,14 @@
 	//    }
 	//});
 
-	function RulesService(internalAPI) {
-		api = internalAPI;
+	function RulesService(config) {
+		internals = config;
+		internals.rules = {};
 		Reflect.defineProperty(this, 'Rule', { value: Rule });
-		Reflect.defineProperty(this, 'addRule', { value: addRule });
-		Reflect.defineProperty(this, 'getRule', { value: getRule });
-		Reflect.defineProperty(this, 'removeRule', { value: removeRule });
-		Reflect.defineProperty(this, 'getApplicableRules', { value: getApplicableRules });
+		Reflect.defineProperty(this, 'get', { value: getRule });
+		Reflect.defineProperty(this, 'add', { value: addRule });
+		Reflect.defineProperty(this, 'remove', { value: removeRule });
+		Reflect.defineProperty(internals.rules, 'getApplicable', { value: getApplicable });
 	}
 
 	Reflect.defineProperty(scope.DataTier, 'RulesService', { value: RulesService });

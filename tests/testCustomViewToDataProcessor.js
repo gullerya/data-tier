@@ -18,8 +18,7 @@
 			);
 		}
 
-		tie = window.DataTier.Ties.obtain('testCustomVTDA');
-		tie.data = data;
+		tie = window.DataTier.ties.create('testCustomVTDA', data);
 		tie.viewToDataProcessor = customVTDProc;
 
 		ie.dataset.tieValue = 'testCustomVTDA.text';

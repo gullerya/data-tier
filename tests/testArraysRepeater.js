@@ -1,8 +1,8 @@
 ﻿(function () {
 	'use strict';
 
-	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays with Repeaters' }), users = [];
-	window.DataTier.Ties.obtain('usersA').data = users;
+	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays with Repeaters' }), users = [], oUsers = Observable.from(users);
+	window.DataTier.ties.create('usersA', oUsers);
 
 	var c = document.createElement('div'), t, c1, e1, e2, e3;
 	t = document.createElement('template');
@@ -37,7 +37,7 @@
 		}
 		t.addEventListener('viewupdate', onViewUpdate);
 
-		users.push({
+		oUsers.push({
 			name: 'A',
 			age: 5,
 			address: { street: 'some street' }
@@ -85,7 +85,7 @@
 		}
 		t.addEventListener('viewupdate', onViewUpdate);
 
-		window.DataTier.Ties.obtain('usersA').data = d;
+		window.DataTier.ties.get('usersA').data = d;
 	});
 
 	suite.addTest({ name: 'array binding - huge bulk update (2000 rows)' }, function (pass, fail) {
@@ -106,7 +106,7 @@
 				address: { street: 'some street 1' }
 			});
 		}
-		window.DataTier.Ties.obtain('usersA').data = a;
+		window.DataTier.ties.get('usersA').data = a;
 	});
 
 	suite.run();

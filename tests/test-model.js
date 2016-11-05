@@ -5,7 +5,7 @@
 		user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } },
 		obsrvblUser = window.Observable.from(user);
 
-    window.DataTier.createTie('userA', obsrvblUser);
+    window.DataTier.ties.create('userA', obsrvblUser);
 
     var s1, s2, s3, s4;
     s1 = document.createElement('input');
@@ -49,7 +49,7 @@
     });
 
     suite.addTest({ name: 'full model replace (to null)' }, function (pass, fail) {
-        var t = window.DataTier.getTie('userA');
+        var t = window.DataTier.ties.get('userA');
         t.data = null;
         setTimeout(function () {
             if (s1.value !== '') fail(new Error('expected the content to be emptied'));
@@ -61,7 +61,7 @@
     });
 
     suite.addTest({ name: 'full model replace (to new data)' }, function (pass, fail) {
-    	var t = window.DataTier.getTie('userA'),
+    	var t = window.DataTier.ties.get('userA'),
     		obsData = Observable.from({ name: 'something else', age: 6 });
         t.data = obsData;
         setTimeout(function () {
@@ -74,7 +74,7 @@
     });
 
     suite.addTest({ name: 'binding view to object' }, function (pass, fail) {
-        var t = window.DataTier.getTie('userA');
+        var t = window.DataTier.ties.get('userA');
         s3.dataset.tie = 'userA.address';
         setTimeout(function () {
             if (s3.textContent !== '') fail(new Error('expected the content to be empty'));

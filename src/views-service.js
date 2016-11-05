@@ -1,14 +1,17 @@
-﻿(function (scope) {
+﻿//	this service is the only to work directly with DOM (in addition to the rules)
+//	this service will hold, watch, maintain all of the elements detected as views
+//	this service will provide means to collect, update views
+
+(function (scope) {
 	'use strict';
 
 	if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
-	var api,
+	var internals,
         vpn = '___vs___',
         vs = {},
         nlvs = {},
-        vcnt = 0,
-        rulesService;
+        vcnt = 0;
 
 	function pathToNodes(value) {
 		if (Array.isArray(value)) return value;
@@ -71,7 +74,7 @@
 		p = pathToNodes(p);
 		if (!p) { console.error('path to data is invalid'); return; }
 		tn = p.shift();
-		t = tiesService.obtain(tn);
+		t = internals.ties.obtain(tn);
 		if (!t) { console.error('tie "' + tn + '" not found'); return; }
 
 		t.viewToDataProcessor({ data: t.data, path: p, view: view });
@@ -98,7 +101,7 @@
 			});
 			collect(view.contentDocument);
 		} else {
-			api.rulesService.getApplicableRules(view).forEach(function (rule) {
+			internals.rules.getApplicable(view).forEach(function (rule) {
 				var path = rule.parseValue(view).dataPath;
 
 				path.push(vpn);
@@ -152,9 +155,9 @@
 
 	function update(view, ruleName) {
 		var r, p, t, data;
-		r = api.rulesService.getRule(ruleName);
+		r = scope.DataTier.rules.get(ruleName);
 		p = r.parseValue(view).dataPath;
-		t = api.tiesService.getTie(p.shift());
+		t = scope.DataTier.ties.get(p.shift());
 		if (t && r) {
 			data = getPath(t.data, p);
 			r.dataToView(data, view);
@@ -183,7 +186,7 @@
 	}
 
 	function discard(rootElement) {
-		var l, e, key, rule, path, va, i;
+		var l, key, rule, path, va, i;
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.prototype.slice.call(rootElement.getElementsByTagName('*'), 0);
 		l.push(rootElement);
@@ -191,7 +194,7 @@
 			for (key in e.dataset) {
 				i = -1;
 				if (key.indexOf('tie') === 0) {
-					rule = api.rulesService.getRule(key);
+					rule = scope.DataTier.rules.get(key);
 					path = rule.parseValue(e).dataPath;
 					path.push(vpn);
 					va = getPath(vs, path);
@@ -228,14 +231,23 @@
 		update(view, ruleId);
 	}
 
-	function ViewsService(internalAPIs) {
-		api = internalAPIs;
-		Reflect.defineProperty(this, 'collect', { value: collect });
-		Reflect.defineProperty(this, 'update', { value: update });
-		Reflect.defineProperty(this, 'relocateByRule', { value: relocateByRule });
-		Reflect.defineProperty(this, 'discard', { value: discard });
-		Reflect.defineProperty(this, 'move', { value: move });
-		Reflect.defineProperty(this, 'get', { value: get });
+	function processChanges(tieName, changes) {
+		console.log(tieName, changes);
+		changes.forEach(function (change) {
+			//	get all relevant views by path and below
+			//	update all from the new value
+		});
+	}
+
+	function ViewsService(config) {
+		internals = config;
+		internals.views = {};
+		Reflect.defineProperty(internals.views, 'collect', { value: collect });
+		Reflect.defineProperty(internals.views, 'processChanges', { value: processChanges });
+		Reflect.defineProperty(internals.views, 'relocateByRule', { value: relocateByRule });
+		Reflect.defineProperty(internals.views, 'discard', { value: discard });
+		Reflect.defineProperty(internals.views, 'move', { value: move });
+		Reflect.defineProperty(internals.views, 'get', { value: get });
 	}
 
 	Reflect.defineProperty(scope.DataTier, 'ViewsService', { value: ViewsService });
