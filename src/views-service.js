@@ -1,6 +1,8 @@
 ﻿//	this service is the only to work directly with DOM (in addition to the rules)
 //	this service will hold, watch, maintain all of the elements detected as views
 //	this service will provide means to collect, update views
+//	views map: {} of keys, where key is tie ID and value is another {}
+//	another {} is where key is a path and the value is {}: 
 
 (function (scope) {
 	'use strict';

@@ -570,7 +570,13 @@
 	Reflect.defineProperty(scope.DataTier, 'TiesService', { value: TiesService });
 
 })(this);
-﻿(function (scope) {
+﻿//	this service is the only to work directly with DOM (in addition to the rules)
+//	this service will hold, watch, maintain all of the elements detected as views
+//	this service will provide means to collect, update views
+//	views map: {} of keys, where key is tie ID and value is another {}
+//	another {} is where key is a path and the value is {}: 
+
+(function (scope) {
 	'use strict';
 
 	if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
@@ -867,10 +873,18 @@
 	}
 	Rule.prototype.parseValue = function (element) {
 		if (element && element.nodeType === Node.ELEMENT_NODE) {
-			var ruleValue = element.dataset[this.name];
-			return {
-				dataPath: internals.utils.pathToNodes(ruleValue.split(' ')[0])
-			};
+			var ruleValue = element.dataset[this.name], dataPath, tieName;
+			if (ruleValue) {
+				dataPath = ruleValue.split('.');
+				tieName = dataPath[0].split(':')[0];
+				dataPath[0] = dataPath[0].replace(tieName + ':', '');
+				return {
+					tieName: tieName,
+					dataPath: dataPath
+				};
+			} else {
+				console.error('valid rule value MUST be non-empty string, found: ' + ruleValue);
+			}
 		} else {
 			console.error('valid DOM Element expected, received: ' + element);
 		}
@@ -1030,10 +1044,7 @@
 		add(new Rule('tieList', {
 			parseValue: function (element) {
 				if (element && element.nodeType === Node.ELEMENT_NODE) {
-					var ruleValue = element.dataset.tieList;
-					return {
-						dataPath: config.utils.pathToNodes(ruleValue.split(' ')[0])
-					};
+					return Rule.prototype.parseValue(element.dataset[this.name]);
 				} else {
 					console.error('valid DOM Element expected, received: ' + element);
 				}
@@ -1093,15 +1104,13 @@
 (function DataTier(scope) {
 	'use strict';
 
-	var config = {},
-		utils = {};
+	var config = {};
 
 	if (typeof scope.DataTier !== 'object') { throw new Error('DataTier initialization faile: "DataTier" namespace not found'); }
 	if (typeof scope.DataTier.TiesService !== 'function') { throw new Error('DataTier initialization failed: "TiesService" not found'); }
 	if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
 	if (typeof scope.DataTier.RulesService !== 'function') { throw new Error('DataTier initialization failed: "RulesService" not found'); }
 
-	Reflect.defineProperty(config, 'utils', { value: utils });
 	Reflect.defineProperty(scope.DataTier, 'ties', { value: new scope.DataTier.TiesService(config) });
 	Reflect.defineProperty(scope.DataTier, 'views', { value: new scope.DataTier.ViewsService(config) });
 	Reflect.defineProperty(scope.DataTier, 'rules', { value: new scope.DataTier.RulesService(config) });
@@ -1112,36 +1121,6 @@
 		while (i < l.length) r += l[i][0].toUpperCase() + l[i++].substr(1);
 		return r;
 	}
-
-	function pathToNodes(value) {
-		if (Array.isArray(value)) return value;
-
-		var c = 0, b = false, n = '', r = [];
-		while (c < value.length) {
-			if (value[c] === '.') {
-				if (n.length) { r.push(n); }
-				n = '';
-			} else if (value[c] === '[') {
-				if (b) throw new Error('bad path: "' + value + '", at: ' + c);
-				if (n.length) { r.push(n); }
-				n = '';
-				b = true;
-			} else if (value[c] === ']') {
-				if (!b) throw new Error('bad path: "' + value + '", at: ' + c);
-				if (n.length) { r.push(n); }
-				n = '';
-				b = false;
-			} else {
-				n += value[c];
-			}
-			c++;
-		}
-		if (n.length) { r.push(n); }
-		return r;
-	}
-
-	//	TODO: normalize this
-	utils.pathToNodes = pathToNodes;
 
 	//function setPath(ref, path, value) {
 	//	var list = pathToNodes(path), i;

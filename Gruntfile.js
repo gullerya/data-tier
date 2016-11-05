@@ -13,7 +13,8 @@ module.exports = function (grunt) {
 		uglify: {
 			build: {
 				files: {
-					'dist/data-tier.min.js': ['dist/data-tier.js']
+					'dist/data-tier.min.js': ['dist/data-tier.js'],
+					'dist/data-tier-wo-oo.min.js': ['dist/data-tier-wo-oo.js']
 				}
 			}
 		}

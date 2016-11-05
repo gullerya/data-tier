@@ -39,7 +39,7 @@ observableUser = Observable.from(user);
 
 DataTier.ties.create('userInfo', observableUser);</code></pre>
 
-The API to register an object/graph in the DataTier is `ties.<b>create</b>` function which accepts 2 parameters: namespace as a string and initial data as an object.<br>
+The API to register an object/graph in the DataTier is `ties.create` function which accepts 2 parameters: namespace as a string and initial data as an object.<br>
 In order to have a views bound to this data we need to declare the ties in HTML also, it will go as following:
 
 <pre><code>&lt;div&gt;

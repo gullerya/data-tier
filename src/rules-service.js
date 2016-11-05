@@ -44,10 +44,18 @@
 	}
 	Rule.prototype.parseValue = function (element) {
 		if (element && element.nodeType === Node.ELEMENT_NODE) {
-			var ruleValue = element.dataset[this.name];
-			return {
-				dataPath: internals.utils.pathToNodes(ruleValue.split(' ')[0])
-			};
+			var ruleValue = element.dataset[this.name], dataPath, tieName;
+			if (ruleValue) {
+				dataPath = ruleValue.split('.');
+				tieName = dataPath[0].split(':')[0];
+				dataPath[0] = dataPath[0].replace(tieName + ':', '');
+				return {
+					tieName: tieName,
+					dataPath: dataPath
+				};
+			} else {
+				console.error('valid rule value MUST be non-empty string, found: ' + ruleValue);
+			}
 		} else {
 			console.error('valid DOM Element expected, received: ' + element);
 		}

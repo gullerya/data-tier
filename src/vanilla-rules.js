@@ -65,10 +65,7 @@
 		add(new Rule('tieList', {
 			parseValue: function (element) {
 				if (element && element.nodeType === Node.ELEMENT_NODE) {
-					var ruleValue = element.dataset.tieList;
-					return {
-						dataPath: config.utils.pathToNodes(ruleValue.split(' ')[0])
-					};
+					return Rule.prototype.parseValue(element.dataset[this.name]);
 				} else {
 					console.error('valid DOM Element expected, received: ' + element);
 				}
