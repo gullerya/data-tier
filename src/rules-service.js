@@ -42,22 +42,18 @@
 		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }
 		if (typeof options.parseValue === 'function') { Reflect.defineProperty(this, 'parseValue', { value: options.parseValue }); }
 	}
-	Rule.prototype.parseValue = function (element) {
-		if (element && element.nodeType === Node.ELEMENT_NODE) {
-			var ruleValue = element.dataset[this.name], dataPath, tieName;
-			if (ruleValue) {
-				dataPath = ruleValue.split('.');
-				tieName = dataPath[0].split(':')[0];
-				dataPath[0] = dataPath[0].replace(tieName + ':', '');
-				return {
-					tieName: tieName,
-					dataPath: dataPath
-				};
-			} else {
-				console.error('valid rule value MUST be non-empty string, found: ' + ruleValue);
-			}
+	Rule.prototype.parseValue = function (ruleValue) {
+		var dataPath, tieName;
+		if (ruleValue) {
+			dataPath = ruleValue.split('.');
+			tieName = dataPath[0].split(':')[0];
+			dataPath[0] = dataPath[0].replace(tieName + ':', '');
+			return {
+				tieName: tieName,
+				dataPath: dataPath
+			};
 		} else {
-			console.error('valid DOM Element expected, received: ' + element);
+			console.error('valid rule value MUST be a non-empty string, found: ' + ruleValue);
 		}
 	};
 

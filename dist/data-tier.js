@@ -587,35 +587,8 @@
         nlvs = {},
         vcnt = 0;
 
-	function pathToNodes(value) {
-		if (Array.isArray(value)) return value;
-
-		var c = 0, b = false, n = '', r = [];
-		while (c < value.length) {
-			if (value[c] === '.') {
-				if (n.length) { r.push(n); }
-				n = '';
-			} else if (value[c] === '[') {
-				if (b) throw new Error('bad path: "' + value + '", at: ' + c);
-				if (n.length) { r.push(n); }
-				n = '';
-				b = true;
-			} else if (value[c] === ']') {
-				if (!b) throw new Error('bad path: "' + value + '", at: ' + c);
-				if (n.length) { r.push(n); }
-				n = '';
-				b = false;
-			} else {
-				n += value[c];
-			}
-			c++;
-		}
-		if (n.length) { r.push(n); }
-		return r;
-	}
-
 	function setPath(ref, path, value) {
-		var list = pathToNodes(path), i;
+		var list = path.split('.'), i;
 		for (i = 0; i < list.length - 1; i++) {
 			if (typeof ref[list[i]] === 'object') ref = ref[list[i]];
 			else if (!(list[i] in ref)) ref = (ref[list[i]] = {});
@@ -627,7 +600,7 @@
 	function getPath(ref, path) {
 		var list, i;
 		if (!ref) return;
-		list = pathToNodes(path);
+		list = path.split('.');
 		for (i = 0; i < list.length; i++) {
 			ref = ref[list[i]];
 			if (!ref) return;
@@ -645,7 +618,7 @@
 		}
 		//	TODO: the following condition is not always error state, need to decide regarding the cardinality of the value suppliers
 		if (!p) { console.error('path to data not available'); return; }
-		p = pathToNodes(p);
+		p = p.split('.');
 		if (!p) { console.error('path to data is invalid'); return; }
 		tn = p.shift();
 		t = internals.ties.obtain(tn);
@@ -716,7 +689,7 @@
 	}
 
 	function get(path) {
-		var p = pathToNodes(path), r = [], tmp, key;
+		var p = Array.isArray(p) ? p : p.split('.'), r = [], tmp, key;
 		tmp = getPath(vs, p);
 		if (tmp) {
 			Object.keys(tmp).forEach(function (key) {
@@ -789,7 +762,7 @@
 
 		//	delete old path
 		if (oldPath) {
-			opn = pathToNodes(oldPath);
+			opn = oldPath.split('.');
 			opn.push(vpn);
 			pathViews = getPath(vs, opn);
 			if (pathViews) i = pathViews.indexOf(view);
@@ -797,7 +770,7 @@
 		}
 
 		//	add new path
-		npn = pathToNodes(newPath);
+		npn = newPath.split('.');
 		npn.push(vpn);
 		if (!getPath(vs, npn)) setPath(vs, npn, []);
 		getPath(vs, npn).push(view);
