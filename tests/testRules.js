@@ -11,7 +11,7 @@
 
 	suite.addTest({ name: 'testing basic rules: text content' }, function (pass, fail) {
 		var e = document.createElement('div');
-		e.dataset.tie = 'testRulesA.text';
+		e.dataset.tie = 'testRulesA:text';
 		document.body.appendChild(e);
 		setTimeout(function () {
 			if (e.textContent !== data.text) fail('textContent of the element expected to be ' + data.text + ', found: ' + e.textContent);
@@ -21,7 +21,7 @@
 
 	suite.addTest({ name: 'testing basic rules: value' }, function (pass, fail) {
 		var e = document.createElement('input');
-		e.dataset.tie = 'testRulesA.text';
+		e.dataset.tie = 'testRulesA:text';
 		document.body.appendChild(e);
 		setTimeout(function () {
 			if (e.value !== data.text) fail('value of the element expected to be ' + data.text + ', found: ' + e.value);
@@ -31,7 +31,7 @@
 
 	suite.addTest({ name: 'testing basic rules: date text content' }, function (pass, fail) {
 		var e = document.createElement('div');
-		e.dataset.tieDateText = 'testRulesA.date';
+		e.dataset.tieDateText = 'testRulesA:date';
 		document.body.appendChild(e);
 		setTimeout(function () {
 			if (e.textContent !== data.date.toLocaleString()) fail('textContent of the element expected to be ' + (data.date.toLocaleString()) + ', found: ' + e.textContent);
@@ -41,7 +41,7 @@
 
 	suite.addTest({ name: 'testing basic rules: date value' }, function (pass, fail) {
 		var e = document.createElement('div');
-		e.dataset.tieDateValue = 'testRulesA.date';
+		e.dataset.tieDateValue = 'testRulesA:date';
 		document.body.appendChild(e);
 		setTimeout(function () {
 			if (e.value !== data.date.toLocaleString()) fail('textContent of the element expected to be ' + (data.date.toLocaleString()) + ', found: ' + e.value);

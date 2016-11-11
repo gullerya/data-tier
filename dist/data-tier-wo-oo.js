@@ -158,22 +158,22 @@
 		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }
 		if (typeof options.parseValue === 'function') { Reflect.defineProperty(this, 'parseValue', { value: options.parseValue }); }
 	}
-	Rule.prototype.parseValue = function (element) {
-		if (element && element.nodeType === Node.ELEMENT_NODE) {
-			var ruleValue = element.dataset[this.name], dataPath, tieName;
-			if (ruleValue) {
-				dataPath = ruleValue.split('.');
-				tieName = dataPath[0].split(':')[0];
-				dataPath[0] = dataPath[0].replace(tieName + ':', '');
-				return {
-					tieName: tieName,
-					dataPath: dataPath
-				};
+	Rule.prototype.parseParam = function (ruleParam) {
+		var dataPath, tieName;
+		if (ruleParam) {
+			dataPath = ruleParam.split('.');
+			tieName = dataPath[0].split(':')[0];
+			if (dataPath[0] === tieName) {
+				dataPath = [];
 			} else {
-				console.error('valid rule value MUST be non-empty string, found: ' + ruleValue);
+				dataPath[0] = dataPath[0].replace(tieName + ':', '');
 			}
+			return {
+				tieName: tieName,
+				dataPath: dataPath
+			};
 		} else {
-			console.error('valid DOM Element expected, received: ' + element);
+			console.error('valid rule value MUST be a non-empty string, found: ' + ruleParam);
 		}
 	};
 
@@ -243,21 +243,20 @@
 	//            }
 	//            return r;
 	//        }
-	//    },
-	//    del: {
-	//        value: function (id) {
-	//            return delete rules[id];
-	//        }
 	//    }
 	//});
 
 	function RulesService(config) {
 		internals = config;
 		internals.rules = {};
+
+		//	public APIs
 		Reflect.defineProperty(this, 'Rule', { value: Rule });
 		Reflect.defineProperty(this, 'get', { value: getRule });
 		Reflect.defineProperty(this, 'add', { value: addRule });
 		Reflect.defineProperty(this, 'remove', { value: removeRule });
+
+		//	internal APIs
 		Reflect.defineProperty(internals.rules, 'getApplicable', { value: getApplicable });
 	}
 
@@ -329,12 +328,8 @@
 		}));
 
 		add(new Rule('tieList', {
-			parseValue: function (element) {
-				if (element && element.nodeType === Node.ELEMENT_NODE) {
-					return Rule.prototype.parseValue(element.dataset[this.name]);
-				} else {
-					console.error('valid DOM Element expected, received: ' + element);
-				}
+			parseValue: function (ruleValue) {
+				return Rule.prototype.parseValue(ruleValue.split(/\s*=>\s*/)[0]);
 			},
 			dataToView: function (tiedValue, template) {
 				var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
@@ -358,7 +353,7 @@
 				if (tiedValue.data && i < tiedValue.data.length) {
 					ruleData = template.dataset.tieList.trim().split(/\s+/);
 					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
-						console.error('invalid parameter for TieList rule specified');
+						console.error('invalid parameter for "tieList" rule specified');
 					} else {
 						rulePath = ruleData[0];
 						itemId = ruleData[2];
@@ -400,27 +395,26 @@
 	if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
 	var internals,
-        vpn = '___vs___',
+		views = {},
         vs = {},
         nlvs = {},
         vcnt = 0;
 
 	function setPath(ref, path, value) {
-		var list = path.split('.'), i;
-		for (i = 0; i < list.length - 1; i++) {
-			if (typeof ref[list[i]] === 'object') ref = ref[list[i]];
-			else if (!(list[i] in ref)) ref = (ref[list[i]] = {});
+		var i;
+		for (i = 0; i < path.length - 1; i++) {
+			if (typeof ref[path[i]] === 'object') ref = ref[path[i]];
+			else if (!(path[i] in ref)) ref = (ref[path[i]] = {});
 			else throw new Error('the path is unavailable');
 		}
-		ref[list[i]] = value;
+		ref[path[i]] = value;
 	}
 
 	function getPath(ref, path) {
-		var list, i;
+		var i;
 		if (!ref) return;
-		list = path.split('.');
-		for (i = 0; i < list.length; i++) {
-			ref = ref[list[i]];
+		for (i = 0; i < path.length; i++) {
+			ref = ref[path[i]];
 			if (!ref) return;
 		}
 		return ref;
@@ -457,7 +451,7 @@
 	}
 
 	function add(view) {
-		var key, path, va, rule;
+		var key, rule;
 		if (view.nodeName === 'IFRAME') {
 			initDocumentObserver(view.contentDocument);
 			view.addEventListener('load', function () {
@@ -467,42 +461,45 @@
 			collect(view.contentDocument);
 		} else {
 			internals.rules.getApplicable(view).forEach(function (rule) {
-				var path = rule.parseValue(view).dataPath;
+				var ruleParam = rule.parseParam(view.dataset[rule.name]),
+					pathString = ruleParam.dataPath.join('.'),
+					tieViews,
+					ruleViews,
+					pathViews;
 
-				path.push(vpn);
-				va = getPath(vs, path);
-				if (!va) setPath(vs, path, (va = []));
-				if (va.indexOf(view) < 0) {
-					va.push(view);
-					path.pop();
+				//	get tie views partition
+				if (!views[ruleParam.tieName]) {
+					views[ruleParam.tieName] = {};
+				}
+				tieViews = views[ruleParam.tieName];
+
+				//	get rule views partition (in tie)
+				if (!tieViews[rule.name]) {
+					tieViews[rule.name] = {};
+				}
+				ruleViews = tieViews[rule.name];
+
+				//	get path views in this context
+				if (!ruleViews[pathString]) {
+					ruleViews[pathString] = [];
+				}
+				pathViews = ruleViews[pathString];
+
+				if (pathViews.indexOf(view) < 0) {
+					pathViews.push(view);
 					update(view, rule.name);
 					addChangeListener(view);
 					vcnt++;
 				}
 			});
-			//	collect potentially future rules element and put them to some tracking storage
 
-			//for (key in view.dataset) {
-			//	if (key.indexOf('tie') === 0) {
-			//		rule = api.rulesService.getRule(key, view);
-			//		if (rule) {
-			//			path = rule.resolvePath(view.dataset[key]);
-			//			path.push(vpn);
-			//			va = getPath(vs, path);
-			//			if (!va) setPath(vs, path, (va = []));
-			//			if (va.indexOf(view) < 0) {
-			//				va.push(view);
-			//				path.pop();
-			//				update(view, key);
-			//				addChangeListener(view);
-			//				vcnt++;
-			//			}
-			//		} else {
-			//			if (!nlvs[key]) nlvs[key] = [];
-			//			nlvs[key].push(view);
-			//		}
-			//	}
-			//}
+			//	collect potentially future rules element and put them into some tracking storage
+			for (key in view.dataset) {
+				if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
+					if (!nlvs[key]) nlvs[key] = [];
+					nlvs[key].push(view);
+				}
+			}
 		}
 	}
 
@@ -521,10 +518,10 @@
 	function update(view, ruleName) {
 		var r, p, t, data;
 		r = scope.DataTier.rules.get(ruleName);
-		p = r.parseValue(view).dataPath;
-		t = scope.DataTier.ties.get(p.shift());
-		if (t && r) {
-			data = getPath(t.data, p);
+		p = r.parseParam(view.dataset[ruleName]);
+		t = scope.DataTier.ties.get(p.tieName);
+		if (t) {
+			data = getPath(t.data, p.dataPath);
 			r.dataToView(data, view);
 		}
 	}
@@ -551,86 +548,50 @@
 	}
 
 	function discard(rootElement) {
-		var l, key, rule, path, va, i;
+		var l, key, param, pathViews, i;
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.prototype.slice.call(rootElement.getElementsByTagName('*'), 0);
 		l.push(rootElement);
 		l.forEach(function (e) {
-			for (key in e.dataset) {
-				i = -1;
-				if (key.indexOf('tie') === 0) {
-					rule = scope.DataTier.rules.get(key);
-					path = rule.parseValue(e).dataPath;
-					path.push(vpn);
-					va = getPath(vs, path);
-					i = va && va.indexOf(e);
-					if (i >= 0) {
-						va.splice(i, 1);
-						delChangeListener(e);
-						vcnt--;
-					}
+			scope.DataTier.rules.getApplicable(e).forEach(function (rule) {
+				param = rule.parseParam(e.dataset[key]);
+				pathViews = views[param.tieName][rule.name][param.dataPath.join('.')];
+				i = pathViews.indexOf(e);
+				if (i >= 0) {
+					pathViews.splice(i, 1);
+					delChangeListener(e);
+					vcnt--;
 				}
-			}
+			});
 		});
 		console.info('discarded views, current total: ' + vcnt);
 	}
 
-	function move(view, ruleId, oldPath, newPath) {
-		var pathViews, i = -1, opn, npn;
+	function move(view, tieName, ruleName, oldPath, newPath) {
+		var pathViews, i = -1;
 
 		//	delete old path
 		if (oldPath) {
-			opn = oldPath.split('.');
-			opn.push(vpn);
-			pathViews = getPath(vs, opn);
+			pathViews = views[tieName][ruleName][oldPath];
 			if (pathViews) i = pathViews.indexOf(view);
-			if (i >= 0) pathViews.splice(i, 1);
+			if (i >= 0) {
+				pathViews.splice(i, 1);
+			}
 		}
 
 		//	add new path
-		npn = newPath.split('.');
-		npn.push(vpn);
-		if (!getPath(vs, npn)) setPath(vs, npn, []);
-		getPath(vs, npn).push(view);
-		npn.pop();
-		update(view, ruleId);
+		views[tieName][ruleName][newPath].push(view);
+		update(view, ruleName);
 	}
 
 	function processChanges(tieName, changes) {
 		console.log(tieName, changes);
 		changes.forEach(function (change) {
+			var tieViews = views[tieName];
 			//	get all relevant views by path and below
 			//	update all from the new value
 		});
 	}
-
-	function ViewsService(config) {
-		internals = config;
-		internals.views = {};
-		Reflect.defineProperty(internals.views, 'collect', { value: collect });
-		Reflect.defineProperty(internals.views, 'processChanges', { value: processChanges });
-		Reflect.defineProperty(internals.views, 'relocateByRule', { value: relocateByRule });
-		Reflect.defineProperty(internals.views, 'discard', { value: discard });
-		Reflect.defineProperty(internals.views, 'move', { value: move });
-		Reflect.defineProperty(internals.views, 'get', { value: get });
-	}
-
-	Reflect.defineProperty(scope.DataTier, 'ViewsService', { value: ViewsService });
-
-})(this);
-(function DataTier(scope) {
-	'use strict';
-
-	var config = {};
-
-	if (typeof scope.DataTier !== 'object') { throw new Error('DataTier initialization faile: "DataTier" namespace not found'); }
-	if (typeof scope.DataTier.TiesService !== 'function') { throw new Error('DataTier initialization failed: "TiesService" not found'); }
-	if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
-	if (typeof scope.DataTier.RulesService !== 'function') { throw new Error('DataTier initialization failed: "RulesService" not found'); }
-
-	Reflect.defineProperty(scope.DataTier, 'ties', { value: new scope.DataTier.TiesService(config) });
-	Reflect.defineProperty(scope.DataTier, 'views', { value: new scope.DataTier.ViewsService(config) });
-	Reflect.defineProperty(scope.DataTier, 'rules', { value: new scope.DataTier.RulesService(config) });
 
 	function dataAttrToProp(v) {
 		var i = 2, l = v.split('-'), r;
@@ -639,70 +600,37 @@
 		return r;
 	}
 
-	//function setPath(ref, path, value) {
-	//	var list = pathToNodes(path), i;
-	//	for (i = 0; i < list.length - 1; i++) {
-	//		if (typeof ref[list[i]] === 'object') ref = ref[list[i]];
-	//		else if (!(list[i] in ref)) ref = (ref[list[i]] = {});
-	//		else throw new Error('the path is unavailable');
-	//	}
-	//	ref[list[i]] = value;
-	//}
-
-	//function getPath(ref, path) {
-	//	var list, i;
-	//	if (!ref) return;
-	//	list = pathToNodes(path);
-	//	for (i = 0; i < list.length; i++) {
-	//		ref = ref[list[i]];
-	//		if (!ref) return;
-	//	}
-	//	return ref;
-	//}
-
-	//function cutPath(ref, path) {
-	//	var list = pathToNodes(path), i = 0, value;
-	//	for (; i < list.length - 1; i++) {
-	//		if (list[i] in ref) ref = ref[list[i]];
-	//		else return;
-	//	}
-	//	value = ref[list[i - 1]];
-	//	delete ref[list[i - 1]];
-	//	return value;
-	//}
-
-	//	TODO: move this to the views service
 	function initDocumentObserver(d) {
 		function processDomChanges(changes) {
 			changes.forEach(function (change) {
 				var tp = change.type, tr = change.target, an = change.attributeName, i, l;
 				if (tp === 'attributes' && an.indexOf('data-tie') === 0) {
-					config.views.move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
+					move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
 				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
-					config.views.discard(tr.contentDocument);
+					discard(tr.contentDocument);
 				} else if (tp === 'childList') {
 					if (change.addedNodes.length) {
 						for (i = 0, l = change.addedNodes.length; i < l; i++) {
 							if (change.addedNodes[i].nodeName === 'IFRAME') {
 								if (change.addedNodes[i].contentDocument) {
 									initDocumentObserver(change.addedNodes[i].contentDocument);
-									config.views.collect(change.addedNodes[i].contentDocument);
+									collect(change.addedNodes[i].contentDocument);
 								}
 								change.addedNodes[i].addEventListener('load', function () {
 									initDocumentObserver(this.contentDocument);
-									config.views.collect(this.contentDocument);
+									collect(this.contentDocument);
 								});
 							} else {
-								config.views.collect(change.addedNodes[i]);
+								collect(change.addedNodes[i]);
 							}
 						}
 					}
 					if (change.removedNodes.length) {
 						for (i = 0, l = change.removedNodes.length; i < l; i++) {
 							if (change.removedNodes[i].nodeName === 'IFRAME') {
-								config.views.discard(change.removedNodes[i].contentDocument);
+								discard(change.removedNodes[i].contentDocument);
 							} else {
-								config.views.discard(change.removedNodes[i]);
+								discard(change.removedNodes[i]);
 							}
 						}
 					}
@@ -720,10 +648,43 @@
 			characterDataOldValue: false
 		});
 	}
-	initDocumentObserver(document);
+
+	function init() {
+		initDocumentObserver(document);
+		collect(document);
+	}
+
+	function ViewsService(config) {
+		internals = config;
+		internals.views = {};
+
+		//	internal APIs
+		Reflect.defineProperty(internals.views, 'init', { value: init });
+		Reflect.defineProperty(internals.views, 'processChanges', { value: processChanges });
+		//Reflect.defineProperty(internals.views, 'relocateByRule', { value: relocateByRule });
+		//Reflect.defineProperty(internals.views, 'discard', { value: discard });
+		//Reflect.defineProperty(internals.views, 'move', { value: move });
+		//Reflect.defineProperty(internals.views, 'get', { value: get });
+	}
+
+	Reflect.defineProperty(scope.DataTier, 'ViewsService', { value: ViewsService });
+
+})(this);
+(function DataTier(scope) {
+	'use strict';
+
+	var config = {};
+
+	if (typeof scope.DataTier !== 'object') { throw new Error('DataTier initialization faile: "DataTier" namespace not found'); }
+	if (typeof scope.DataTier.TiesService !== 'function') { throw new Error('DataTier initialization failed: "TiesService" not found'); }
+	if (typeof scope.DataTier.ViewsService !== 'function') { throw new Error('DataTier initialization failed: "ViewsService" not found'); }
+	if (typeof scope.DataTier.RulesService !== 'function') { throw new Error('DataTier initialization failed: "RulesService" not found'); }
+
+	Reflect.defineProperty(scope.DataTier, 'ties', { value: new scope.DataTier.TiesService(config) });
+	Reflect.defineProperty(scope.DataTier, 'rules', { value: new scope.DataTier.RulesService(config) });
+	Reflect.defineProperty(scope.DataTier, 'views', { value: new scope.DataTier.ViewsService(config) });
 
 	scope.DataTier.initVanillaRules(config);
-
-	config.views.collect(document);
+	config.views.init();
 
 })(this);

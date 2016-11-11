@@ -42,18 +42,22 @@
 		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }
 		if (typeof options.parseValue === 'function') { Reflect.defineProperty(this, 'parseValue', { value: options.parseValue }); }
 	}
-	Rule.prototype.parseValue = function (ruleValue) {
+	Rule.prototype.parseParam = function (ruleParam) {
 		var dataPath, tieName;
-		if (ruleValue) {
-			dataPath = ruleValue.split('.');
+		if (ruleParam) {
+			dataPath = ruleParam.split('.');
 			tieName = dataPath[0].split(':')[0];
-			dataPath[0] = dataPath[0].replace(tieName + ':', '');
+			if (dataPath[0] === tieName) {
+				dataPath = [];
+			} else {
+				dataPath[0] = dataPath[0].replace(tieName + ':', '');
+			}
 			return {
 				tieName: tieName,
 				dataPath: dataPath
 			};
 		} else {
-			console.error('valid rule value MUST be a non-empty string, found: ' + ruleValue);
+			console.error('valid rule value MUST be a non-empty string, found: ' + ruleParam);
 		}
 	};
 
@@ -123,21 +127,20 @@
 	//            }
 	//            return r;
 	//        }
-	//    },
-	//    del: {
-	//        value: function (id) {
-	//            return delete rules[id];
-	//        }
 	//    }
 	//});
 
 	function RulesService(config) {
 		internals = config;
 		internals.rules = {};
+
+		//	public APIs
 		Reflect.defineProperty(this, 'Rule', { value: Rule });
 		Reflect.defineProperty(this, 'get', { value: getRule });
 		Reflect.defineProperty(this, 'add', { value: addRule });
 		Reflect.defineProperty(this, 'remove', { value: removeRule });
+
+		//	internal APIs
 		Reflect.defineProperty(internals.rules, 'getApplicable', { value: getApplicable });
 	}
 

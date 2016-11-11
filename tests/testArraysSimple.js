@@ -8,9 +8,9 @@
 	e1 = document.createElement('div');
 	e2 = document.createElement('div');
 	e3 = document.createElement('div');
-	e1.dataset.tieText = 'users[0].name';
-	e2.dataset.tieText = 'users[1].name';
-	e3.dataset.tieText = 'users[1].address.street';
+	e1.dataset.tieText = 'users:0.name';
+	e2.dataset.tieText = 'users:1.name';
+	e3.dataset.tieText = 'users:1.address.street';
 	d.appendChild(e1);
 	d.appendChild(e2);
 	d.appendChild(e3);
@@ -23,14 +23,10 @@
 		oUsers.push({
 			name: 'A'
 		});
-		setTimeout(function () {
-			if (e1.textContent !== 'A') fail('expected textContent to be A');
-			oUsers[0].name = 'AA';
-			setTimeout(function () {
-				if (e1.textContent !== 'AA') fail('expected textContent to be AA');
-				pass();
-			});
-		}, 0);
+		if (e1.textContent !== 'A') fail('expected textContent to be A');
+		oUsers[0].name = 'AA';
+		if (e1.textContent !== 'AA') fail('expected textContent to be AA');
+		pass();
 	});
 
 	suite.addTest({ name: 'array binding - replacing element directly' }, function (pass, fail) {
@@ -38,10 +34,8 @@
 		oUsers[0] = {
 			name: 'B'
 		};
-		setTimeout(function () {
-			if (e1.textContent !== 'B') fail('expected textContent to be B');
-			pass();
-		}, 0);
+		if (e1.textContent !== 'B') fail('expected textContent to be B');
+		pass();
 	});
 
 	suite.addTest({ name: 'array binding - replacing element with splice' }, function (pass, fail) {

@@ -11,9 +11,9 @@
 	e2 = document.createElement('span');
 	e3 = document.createElement('span');
 	t.dataset.tieList = 'usersA => user';
-	e1.dataset.tieText = 'user.name';
-	e2.dataset.tieText = 'user.age';
-	e3.dataset.tieText = 'user.address.street';
+	e1.dataset.tieText = 'user:name';
+	e2.dataset.tieText = 'user:age';
+	e3.dataset.tieText = 'user:address.street';
 	c1.appendChild(e1);
 	c1.appendChild(e2);
 	c1.appendChild(e3);

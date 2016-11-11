@@ -63,12 +63,8 @@
 		}));
 
 		add(new Rule('tieList', {
-			parseValue: function (element) {
-				if (element && element.nodeType === Node.ELEMENT_NODE) {
-					return Rule.prototype.parseValue(element.dataset.tieList);
-				} else {
-					console.error('valid DOM Element expected, received: ' + element);
-				}
+			parseValue: function (ruleValue) {
+				return Rule.prototype.parseValue(ruleValue.split(/\s*=>\s*/)[0]);
 			},
 			dataToView: function (tiedValue, template) {
 				var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
@@ -92,7 +88,7 @@
 				if (tiedValue.data && i < tiedValue.data.length) {
 					ruleData = template.dataset.tieList.trim().split(/\s+/);
 					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
-						console.error('invalid parameter for TieList rule specified');
+						console.error('invalid parameter for "tieList" rule specified');
 					} else {
 						rulePath = ruleData[0];
 						itemId = ruleData[2];
@@ -104,7 +100,7 @@
 							vs.forEach(function (view) {
 								Object.keys(view.dataset).forEach(function (key) {
 									if (view.dataset[key].indexOf(itemId + '.') === 0) {
-										view.dataset[key] = view.dataset[key].replace(itemId, rulePath + '[' + i + ']');
+										view.dataset[key] = view.dataset[key].replace(itemId, rulePath + '.' + i);
 										config.views.update(view, key);
 									}
 								});

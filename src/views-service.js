@@ -10,7 +10,7 @@
 	if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
 
 	var internals,
-        vpn = '___vs___',
+		views = {},
         vs = {},
         nlvs = {},
         vcnt = 0;
@@ -66,7 +66,6 @@
 	}
 
 	function add(view) {
-		var key, path, va, rule;
 		if (view.nodeName === 'IFRAME') {
 			initDocumentObserver(view.contentDocument);
 			view.addEventListener('load', function () {
@@ -76,42 +75,45 @@
 			collect(view.contentDocument);
 		} else {
 			internals.rules.getApplicable(view).forEach(function (rule) {
-				var path = rule.parseValue(view).dataPath;
+				var ruleParam = rule.parseParam(view.dataset[rule.name]),
+					pathString = ruleParam.dataPath.join('.'),
+					tieViews,
+					ruleViews,
+					pathViews;
 
-				path.push(vpn);
-				va = getPath(vs, path);
-				if (!va) setPath(vs, path, (va = []));
-				if (va.indexOf(view) < 0) {
-					va.push(view);
-					path.pop();
+				//	get tie views partition
+				if (!views[ruleParam.tieName]) {
+					views[ruleParam.tieName] = {};
+				}
+				tieViews = views[ruleParam.tieName];
+
+				//	get rule views partition (in tie)
+				if (!tieViews[rule.name]) {
+					tieViews[rule.name] = {};
+				}
+				ruleViews = tieViews[rule.name];
+
+				//	get path views in this context
+				if (!ruleViews[pathString]) {
+					ruleViews[pathString] = [];
+				}
+				pathViews = ruleViews[pathString];
+
+				if (pathViews.indexOf(view) < 0) {
+					pathViews.push(view);
 					update(view, rule.name);
 					addChangeListener(view);
 					vcnt++;
 				}
 			});
-			//	collect potentially future rules element and put them to some tracking storage
 
-			//for (key in view.dataset) {
-			//	if (key.indexOf('tie') === 0) {
-			//		rule = api.rulesService.getRule(key, view);
-			//		if (rule) {
-			//			path = rule.resolvePath(view.dataset[key]);
-			//			path.push(vpn);
-			//			va = getPath(vs, path);
-			//			if (!va) setPath(vs, path, (va = []));
-			//			if (va.indexOf(view) < 0) {
-			//				va.push(view);
-			//				path.pop();
-			//				update(view, key);
-			//				addChangeListener(view);
-			//				vcnt++;
-			//			}
-			//		} else {
-			//			if (!nlvs[key]) nlvs[key] = [];
-			//			nlvs[key].push(view);
-			//		}
-			//	}
-			//}
+			//	collect potentially future rules element and put them into some tracking storage
+			for (var key in view.dataset) {
+				if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
+					if (!nlvs[key]) nlvs[key] = [];
+					nlvs[key].push(view);
+				}
+			}
 		}
 	}
 
@@ -130,10 +132,10 @@
 	function update(view, ruleName) {
 		var r, p, t, data;
 		r = scope.DataTier.rules.get(ruleName);
-		p = r.parseValue(view).dataPath;
-		t = scope.DataTier.ties.get(p.shift());
-		if (t && r) {
-			data = getPath(t.data, p);
+		p = r.parseParam(view.dataset[ruleName]);
+		t = scope.DataTier.ties.get(p.tieName);
+		if (t) {
+			data = getPath(t.data, p.dataPath);
 			r.dataToView(data, view);
 		}
 	}
@@ -160,68 +162,135 @@
 	}
 
 	function discard(rootElement) {
-		var l, key, rule, path, va, i;
+		var l, param, pathViews, i;
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.prototype.slice.call(rootElement.getElementsByTagName('*'), 0);
 		l.push(rootElement);
 		l.forEach(function (e) {
-			for (key in e.dataset) {
-				i = -1;
-				if (key.indexOf('tie') === 0) {
-					rule = scope.DataTier.rules.get(key);
-					path = rule.parseValue(e).dataPath;
-					path.push(vpn);
-					va = getPath(vs, path);
-					i = va && va.indexOf(e);
-					if (i >= 0) {
-						va.splice(i, 1);
-						delChangeListener(e);
-						vcnt--;
-					}
+			internals.rules.getApplicable(e).forEach(function (rule) {
+				param = rule.parseParam(rule.name);
+				pathViews = views[param.tieName][rule.name][param.dataPath.join('.')];
+				i = pathViews.indexOf(e);
+				if (i >= 0) {
+					pathViews.splice(i, 1);
+					delChangeListener(e);
+					vcnt--;
 				}
-			}
+			});
 		});
 		console.info('discarded views, current total: ' + vcnt);
 	}
 
-	function move(view, ruleId, oldPath, newPath) {
-		var pathViews, i = -1, opn, npn;
+	function move(view, ruleName, oldPath, newPath) {
+		var pathViews, i = -1, tieName;
+
+		tieName = scope.DataTier.rules.get(ruleName).parseParam(view.dataset[ruleName]);
+
+		if (!views[tieName]) views[tieName] = {};
+		if (!views[tieName][ruleName]) views[tieName][ruleName] = {};
 
 		//	delete old path
 		if (oldPath) {
-			opn = oldPath.split('.');
-			opn.push(vpn);
-			pathViews = getPath(vs, opn);
+			pathViews = views[tieName][ruleName][oldPath];
 			if (pathViews) i = pathViews.indexOf(view);
-			if (i >= 0) pathViews.splice(i, 1);
+			if (i >= 0) {
+				pathViews.splice(i, 1);
+			}
 		}
 
 		//	add new path
-		npn = newPath.split('.');
-		npn.push(vpn);
-		if (!getPath(vs, npn)) setPath(vs, npn, []);
-		getPath(vs, npn).push(view);
-		npn.pop();
-		update(view, ruleId);
+		if (!views[tieName][ruleName][newPath]) views[tieName][ruleName][newPath] = [];
+		views[tieName][ruleName][newPath].push(view);
+		update(view, ruleName);
 	}
 
 	function processChanges(tieName, changes) {
-		console.log(tieName, changes);
+		var tieViews = views[tieName], ruleViews, pathString;
 		changes.forEach(function (change) {
-			//	get all relevant views by path and below
-			//	update all from the new value
+			pathString = change.path.join('.');
+			Object.keys(tieViews).forEach(function (ruleName) {
+				ruleViews = tieViews[ruleName];
+				if (ruleViews && ruleViews[pathString]) {
+					ruleViews[pathString].forEach(function (view) {
+						update(view, ruleName);
+					});
+				}
+			});
 		});
+	}
+
+	function dataAttrToProp(v) {
+		var i = 2, l = v.split('-'), r;
+		r = l[1];
+		while (i < l.length) r += l[i][0].toUpperCase() + l[i++].substr(1);
+		return r;
+	}
+
+	function initDocumentObserver(d) {
+		function processDomChanges(changes) {
+			changes.forEach(function (change) {
+				var tp = change.type, tr = change.target, an = change.attributeName, i, l;
+				if (tp === 'attributes' && an.indexOf('data-tie') === 0) {
+					move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
+				} else if (tp === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
+					discard(tr.contentDocument);
+				} else if (tp === 'childList') {
+					if (change.addedNodes.length) {
+						for (i = 0, l = change.addedNodes.length; i < l; i++) {
+							if (change.addedNodes[i].nodeName === 'IFRAME') {
+								if (change.addedNodes[i].contentDocument) {
+									initDocumentObserver(change.addedNodes[i].contentDocument);
+									collect(change.addedNodes[i].contentDocument);
+								}
+								change.addedNodes[i].addEventListener('load', function () {
+									initDocumentObserver(this.contentDocument);
+									collect(this.contentDocument);
+								});
+							} else {
+								collect(change.addedNodes[i]);
+							}
+						}
+					}
+					if (change.removedNodes.length) {
+						for (i = 0, l = change.removedNodes.length; i < l; i++) {
+							if (change.removedNodes[i].nodeName === 'IFRAME') {
+								discard(change.removedNodes[i].contentDocument);
+							} else {
+								discard(change.removedNodes[i]);
+							}
+						}
+					}
+				}
+			});
+		}
+
+		var domObserver = new MutationObserver(processDomChanges);
+		domObserver.observe(d, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeOldValue: true,
+			characterData: false,
+			characterDataOldValue: false
+		});
+	}
+
+	function init() {
+		initDocumentObserver(document);
+		collect(document);
 	}
 
 	function ViewsService(config) {
 		internals = config;
 		internals.views = {};
-		Reflect.defineProperty(internals.views, 'collect', { value: collect });
+
+		//	internal APIs
+		Reflect.defineProperty(internals.views, 'init', { value: init });
 		Reflect.defineProperty(internals.views, 'processChanges', { value: processChanges });
-		Reflect.defineProperty(internals.views, 'relocateByRule', { value: relocateByRule });
-		Reflect.defineProperty(internals.views, 'discard', { value: discard });
-		Reflect.defineProperty(internals.views, 'move', { value: move });
-		Reflect.defineProperty(internals.views, 'get', { value: get });
+		//Reflect.defineProperty(internals.views, 'relocateByRule', { value: relocateByRule });
+		//Reflect.defineProperty(internals.views, 'discard', { value: discard });
+		//Reflect.defineProperty(internals.views, 'move', { value: move });
+		//Reflect.defineProperty(internals.views, 'get', { value: get });
 	}
 
 	Reflect.defineProperty(scope.DataTier, 'ViewsService', { value: ViewsService });
