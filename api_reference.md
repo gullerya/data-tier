@@ -1,41 +1,39 @@
-# API Reference
+# Loading the Library
 
-For **obtaining** your copy of the 'data-tier.js' you may use:
-*	<code>bower install data-tier</code>
-*	<code>npm install data-tier</code>
-*	putting 'data-tier' dependency in the config file of either bower or npm package manager, whichever you use
+You have 2 ways to load the library: into a 'window' global scope, or a custom scope provided by you.
 
-The **consumption** of the DataTier library begins from it's loading and initiation. This may be done in two flavors:
-*	**basic** one performs loading and initiation in the most standard and simple way, yet the library will be loaded into the predefined namespace <code>**window.Modules.DataTier**</code>
-*	**advanced** flavor requires custom loading and execution (see an example below), yet allows to specify the namespace you'd like the DataTier to be 'installed'
+* Simple a reference (script tag) to the object-oserver.js in your HTML will load it into the __global scope__:
+```html
+<script src="data-tier.js"></script>
+<script>
+	var person = { name: 'Uriya', age: 8 },
+	    observablePerson = Observable.from(person);
 
-#### Example A: getting DataTier in a *basic* way
+	window.DataTier.ties.create('person', observablePerson);
+</script>
+```
 
-Put a script tag inside you HTML file referring to the location of data-tier.js (replace the below path with your local copy's one):
+* Following loader exemplifies how to load the library into a __custom scope__ (add error handling as appropriate):
+```javascript
+var customNamespace = {},
+    person = { name: 'Nava', age: 6 },
+    observablePerson;
 
-<code>&lt;script src="../libs/data-tier.js"&gt;&lt;/script&gt;</code>
+fetch('data-tier.js').then(function (response) {
+	if (response.status === 200) {
+		response.text().then(function (code) {
+			Function(code).call(customNamespace);
+			
+			//	the below code is an example of consumption, locate it in your app lifecycle/flow as appropriate
+			observablePerson = customNamespace.Observable.from(person);
+			customNamespace.DataTier.ties.create('person', observablePerson);
+		});
+	}
+});
+```
 
-Use the APIs in any place in application (main window):<br>
-<code>var userTie = window.Modules.DataTier.Ties.create('user', {});</code>
+Please pay attention, that the above examples use the distribution of library which includes embedded ([object-observer](https://www.npmjs.com/package/object-observer) library.
+If you have your own `Observable` implementation, you may want to consume `data-tier-wo-oo.js` distribution, which is without `object-observer.js` and thus thinner.
+To be sure both, the full version with `object-observer.js` and the thin one without it are available in the minified flavor too.
 
-Use the APIs in any place in application (iframe window):<br>
-<code>var userTie = parentWindow.Modules.DataTier.Ties.create('user', {});</code>
-
-#### Example B: getting DataTier in an *advanced* way
-
-Let's review the following snippet:
-<pre><code>var xhr = new XMLHttpRequest(),
-	customNS = {};
-xhr.open('get', '../libs/data-tier.js');
-xhr.onload = function () {
-	new Function(xhr.responseText)({ namespace: customNS });
-	//	DataTier is initialized in the specified namespace object
-	var userTie = customNS.DataTier.Ties.create('user', {});
-}
-xhr.send();</code></pre>
-
-Actually, this one is quite straght forward as well. We're just loading the code of the library as a text file and then executing it via <code>new Function(<string>)</code> syntax providing it with an options object.
-
-Options object currently have only one supported property <code>namespace</code> which MUST be an object, that will hold the reference to the library. If no options object supplied, or it doesn't have a <code>namespace</code> property or the <code>namespace</code> property is not an object or <code>null</code> - DataTier will be initialized in the default namespace.
-
-* Please pay attention, that <code>new Function()</code> syntax is effectively the same as <code>eval()</code> syntax. Since some hold strong opinions against using these (not myself, though), I'm explicitly noting this here.
+# APIs

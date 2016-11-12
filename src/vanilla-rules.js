@@ -1,7 +1,7 @@
 ﻿(function (scope) {
 	'use strict';
 
-	function init(config) {
+	function init(internals) {
 		var Rule = scope.DataTier.rules.Rule,
 			add = scope.DataTier.rules.add
 
@@ -90,7 +90,7 @@
 					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 						console.error('invalid parameter for "tieList" rule specified');
 					} else {
-						rulePath = ruleData[0];
+						var ruleParam = scope.rules.Rule.parseParam(ruleData[0]);
 						itemId = ruleData[2];
 						d = template.ownerDocument;
 						df = d.createDocumentFragment();
@@ -100,8 +100,8 @@
 							vs.forEach(function (view) {
 								Object.keys(view.dataset).forEach(function (key) {
 									if (view.dataset[key].indexOf(itemId + '.') === 0) {
-										view.dataset[key] = view.dataset[key].replace(itemId, rulePath + '.' + i);
-										config.views.update(view, key);
+										view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
+										internals.views.update(view, key);
 									}
 								});
 							});

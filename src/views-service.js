@@ -168,7 +168,7 @@
 		l.push(rootElement);
 		l.forEach(function (e) {
 			internals.rules.getApplicable(e).forEach(function (rule) {
-				param = rule.parseParam(rule.name);
+				param = rule.parseParam(e.dataset[rule.name]);
 				pathViews = views[param.tieName][rule.name][param.dataPath.join('.')];
 				i = pathViews.indexOf(e);
 				if (i >= 0) {
@@ -181,17 +181,14 @@
 		console.info('discarded views, current total: ' + vcnt);
 	}
 
-	function move(view, ruleName, oldPath, newPath) {
-		var pathViews, i = -1, tieName;
+	function move(view, ruleName, oldParam, newParam) {
+		var ruleParam, pathViews, i = -1, tieName;
 
-		tieName = scope.DataTier.rules.get(ruleName).parseParam(view.dataset[ruleName]);
-
-		if (!views[tieName]) views[tieName] = {};
-		if (!views[tieName][ruleName]) views[tieName][ruleName] = {};
+		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(oldParam);
 
 		//	delete old path
-		if (oldPath) {
-			pathViews = views[tieName][ruleName][oldPath];
+		if (views[ruleParam.tieName] && views[ruleParam.tieName][ruleName]) {
+			pathViews = views[ruleParam.tieName][ruleName][ruleParam.dataPath];
 			if (pathViews) i = pathViews.indexOf(view);
 			if (i >= 0) {
 				pathViews.splice(i, 1);
@@ -199,8 +196,11 @@
 		}
 
 		//	add new path
-		if (!views[tieName][ruleName][newPath]) views[tieName][ruleName][newPath] = [];
-		views[tieName][ruleName][newPath].push(view);
+		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(newParam);
+		if (!views[ruleParam.tieName]) views[ruleParam.tieName] = {};
+		if (!views[ruleParam.tieName][ruleName]) views[ruleParam.tieName][ruleName] = {};
+		if (!views[ruleParam.tieName][ruleName][ruleParam.dataPath]) views[ruleParam.tieName][ruleName][ruleParam.dataPath] = [];
+		views[ruleParam.tieName][ruleName][ruleParam.dataPath].push(view);
 		update(view, ruleName);
 	}
 
@@ -210,9 +210,13 @@
 			pathString = change.path.join('.');
 			Object.keys(tieViews).forEach(function (ruleName) {
 				ruleViews = tieViews[ruleName];
-				if (ruleViews && ruleViews[pathString]) {
-					ruleViews[pathString].forEach(function (view) {
-						update(view, ruleName);
+				if (ruleViews) {
+					Object.keys(ruleViews).forEach(function (path) {
+						if (path.indexOf(pathString) === 0) {
+							ruleViews[path].forEach(function (view) {
+								update(view, ruleName);
+							});
+						}
 					});
 				}
 			});
