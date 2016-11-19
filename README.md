@@ -3,13 +3,13 @@
 
 # Summary
 
-DataTier ('tier' from 'to tie') is a service oriented framework, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
-This library works tightly with [`Observable`](https://github.com/gullerya/object-observer-js#observable-static-properties)-driven event cycle, therefore it comes with an embedded [object-observer.js](https://github.com/gullerya/object-observer-js) library.
+`DataTier` ('tier' from 'to tie') is a service oriented framework, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
+This library works tightly with [`Observable`](https://github.com/gullerya/object-observer-js#observable-static-properties)-driven event cycle, therefore it comes with an embedded [`object-observer.js`](https://github.com/gullerya/object-observer-js) library.
 
 Yet, it is possible to provide any other `Observable` implementation, if it provides the same functionality. In this case you may want to import lightweigth `data-tier` distribution (bundled within npm module as well) without `object-observer.js`.
 
 #### Support matrix: ![CHROME](https://raw.githubusercontent.com/alrra/browser-logos/master/chrome/chrome_24x24.png) <sub>49+</sub>, ![FIREFOX](https://raw.githubusercontent.com/alrra/browser-logos/master/firefox/firefox_24x24.png) <sub>42+</sub>, ![EDGE](https://raw.githubusercontent.com/alrra/browser-logos/master/edge/edge_24x24.png) <sub>13+</sub>
-Support matrix is currently as wide as that of [object-observer.js](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
+Support matrix is currently as wide as that of [`object-observer.js`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
 
 #### Backlog:
 
@@ -25,7 +25,7 @@ Support matrix is currently as wide as that of [object-observer.js](https://gith
 
 You have 2 ways to load the library: into a `window` global scope, or a custom scope provided by you.
 
-* Simple a reference (script tag) to the `data-tier.js` in your HTML will load it into the __global scope__:
+* Simple reference (script tag) to the `data-tier.js` in your HTML will load it into the __global scope__:
 ```html
 <script src="data-tier.js"></script>
 <script>
@@ -62,11 +62,12 @@ fetch('data-tier.js').then(function (response) {
 In essence, the purpose of the `DataTier` service is to tie model and view and sync between them automatically once changes detected in either one or another.
 
 In order to let this happen, two actions need to be done:
-A. any model to be shown should be registered in the `DataTier` service
-B. DOM elements intended to visualize the model need to be decorated with an appropriate declaration
+1. any model to be shown should be registered in the `DataTier` service
+2. DOM elements intended to visualize the model need to be decorated with an appropriate declaration
 
-The above two may happen in any order, on any phase in the application lifecycle. The framework supports of lazy binding, watched for DOM changes as well as for a data changes and should pick up any new linking information relevant and tie the things up.
-Let's review the actual example, in which we have in our code some `user` object which is our model and we want to bind it to some interactive view of it.
+The above two may happen in any order, in any phase in the application lifecycle. `DataTier` supports lazy binding, watching for DOM changes as well as for a data changes and will pick up any new linking information relevant and tie the things up.
+
+Let's review the actual example, where we have some `user` object which is our model and we want to bind it to some interactive view of it.
 
 ### Functional part
 ```javascript
