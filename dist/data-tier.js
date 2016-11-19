@@ -583,19 +583,18 @@
 
 	var internals,
 		views = {},
-        vs = {},
         nlvs = {},
         vcnt = 0;
 
-	function setPath(ref, path, value) {
-		var i;
-		for (i = 0; i < path.length - 1; i++) {
-			if (typeof ref[path[i]] === 'object') ref = ref[path[i]];
-			else if (!(path[i] in ref)) ref = (ref[path[i]] = {});
-			else throw new Error('the path is unavailable');
-		}
-		ref[path[i]] = value;
-	}
+	//function setPath(ref, path, value) {
+	//	var i;
+	//	for (i = 0; i < path.length - 1; i++) {
+	//		if (typeof ref[path[i]] === 'object') ref = ref[path[i]];
+	//		else if (!(path[i] in ref)) ref = (ref[path[i]] = {});
+	//		else throw new Error('the path is unavailable');
+	//	}
+	//	ref[path[i]] = value;
+	//}
 
 	function getPath(ref, path) {
 		var i;
@@ -638,7 +637,6 @@
 	}
 
 	function add(view) {
-		var key, rule;
 		if (view.nodeName === 'IFRAME') {
 			initDocumentObserver(view.contentDocument);
 			view.addEventListener('load', function () {
@@ -681,7 +679,7 @@
 			});
 
 			//	collect potentially future rules element and put them into some tracking storage
-			for (key in view.dataset) {
+			for (var key in view.dataset) {
 				if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
 					if (!nlvs[key]) nlvs[key] = [];
 					nlvs[key].push(view);
@@ -690,17 +688,17 @@
 		}
 	}
 
-	function get(path) {
-		var p = Array.isArray(p) ? p : p.split('.'), r = [], tmp, key;
-		tmp = getPath(vs, p);
-		if (tmp) {
-			Object.keys(tmp).forEach(function (key) {
-				if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
-				else Array.prototype.push.apply(r, get(path + '.' + key));
-			});
-		}
-		return r;
-	}
+	//function get(path) {
+	//	var p = Array.isArray(p) ? p : p.split('.'), r = [], tmp, key;
+	//	tmp = getPath(vs, p);
+	//	if (tmp) {
+	//		Object.keys(tmp).forEach(function (key) {
+	//			if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
+	//			else Array.prototype.push.apply(r, get(path + '.' + key));
+	//		});
+	//	}
+	//	return r;
+	//}
 
 	function update(view, ruleName) {
 		var r, p, t, data;
@@ -727,21 +725,21 @@
 		}
 	}
 
-	function relocateByRule(rule) {
-		if (nlvs[rule.id]) {
-			nlvs[rule.id].forEach(add);
-		}
-		console.info('relocated views, current total: ' + vcnt);
-	}
+	//function relocateByRule(rule) {
+	//	if (nlvs[rule.id]) {
+	//		nlvs[rule.id].forEach(add);
+	//	}
+	//	console.info('relocated views, current total: ' + vcnt);
+	//}
 
 	function discard(rootElement) {
-		var l, key, param, pathViews, i;
+		var l, param, pathViews, i;
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.prototype.slice.call(rootElement.getElementsByTagName('*'), 0);
 		l.push(rootElement);
 		l.forEach(function (e) {
-			scope.DataTier.rules.getApplicable(e).forEach(function (rule) {
-				param = rule.parseParam(e.dataset[key]);
+			internals.rules.getApplicable(e).forEach(function (rule) {
+				param = rule.parseParam(e.dataset[rule.name]);
 				pathViews = views[param.tieName][rule.name][param.dataPath.join('.')];
 				i = pathViews.indexOf(e);
 				if (i >= 0) {
@@ -754,12 +752,14 @@
 		console.info('discarded views, current total: ' + vcnt);
 	}
 
-	function move(view, tieName, ruleName, oldPath, newPath) {
-		var pathViews, i = -1;
+	function move(view, ruleName, oldParam, newParam) {
+		var ruleParam, pathViews, i = -1;
+
+		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(oldParam);
 
 		//	delete old path
-		if (oldPath) {
-			pathViews = views[tieName][ruleName][oldPath];
+		if (views[ruleParam.tieName] && views[ruleParam.tieName][ruleName]) {
+			pathViews = views[ruleParam.tieName][ruleName][ruleParam.dataPath];
 			if (pathViews) i = pathViews.indexOf(view);
 			if (i >= 0) {
 				pathViews.splice(i, 1);
@@ -767,16 +767,30 @@
 		}
 
 		//	add new path
-		views[tieName][ruleName][newPath].push(view);
+		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(newParam);
+		if (!views[ruleParam.tieName]) views[ruleParam.tieName] = {};
+		if (!views[ruleParam.tieName][ruleName]) views[ruleParam.tieName][ruleName] = {};
+		if (!views[ruleParam.tieName][ruleName][ruleParam.dataPath]) views[ruleParam.tieName][ruleName][ruleParam.dataPath] = [];
+		views[ruleParam.tieName][ruleName][ruleParam.dataPath].push(view);
 		update(view, ruleName);
 	}
 
 	function processChanges(tieName, changes) {
-		console.log(tieName, changes);
+		var tieViews = views[tieName], ruleViews, pathString;
 		changes.forEach(function (change) {
-			var tieViews = views[tieName];
-			//	get all relevant views by path and below
-			//	update all from the new value
+			pathString = change.path.join('.');
+			Object.keys(tieViews).forEach(function (ruleName) {
+				ruleViews = tieViews[ruleName];
+				if (ruleViews) {
+					Object.keys(ruleViews).forEach(function (path) {
+						if (path.indexOf(pathString) === 0) {
+							ruleViews[path].forEach(function (view) {
+								update(view, ruleName);
+							});
+						}
+					});
+				}
+			});
 		});
 	}
 
@@ -1009,7 +1023,7 @@
 ﻿(function (scope) {
 	'use strict';
 
-	function init(config) {
+	function init(internals) {
 		var Rule = scope.DataTier.rules.Rule,
 			add = scope.DataTier.rules.add
 
@@ -1075,7 +1089,7 @@
 				return Rule.prototype.parseValue(ruleValue.split(/\s*=>\s*/)[0]);
 			},
 			dataToView: function (tiedValue, template) {
-				var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
+				var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df;
 
 				function shortenListTo(cnt, aid) {
 					var a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
@@ -1098,7 +1112,6 @@
 					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 						console.error('invalid parameter for "tieList" rule specified');
 					} else {
-						rulePath = ruleData[0];
 						itemId = ruleData[2];
 						d = template.ownerDocument;
 						df = d.createDocumentFragment();
@@ -1108,8 +1121,8 @@
 							vs.forEach(function (view) {
 								Object.keys(view.dataset).forEach(function (key) {
 									if (view.dataset[key].indexOf(itemId + '.') === 0) {
-										view.dataset[key] = view.dataset[key].replace(itemId, rulePath + '[' + i + ']');
-										config.views.update(view, key);
+										view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
+										internals.views.update(view, key);
 									}
 								});
 							});

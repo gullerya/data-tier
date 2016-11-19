@@ -17,16 +17,18 @@
 	document.body.appendChild(d);
 
 	suite.addTest({ name: 'array binding - adding element' }, function (pass, fail) {
-		if (e1.textContent !== '') fail('preliminary check failed');
-		if (e2.textContent !== '') fail('preliminary check failed');
-		if (e3.textContent !== '') fail('preliminary check failed');
-		oUsers.push({
-			name: 'A'
-		});
-		if (e1.textContent !== 'A') fail('expected textContent to be A');
-		oUsers[0].name = 'AA';
-		if (e1.textContent !== 'AA') fail('expected textContent to be AA');
-		pass();
+		setTimeout(function () {
+			if (e1.textContent !== '') fail('preliminary check failed');
+			if (e2.textContent !== '') fail('preliminary check failed');
+			if (e3.textContent !== '') fail('preliminary check failed');
+			oUsers.push({
+				name: 'A'
+			});
+			if (e1.textContent !== 'A') fail('expected textContent to be A');
+			oUsers[0].name = 'AA';
+			if (e1.textContent !== 'AA') fail('expected textContent to be AA');
+			pass();
+		}, 0);
 	});
 
 	suite.addTest({ name: 'array binding - replacing element directly' }, function (pass, fail) {

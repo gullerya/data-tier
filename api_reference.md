@@ -36,6 +36,6 @@ Please pay attention, that the above examples use the distribution which include
 
 If you have your own [`Observable`](https://github.com/gullerya/object-observer-js#observable-static-properties) implementation, you may want to consume `data-tier-wo-oo.js` distribution, which is without `object-observer.js` and thus thinner. `data-tier.js` does not uses directly the `Observable`, but the changes notifications are expected to be delivered in the exact way as it is outlined in the above API reference.
 
-To be sure, both: the full version with `object-observer.js` and the thin one without it - are available in the minified flavor too.
+To be sure, both: the full version with `object-observer.js` and the thin one without it - are available in the minified flavor as well.
 
 # APIs

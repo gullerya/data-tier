@@ -2,10 +2,10 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Custom View to Data Processor' }),
-		data = {
+		data = window.Observable.from({
 			text: 'some text',
 			date: new Date()
-		};
+		});
 
 	suite.addTest({ name: 'testing setup of the processor from create' }, function (pass, fail) {
 		var ie = document.createElement('input'), tie, e;

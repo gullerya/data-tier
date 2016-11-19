@@ -9,42 +9,48 @@
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('div');
-	s1.dataset.tie = 'userB:name';
+	s1.dataset.tieText = 'userB:name';
 	document.body.appendChild(s1);
 	s2 = document.createElement('div');
-	s2.dataset.tie = 'userB:age';
+	s2.dataset.tieText = 'userB:age';
 	document.body.appendChild(s2);
 	s3 = document.createElement('div');
-	s3.dataset.tie = 'userB:address.street';
+	s3.dataset.tieText = 'userB:address.street';
 	document.body.appendChild(s3);
 	s4 = document.createElement('div');
-	s4.dataset.tie = 'userB:address.apt';
+	s4.dataset.tieText = 'userB:address.apt';
 	document.body.appendChild(s4);
 
 	suite.addTest({ name: 'update view when path changes (deep)' }, function (pass, fail) {
-		if (s1.textContent !== user.name) fail(new Error('preliminary check failed'));
-		s1.dataset.tie = 'userB:address.street';
-		if (s1.textContent !== user.address.street) fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
-		pass();
+		setTimeout(function () {
+			if (s1.textContent !== user.name) fail(new Error('preliminary check failed'));
+			s1.dataset.tie = 'userB:address.street';
+			if (s1.textContent !== user.address.street) fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
+			pass();
+		}, 0);
 	});
 
 	suite.addTest({ name: 'adding new view (zero depth) with path defined' }, function (pass, fail) {
 		var newEl = document.createElement('div');
-		newEl.dataset.tie = 'userB:name';
+		newEl.dataset.tieText = 'userB:name';
 		document.body.appendChild(newEl);
-		if (newEl.textContent !== user.name) fail(new Error('expected the content to be "' + user.name + '"'));
-		pass();
+		setTimeout(function () {
+			if (newEl.textContent !== user.name) fail(new Error('expected the content to be "' + user.name + '"'));
+			pass();
+		}, 0);
 	});
 
 	suite.addTest({ name: 'adding few views (with depth) with paths defined' }, function (pass, fail) {
 		var newElA = document.createElement('div'), newElB = document.createElement('div');
-		newElA.dataset.tie = 'userB:name';
-		newElB.dataset.tie = 'userB:address.apt';
+		newElA.dataset.tieText = 'userB:name';
+		newElB.dataset.tieText = 'userB:address.apt';
 		newElA.appendChild(newElB);
 		document.body.appendChild(newElA);
-		if (newElA.textContent !== user.name) fail(new Error('expected the content to be "' + user.name + '"'));
-		if (newElB.textContent != user.address.apt) fail(new Error('expected the content to be "' + user.address.apt + '"'));
-		pass();
+		setTimeout(function () {
+			if (newElA.textContent !== user.name) fail(new Error('expected the content to be "' + user.name + '"'));
+			if (newElB.textContent != user.address.apt) fail(new Error('expected the content to be "' + user.address.apt + '"'));
+			pass();
+		}, 0);
 	});
 
 	suite.run();

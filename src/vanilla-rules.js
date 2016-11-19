@@ -5,21 +5,6 @@
 		var Rule = scope.DataTier.rules.Rule,
 			add = scope.DataTier.rules.add
 
-		add(new Rule('tie', {
-			dataToView: function (data, view) {
-				var dfltValueElements = ['INPUT', 'TEXTAREA', 'SELECT', 'OPTION', 'PROGRESS', 'METER'];
-				if (view && view.nodeType === Node.ELEMENT_NODE) {
-					if (dfltValueElements.indexOf(view.tagName) >= 0) {
-						view.value = data;
-					} else {
-						view.textContent = data;
-					}
-				} else {
-					console.error('valid element expected, found: ' + view);
-				}
-			}
-		}));
-
 		add(new Rule('tieValue', {
 			dataToView: function (data, view) {
 				view.value = data;
@@ -67,7 +52,7 @@
 				return Rule.prototype.parseValue(ruleValue.split(/\s*=>\s*/)[0]);
 			},
 			dataToView: function (tiedValue, template) {
-				var container = template.parentNode, i, nv, ruleData, itemId, rulePath, vs, d, df;
+				var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df;
 
 				function shortenListTo(cnt, aid) {
 					var a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
@@ -90,7 +75,6 @@
 					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 						console.error('invalid parameter for "tieList" rule specified');
 					} else {
-						var ruleParam = scope.rules.Rule.parseParam(ruleData[0]);
 						itemId = ruleData[2];
 						d = template.ownerDocument;
 						df = d.createDocumentFragment();

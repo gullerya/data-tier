@@ -1,27 +1,63 @@
 [![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
 [![Build Status](https://travis-ci.org/gullerya/data-tier.svg?branch=master)](https://travis-ci.org/gullerya/data-tier)
 
-Temporary Suspension notice
-=================
-The current implementation is fully based on Object.observe functionality that was part a a proposed spec and available in Chrome environment up till v. 50.
-The proposal was recently removed and from Crome v. 50 this feature is not supported amymore.
-I have a very strong opinion, that Object.observe is a MUST HAVE funtionality to be available on the native level, and i truly believe that it will make it's way back in a future.
-Meanwhile, I'm completely refactoring the observing part of this module implementing it via Proxy facilities (observation module will be published as a separate module in npm soon) and once this is availalbe - DataTier module will become functional again.
-ETA for the DataTier is end of 2016 ([object-observer](https://www.npmjs.com/package/object-observer) is matured enough to start re-writing this library on top of it now).
-APIs - current APIs will mostly not be changed, except the observing syntax.
-Feedback - any early feedback from anyone who had a chance to try this out is welcome.
+# Summary
 
-DataTier - Intro
-================
+DataTier ('tier' from 'to tie') is a service oriented framework, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
+This library works tightly with [`Observable`](https://github.com/gullerya/object-observer-js#observable-static-properties)-driven event cycle, therefore it comes with an embedded [object-observer.js](https://github.com/gullerya/object-observer-js) library.
 
-DataTier is a framework, or better utility, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
-The most important principals that guided the author were simplicity of usage, shortest learning curve and yet an ability to give all of the essentials expected from such a utility.
-I tried to design this library in such a way that the more simpe the usecase - less needs to be done to get it working.
-So i believe that in it's current architecture, DataTier covers most of the usecases in quite a simple and straight forward way, yet the more complicated the things you'd need to achieve with it - you can, you'll just need to get more into the internals.
+Yet, it is possible to provide any other `Observable` implementation, if it provides the same functionality. In this case you may want to import lightweigth `data-tier` distribution (bundled within npm module as well) without `object-observer.js`.
+
+#### Support matrix: ![CHROME](https://raw.githubusercontent.com/alrra/browser-logos/master/chrome/chrome_24x24.png) <sub>49+</sub>, ![FIREFOX](https://raw.githubusercontent.com/alrra/browser-logos/master/firefox/firefox_24x24.png) <sub>42+</sub>, ![EDGE](https://raw.githubusercontent.com/alrra/browser-logos/master/edge/edge_24x24.png) <sub>13+</sub>
+Support matrix is currently as wide as that of [object-observer](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
+
+#### Backlog:
 
 
-Basic examples
-==============
+#### Versions
+- __0.6.0__
+  - Since native Object.observe was deprecated and removed, moved to object-observer.js library as an observation engine. This has impact on both the API and the implementaion.
+- __0.5.41__
+  - First version, based on native Object.observe technology.
+
+
+# Loading the Library
+
+You have 2 ways to load the library: into a 'window' global scope, or a custom scope provided by you.
+
+* Simple a reference (script tag) to the data-tier.js in your HTML will load it into the __global scope__:
+```html
+<script src="data-tier.js"></script>
+<script>
+	var person = { name: 'Uriya', age: 8 },
+	    observablePerson = window.Observable.from(person);
+	window.DataTier.ties.create('person', observablePerson);
+</script>
+```
+
+* Following loader exemplifies how to load the library into a __custom scope__ (add error handling as appropriate):
+```javascript
+var customNamespace = {},
+    person = { name: 'Nava', age: 6 },
+    observablePerson;
+
+fetch('data-tier.js').then(function (response) {
+	if (response.status === 200) {
+		response.text().then(function (code) {
+			Function(code).call(customNamespace);
+			
+			//	the below code is an example of consumption, locate it in your app lifecycle/flow as appropriate
+			observablePerson = customNamespace.Observable.from(person);
+			customNamespace.DataTier.ties.create('person', observablePerson);
+		});
+	}
+});
+```
+- Note the usage of an embedded `Observable` along the way. As it has been mentioned before, you may provide your own `Observable` implementation and in this case more lightweigth `data-tier-wo-oo.js` will suite you more.
+- Minified version is also available for both distributions, with and without `object-observer.js`.
+
+
+# Basic examples
 
 Let's assume you have and object that holds user info and you want to bind it to it's view in HTML. This splits into the <b>declaration in the HTML</b> and <b>functional part in the Javascript</b>.<br>
 In Javascript you'll need to tell to DataTier that the object 'user' is to be tied to it's views and watched for changes. This is done using API as in the following example (let's assume that you've got the reference to the library in 'dataTier' variable; see full description in [API Reference](api_reference.md)):

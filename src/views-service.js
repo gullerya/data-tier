@@ -11,19 +11,18 @@
 
 	var internals,
 		views = {},
-        vs = {},
         nlvs = {},
         vcnt = 0;
 
-	function setPath(ref, path, value) {
-		var i;
-		for (i = 0; i < path.length - 1; i++) {
-			if (typeof ref[path[i]] === 'object') ref = ref[path[i]];
-			else if (!(path[i] in ref)) ref = (ref[path[i]] = {});
-			else throw new Error('the path is unavailable');
-		}
-		ref[path[i]] = value;
-	}
+	//function setPath(ref, path, value) {
+	//	var i;
+	//	for (i = 0; i < path.length - 1; i++) {
+	//		if (typeof ref[path[i]] === 'object') ref = ref[path[i]];
+	//		else if (!(path[i] in ref)) ref = (ref[path[i]] = {});
+	//		else throw new Error('the path is unavailable');
+	//	}
+	//	ref[path[i]] = value;
+	//}
 
 	function getPath(ref, path) {
 		var i;
@@ -54,10 +53,9 @@
 		t.viewToDataProcessor({ data: t.data, path: p, view: view });
 	}
 
-	function addChangeListener(v) {
-		var ow = v.ownerDocument.defaultView;
-		if (v instanceof ow.HTMLInputElement || v instanceof ow.HTMLSelectElement) {
-			v.addEventListener('change', changeListener);
+	function addChangeListener(view) {
+		if (view.nodeName === 'INPUT' || view.nodeName === 'SELECT') {
+			view.addEventListener('change', changeListener);
 		}
 	}
 
@@ -110,6 +108,7 @@
 			//	collect potentially future rules element and put them into some tracking storage
 			for (var key in view.dataset) {
 				if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
+					console.warn('non-registerd rule "' + key + '" used, it may still be defined later in code and post-tied');
 					if (!nlvs[key]) nlvs[key] = [];
 					nlvs[key].push(view);
 				}
@@ -117,17 +116,17 @@
 		}
 	}
 
-	function get(path) {
-		var p = Array.isArray(p) ? p : p.split('.'), r = [], tmp, key;
-		tmp = getPath(vs, p);
-		if (tmp) {
-			Object.keys(tmp).forEach(function (key) {
-				if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
-				else Array.prototype.push.apply(r, get(path + '.' + key));
-			});
-		}
-		return r;
-	}
+	//function get(path) {
+	//	var p = Array.isArray(p) ? p : p.split('.'), r = [], tmp, key;
+	//	tmp = getPath(vs, p);
+	//	if (tmp) {
+	//		Object.keys(tmp).forEach(function (key) {
+	//			if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
+	//			else Array.prototype.push.apply(r, get(path + '.' + key));
+	//		});
+	//	}
+	//	return r;
+	//}
 
 	function update(view, ruleName) {
 		var r, p, t, data;
@@ -154,12 +153,12 @@
 		}
 	}
 
-	function relocateByRule(rule) {
-		if (nlvs[rule.id]) {
-			nlvs[rule.id].forEach(add);
-		}
-		console.info('relocated views, current total: ' + vcnt);
-	}
+	//function relocateByRule(rule) {
+	//	if (nlvs[rule.id]) {
+	//		nlvs[rule.id].forEach(add);
+	//	}
+	//	console.info('relocated views, current total: ' + vcnt);
+	//}
 
 	function discard(rootElement) {
 		var l, param, pathViews, i;
@@ -182,7 +181,7 @@
 	}
 
 	function move(view, ruleName, oldParam, newParam) {
-		var ruleParam, pathViews, i = -1, tieName;
+		var ruleParam, pathViews, i = -1;
 
 		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(oldParam);
 

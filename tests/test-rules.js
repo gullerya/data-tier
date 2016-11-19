@@ -11,7 +11,7 @@
 
 	suite.addTest({ name: 'testing basic rules: text content' }, function (pass, fail) {
 		var e = document.createElement('div');
-		e.dataset.tie = 'testRulesA:text';
+		e.dataset.tieText = 'testRulesA:text';
 		document.body.appendChild(e);
 		setTimeout(function () {
 			if (e.textContent !== data.text) fail('textContent of the element expected to be ' + data.text + ', found: ' + e.textContent);
@@ -21,7 +21,7 @@
 
 	suite.addTest({ name: 'testing basic rules: value' }, function (pass, fail) {
 		var e = document.createElement('input');
-		e.dataset.tie = 'testRulesA:text';
+		e.dataset.tieValue = 'testRulesA:text';
 		document.body.appendChild(e);
 		setTimeout(function () {
 			if (e.value !== data.text) fail('value of the element expected to be ' + data.text + ', found: ' + e.value);

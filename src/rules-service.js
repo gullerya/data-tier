@@ -70,11 +70,7 @@
 	}
 
 	function getRule(name) {
-		if (rules[name]) {
-			return rules[name];
-		} else {
-			console.error('rule "' + name + '" is not defined');
-		}
+		return rules[name];
 	}
 
 	function removeRule(name) {
