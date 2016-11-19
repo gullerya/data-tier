@@ -57,11 +57,18 @@ fetch('data-tier.js').then(function (response) {
 - Minified version is also available for both distributions, with and without `object-observer.js`.
 
 
-# Basic examples
+# Basic example
 
-Let's assume you have and object that holds user info and you want to bind it to it's view in HTML. This splits into the <b>declaration in the HTML</b> and <b>functional part in the Javascript</b>.<br>
-In Javascript you'll need to tell to DataTier that the object 'user' is to be tied to it's views and watched for changes. This is done using API as in the following example (let's assume that you've got the reference to the library in 'dataTier' variable; see full description in [API Reference](api_reference.md)):
+In essence, the purpose of the `DataTier` service is to tie model and view and sync between them automatically once changes detected in either one or another.
 
+In order to let this happen, two actions need to be done:
+A. any model to be shown should be registered in the `DataTier` service
+B. DOM elements intended to visualize the model need to be decorated with an appropriate declaration
+
+The above two may happen in any order, on any phase in the application lifecycle. The framework supports of lazy binding, watched for DOM changes as well as for a data changes and should pick up any new linking information relevant and tie the things up.
+Let's review the actual example, in which we have in our code some `user` object which is our model and we want to bind it to some interactive view of it.
+
+### Functional part
 ```javascript
 var user = {
 	name: 'User Name',
@@ -77,9 +84,7 @@ observableUser = window.Observable.from(user);
 window.DataTier.ties.create('userInfo', observableUser);
 ```
 
-The API to register an object/graph in the DataTier is `ties.create` function which accepts 2 parameters: namespace as a string and initial data as an object.<br>
-In order to have a views bound to this data we need to declare the ties in HTML also, it will go as following:
-
+### Declarative part
 ```html
 <div>
 	<span data-tie-text="userInfo:name"></span>
