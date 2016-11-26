@@ -24,7 +24,7 @@
 	suite.addTest({ name: 'update view when path changes (deep)' }, function (pass, fail) {
 		setTimeout(function () {
 			if (s1.textContent !== user.name) fail(new Error('preliminary check failed'));
-			s1.dataset.tie = 'userB:address.street';
+			s1.dataset.tieText = 'userB:address.street';
 			if (s1.textContent !== user.address.street) fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
 			pass();
 		}, 0);

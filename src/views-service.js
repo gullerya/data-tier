@@ -34,23 +34,17 @@
 		return ref;
 	}
 
-	function changeListener(ev) {
-		var view = ev.target, p, tn, t;
+	function changeListener(event) {
+		internals.rules.getApplicable(event.target).forEach(function (rule) {
+			if (rule.name === 'tieValue') {
+				var ruleParam = rule.parseParam(event.target.dataset[rule.name]),
+					tie = scope.DataTier.ties.get(ruleParam.tieName);
+				if (!ruleParam.dataPath) { console.error('path to data not available'); return; }
+				if (!tie) { console.error('tie "' + ruleParam.tieName + '" not found'); return; }
 
-		if (view.dataset.tieValue) {
-			p = view.dataset.tieValue;
-		} else {
-			p = view.dataset.tie;
-		}
-		//	TODO: the following condition is not always error state, need to decide regarding the cardinality of the value suppliers
-		if (!p) { console.error('path to data not available'); return; }
-		p = p.split('.');
-		if (!p) { console.error('path to data is invalid'); return; }
-		tn = p.shift();
-		t = internals.ties.obtain(tn);
-		if (!t) { console.error('tie "' + tn + '" not found'); return; }
-
-		t.viewToDataProcessor({ data: t.data, path: p, view: view });
+				tie.viewToDataProcessor({ data: tie.data, path: ruleParam.dataPath, view: event.target });
+			}
+		});
 	}
 
 	function addChangeListener(view) {

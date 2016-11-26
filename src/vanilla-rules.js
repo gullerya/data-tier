@@ -48,8 +48,8 @@
 		}));
 
 		add(new Rule('tieList', {
-			parseValue: function (ruleValue) {
-				return Rule.prototype.parseValue(ruleValue.split(/\s*=>\s*/)[0]);
+			parseParam: function (ruleValue) {
+				return Rule.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
 			},
 			dataToView: function (tiedValue, template) {
 				var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df;

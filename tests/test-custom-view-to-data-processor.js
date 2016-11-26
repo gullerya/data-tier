@@ -11,11 +11,8 @@
 		var ie = document.createElement('input'), tie, e;
 
 		function customVTDProc(input) {
-			window.DataTier.Utils.setPath(
-				input.data,
-				input.path,
-				input.view.value.toUpperCase()
-			);
+			//	assuming for the test purposes that the path is on single node
+			input.data[input.path[0]] = input.view.value.toUpperCase();
 		}
 
 		tie = window.DataTier.ties.create('testCustomVTDA', data);

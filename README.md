@@ -98,16 +98,6 @@ window.DataTier.ties.create('userInfo', observableUser);
 </div>
 ```
 
-Don't be confused with the diversity of variants of `data` attributes - this is something to do with a concept of <b>rules</b> and will be covered later in docs, the main point here is that DOM elements are being tied to the data registered in DataTier by means of `data` attributes with <b>path</b> values, which i also expand on in the documentation below.
-There is no importance of the order of things, Javascript part may run before the HTML declarations and an opposite. HTML chunks with binding attributes may be injected/built later on, say on dynamic rendering of the pages.
-Similarly, Javascript tying may be done as part of any later async flow, as well as untying in the case of need, to be sure.
-
-Once two contracts exemplified above are done, you have the following:
-<ul>
-	<li>Any change in the data itself (model) will be reflected in all tied views</li>
-	<li>Any change of values in input elements which invoke 'onchange' event (user driven changes, usually, but may be simulated from Javascript code as well, of course) will be reflected in the model, and propagate to all the relevant views</li>
-	<li>Adding new HTML chunks having data ties setup will automatically pick up and reflect the model state</li>
-	<li>Adding new data to the namespace or registering new namespaces with data will invode update of all the view waiting for that data</li>
-</ul>
+TBD...
 
 For a more thorough API documentation see [API Reference](api_reference.md) page.

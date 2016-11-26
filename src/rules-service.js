@@ -40,7 +40,7 @@
 		Reflect.defineProperty(this, 'name', { value: name });
 		Reflect.defineProperty(this, 'dataToView', { value: options.dataToView });
 		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }
-		if (typeof options.parseValue === 'function') { Reflect.defineProperty(this, 'parseValue', { value: options.parseValue }); }
+		if (typeof options.parseParam === 'function') { Reflect.defineProperty(this, 'parseParam', { value: options.parseParam }); }
 	}
 	Rule.prototype.parseParam = function (ruleParam) {
 		var dataPath, tieName;

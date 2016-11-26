@@ -606,29 +606,24 @@
 		return ref;
 	}
 
-	function changeListener(ev) {
-		var view = ev.target, p, tn, t;
+	function changeListener(event) {
+		var t;
 
-		if (view.dataset.tieValue) {
-			p = view.dataset.tieValue;
-		} else {
-			p = view.dataset.tie;
-		}
-		//	TODO: the following condition is not always error state, need to decide regarding the cardinality of the value suppliers
-		if (!p) { console.error('path to data not available'); return; }
-		p = p.split('.');
-		if (!p) { console.error('path to data is invalid'); return; }
-		tn = p.shift();
-		t = internals.ties.obtain(tn);
-		if (!t) { console.error('tie "' + tn + '" not found'); return; }
+		internals.rules.getApplicable(event.target).forEach(function (rule) {
+			if (rule.name === 'tieValue') {
+				var ruleParam = rule.parseParam(event.target.dataset[rule.name]),
+					tie = scope.DataTier.ties.get(ruleParam.tieName);
+				if (!ruleParam.dataPath) { console.error('path to data not available'); return; }
+				if (!tie) { console.error('tie "' + ruleParam.tieName + '" not found'); return; }
 
-		t.viewToDataProcessor({ data: t.data, path: p, view: view });
+				tie.viewToDataProcessor({ data: tie.data, path: ruleParam.dataPath, view: event.target });
+			}
+		});
 	}
 
-	function addChangeListener(v) {
-		var ow = v.ownerDocument.defaultView;
-		if (v instanceof ow.HTMLInputElement || v instanceof ow.HTMLSelectElement) {
-			v.addEventListener('change', changeListener);
+	function addChangeListener(view) {
+		if (view.nodeName === 'INPUT' || view.nodeName === 'SELECT') {
+			view.addEventListener('change', changeListener);
 		}
 	}
 
@@ -681,6 +676,7 @@
 			//	collect potentially future rules element and put them into some tracking storage
 			for (var key in view.dataset) {
 				if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
+					console.warn('non-registerd rule "' + key + '" used, it may still be defined later in code and post-tied');
 					if (!nlvs[key]) nlvs[key] = [];
 					nlvs[key].push(view);
 				}
@@ -913,7 +909,7 @@
 		Reflect.defineProperty(this, 'name', { value: name });
 		Reflect.defineProperty(this, 'dataToView', { value: options.dataToView });
 		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }
-		if (typeof options.parseValue === 'function') { Reflect.defineProperty(this, 'parseValue', { value: options.parseValue }); }
+		if (typeof options.parseParam === 'function') { Reflect.defineProperty(this, 'parseParam', { value: options.parseParam }); }
 	}
 	Rule.prototype.parseParam = function (ruleParam) {
 		var dataPath, tieName;
@@ -943,11 +939,7 @@
 	}
 
 	function getRule(name) {
-		if (rules[name]) {
-			return rules[name];
-		} else {
-			console.error('rule "' + name + '" is not defined');
-		}
+		return rules[name];
 	}
 
 	function removeRule(name) {
@@ -1027,21 +1019,6 @@
 		var Rule = scope.DataTier.rules.Rule,
 			add = scope.DataTier.rules.add
 
-		add(new Rule('tie', {
-			dataToView: function (data, view) {
-				var dfltValueElements = ['INPUT', 'TEXTAREA', 'SELECT', 'OPTION', 'PROGRESS', 'METER'];
-				if (view && view.nodeType === Node.ELEMENT_NODE) {
-					if (dfltValueElements.indexOf(view.tagName) >= 0) {
-						view.value = data;
-					} else {
-						view.textContent = data;
-					}
-				} else {
-					console.error('valid element expected, found: ' + view);
-				}
-			}
-		}));
-
 		add(new Rule('tieValue', {
 			dataToView: function (data, view) {
 				view.value = data;
@@ -1085,8 +1062,8 @@
 		}));
 
 		add(new Rule('tieList', {
-			parseValue: function (ruleValue) {
-				return Rule.prototype.parseValue(ruleValue.split(/\s*=>\s*/)[0]);
+			parseParam: function (ruleValue) {
+				return Rule.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
 			},
 			dataToView: function (tiedValue, template) {
 				var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df;
