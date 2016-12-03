@@ -23,29 +23,30 @@
 	document.body.appendChild(c);
 
 	suite.addTest({ name: 'array binding - verification' }, function (pass, fail) {
-		if (e1.textContent !== '') fail('preliminary check failed');
-		if (e2.textContent !== '') fail('preliminary check failed');
-		if (e3.textContent !== '') fail('preliminary check failed');
+		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
+		setTimeout(function () {
+			if (e1.textContent !== '') fail('preliminary check failed');
+			if (e2.textContent !== '') fail('preliminary check failed');
+			if (e3.textContent !== '') fail('preliminary check failed');
 
-		function onViewUpdate(e) {
+			oUsers.push({
+				name: 'A',
+				age: 5,
+				address: { street: 'some street' }
+			});
+
 			if (c.childElementCount !== 2) fail('expected child elements of repeater to be 2, found: ' + c.childElementCount);
 			if (c.childNodes[1].childNodes[0].textContent !== 'A') fail('expected first repeated sub-child text to be "A", found: ' + c.childNodes[1].childNodes[0].textContent);
 			if (c.childNodes[1].childNodes[1].textContent !== '5') fail('expected first repeated sub-child text to be "5", found: ' + c.childNodes[1].childNodes[1].textContent);
 			if (c.childNodes[1].childNodes[2].textContent !== 'some street') fail('expected first repeated sub-child text to be "some street", found: ' + c.childNodes[1].childNodes[2].textContent);
-			c.removeEventListener('viewupdate', onViewUpdate);
 			pass();
-		}
-		t.addEventListener('viewupdate', onViewUpdate);
-
-		oUsers.push({
-			name: 'A',
-			age: 5,
-			address: { street: 'some street' }
-		});
+		}, 0);
 	});
 
 	suite.addTest({ name: 'array binding - bulk update' }, function (pass, fail) {
-		var d = [
+		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
+		setTimeout(function () {
+			var d = [
 			{
 				name: 'A',
 				age: 5,
@@ -71,42 +72,39 @@
 				age: 13,
 				address: { street: 'some street 5' }
 			}
-		];
+			],
+			dO = Observable.from(d);
 
-		function onViewUpdate(e) {
+			DataTier.ties.get('usersA').data = dO;
+
 			if (c.childElementCount !== 6) fail('expected child elements of repeater to be 6, found: ' + c.childElementCount);
 			for (var i = 0; i < d.length; i++) {
 				if (c.childNodes[i + 1].childNodes[0].textContent !== d[i].name) fail('unexpected text content of repeated element ' + i + ' sub-child 0');
 				if (c.childNodes[i + 1].childNodes[1].textContent !== d[i].age.toString()) fail('unexpected text content of repeated element ' + i + ' sub-child 1');
 				if (c.childNodes[i + 1].childNodes[2].textContent !== d[i].address.street) fail('unexpected text content of repeated element ' + i + ' sub-child 2');
 			}
-			c.removeEventListener('viewupdate', onViewUpdate);
 			pass();
-		}
-		t.addEventListener('viewupdate', onViewUpdate);
-
-		window.DataTier.ties.get('usersA').data = d;
+		}, 0);
 	});
 
 	suite.addTest({ name: 'array binding - huge bulk update (2000 rows)' }, function (pass, fail) {
-		var a = [], i;
+		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
+		setTimeout(function () {
+			var a = [], aO, i;
 
-		function onViewUpdate(e) {
+			for (i = 0; i < 2000; i++) {
+				a.push({
+					name: 'A',
+					age: 6,
+					address: { street: 'some street 1' }
+				});
+			}
+			DataTier.ties.get('usersA').data = Observable.from(a);
+
 			if (c.childElementCount !== 2001) fail('expected child elements of repeater to be 2001, found: ' + c.childElementCount);
 			//	TODO: ensure the content of the repeated child is as expected
-			c.removeEventListener('viewupdate', onViewUpdate);
 			pass();
-		}
-		t.addEventListener('viewupdate', onViewUpdate);
-
-		for (i = 0; i < 2000; i++) {
-			a.push({
-				name: 'A',
-				age: 6,
-				address: { street: 'some street 1' }
-			});
-		}
-		window.DataTier.ties.get('usersA').data = a;
+		}, 0);
 	});
 
 	suite.run();

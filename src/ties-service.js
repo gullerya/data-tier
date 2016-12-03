@@ -20,13 +20,19 @@
 		Reflect.defineProperty(this, 'data', {
 			get: function () { return data; },
 			set: function (observable) {
-				validateObservable(observable)
-				if (data) {
-					data.revoke();
+				if (observable) {
+					validateObservable(observable);
+					if (data) {
+						data.revoke();
+					}
 				}
 
+				var oldData = data;
 				data = observable;
-				data.observe(observer);
+				if (data) {
+					data.observe(observer);
+				}
+				internals.views.processChanges(name, [{ type: 'update', value: data, oldValue: oldData, path: [] }]);
 			}
 		});
 

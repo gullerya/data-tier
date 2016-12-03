@@ -199,21 +199,25 @@
 
 	function processChanges(tieName, changes) {
 		var tieViews = views[tieName], ruleViews, pathString;
-		changes.forEach(function (change) {
-			pathString = change.path.join('.');
-			Object.keys(tieViews).forEach(function (ruleName) {
-				ruleViews = tieViews[ruleName];
-				if (ruleViews) {
-					Object.keys(ruleViews).forEach(function (path) {
-						if (path.indexOf(pathString) === 0) {
-							ruleViews[path].forEach(function (view) {
-								update(view, ruleName);
-							});
-						}
-					});
-				}
+		if (tieViews) {
+			changes.forEach(function (change) {
+				pathString = change.path.join('.');
+				Object.keys(tieViews).forEach(function (ruleName) {
+					ruleViews = tieViews[ruleName];
+					if (ruleViews) {
+						Object.keys(ruleViews).forEach(function (path) {
+							if (path.indexOf(pathString) === 0 || path === '') {
+								ruleViews[path].forEach(function (view) {
+									update(view, ruleName);
+								});
+							}
+						});
+					}
+				});
 			});
-		});
+		} else {
+			console.debug('views of tie "' + tieName + '" are not defined');
+		}
 	}
 
 	function dataAttrToProp(v) {
@@ -284,6 +288,7 @@
 		//	internal APIs
 		Reflect.defineProperty(internals.views, 'init', { value: init });
 		Reflect.defineProperty(internals.views, 'processChanges', { value: processChanges });
+		Reflect.defineProperty(internals.views, 'update', { value: update });
 		//Reflect.defineProperty(internals.views, 'relocateByRule', { value: relocateByRule });
 		//Reflect.defineProperty(internals.views, 'discard', { value: discard });
 		//Reflect.defineProperty(internals.views, 'move', { value: move });

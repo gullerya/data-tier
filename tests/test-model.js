@@ -71,12 +71,14 @@
 	suite.addTest({ name: 'binding view to object' }, function (pass, fail) {
 		var t = window.DataTier.ties.get('userA');
 		s3.dataset.tieText = 'userA:address';
-		if (s3.textContent !== '') fail(new Error('expected the content to be empty'));
+		if (s3.textContent !== '') fail(new Error('expected the content to be empty, found: ' + s3.textContent));
 		t.data.address = { street: 'street name', apt: 17 };
 		t.data.address.toString = function () { return 'Street: ' + this.street + '; Apt: ' + this.apt };
-		if (s4.textContent !== '17') fail(new Error('expected the content to be 17'));
-		if (s3.textContent !== t.data.address.toString()) fail(new Error('expected the content to be string of object'));
-		pass();
+		setTimeout(function () {
+			if (s4.textContent !== '17') fail(new Error('expected the content to be 17'));
+			if (s3.textContent !== t.data.address.toString()) fail(new Error('expected the content to be string of object'));
+			pass();
+		}, 0);
 	});
 
 	suite.run();

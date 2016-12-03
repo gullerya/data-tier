@@ -20,13 +20,19 @@
 		Reflect.defineProperty(this, 'data', {
 			get: function () { return data; },
 			set: function (observable) {
-				validateObservable(observable)
-				if (data) {
-					data.revoke();
+				if (observable) {
+					validateObservable(observable);
+					if (data) {
+						data.revoke();
+					}
 				}
 
+				var oldData = data;
 				data = observable;
-				data.observe(observer);
+				if (data) {
+					data.observe(observer);
+				}
+				internals.views.processChanges(name, [{ type: 'update', value: data, oldValue: oldData, path: [] }]);
 			}
 		});
 
@@ -268,43 +274,43 @@
 
 		add(new Rule('tieValue', {
 			dataToView: function (data, view) {
-				view.value = data;
+				view.value = data ? data : '';
 			}
 		}));
 
 		add(new Rule('tieText', {
 			dataToView: function (data, view) {
-				view.textContent = data;
+				view.textContent = data ? data.toString() : '';
 			}
 		}));
 
 		add(new Rule('tiePlaceholder', {
 			dataToView: function (data, view) {
-				view.placeholder = data;
+				view.placeholder = data ? data : '';
 			}
 		}));
 
 		add(new Rule('tieTooltip', {
 			dataToView: function (data, view) {
-				view.title = data;
+				view.title = data ? data : '';
 			}
 		}));
 
 		add(new Rule('tieImage', {
 			dataToView: function (data, view) {
-				view.src = data;
+				view.src = data ? data : '';
 			}
 		}));
 
 		add(new Rule('tieDateValue', {
 			dataToView: function (data, view) {
-				view.value = data.toLocaleString();
+				view.value = data ? data.toLocaleString() : '';
 			}
 		}));
 
 		add(new Rule('tieDateText', {
 			dataToView: function (data, view) {
-				view.textContent = data.toLocaleString();
+				view.textContent = data ? data.toLocaleString() : '';
 			}
 		}));
 
@@ -330,8 +336,8 @@
 				if (!template.dataset.listSourceAid) {
 					template.dataset.listSourceAid = new Date().getTime();
 				}
-				i = shortenListTo(tiedValue.data ? tiedValue.data.length : 0, template.dataset.listSourceAid);
-				if (tiedValue.data && i < tiedValue.data.length) {
+				i = shortenListTo(tiedValue ? tiedValue.length : 0, template.dataset.listSourceAid);
+				if (tiedValue && i < tiedValue.length) {
 					ruleData = template.dataset.tieList.trim().split(/\s+/);
 					if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 						console.error('invalid parameter for "tieList" rule specified');
@@ -339,13 +345,13 @@
 						itemId = ruleData[2];
 						d = template.ownerDocument;
 						df = d.createDocumentFragment();
-						for (; i < tiedValue.data.length; i++) {
+						for (; i < tiedValue.length; i++) {
 							nv = d.importNode(template.content, true);
 							vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
 							vs.forEach(function (view) {
 								Object.keys(view.dataset).forEach(function (key) {
-									if (view.dataset[key].indexOf(itemId + '.') === 0) {
-										view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
+									if (view.dataset[key].indexOf(itemId) === 0) {
+										view.dataset[key] = view.dataset[key].replace(itemId + ':', ruleData[0] + ':' + i + '.');
 										internals.views.update(view, key);
 									}
 								});
@@ -400,8 +406,6 @@
 	}
 
 	function changeListener(event) {
-		var t;
-
 		internals.rules.getApplicable(event.target).forEach(function (rule) {
 			if (rule.name === 'tieValue') {
 				var ruleParam = rule.parseParam(event.target.dataset[rule.name]),
@@ -566,21 +570,25 @@
 
 	function processChanges(tieName, changes) {
 		var tieViews = views[tieName], ruleViews, pathString;
-		changes.forEach(function (change) {
-			pathString = change.path.join('.');
-			Object.keys(tieViews).forEach(function (ruleName) {
-				ruleViews = tieViews[ruleName];
-				if (ruleViews) {
-					Object.keys(ruleViews).forEach(function (path) {
-						if (path.indexOf(pathString) === 0) {
-							ruleViews[path].forEach(function (view) {
-								update(view, ruleName);
-							});
-						}
-					});
-				}
+		if (tieViews) {
+			changes.forEach(function (change) {
+				pathString = change.path.join('.');
+				Object.keys(tieViews).forEach(function (ruleName) {
+					ruleViews = tieViews[ruleName];
+					if (ruleViews) {
+						Object.keys(ruleViews).forEach(function (path) {
+							if (path.indexOf(pathString) === 0 || path === '') {
+								ruleViews[path].forEach(function (view) {
+									update(view, ruleName);
+								});
+							}
+						});
+					}
+				});
 			});
-		});
+		} else {
+			console.debug('views of tie "' + tieName + '" are not defined');
+		}
 	}
 
 	function dataAttrToProp(v) {
@@ -651,6 +659,7 @@
 		//	internal APIs
 		Reflect.defineProperty(internals.views, 'init', { value: init });
 		Reflect.defineProperty(internals.views, 'processChanges', { value: processChanges });
+		Reflect.defineProperty(internals.views, 'update', { value: update });
 		//Reflect.defineProperty(internals.views, 'relocateByRule', { value: relocateByRule });
 		//Reflect.defineProperty(internals.views, 'discard', { value: discard });
 		//Reflect.defineProperty(internals.views, 'move', { value: move });

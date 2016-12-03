@@ -16,17 +16,15 @@ module.exports.obtainChrome = function (callback) {
     utils.removeFolderSync('./tmp');
     fs.mkdirSync('./tmp');
 
-    process.stdout.write('Obtaining latest Chromium revision...');
     var req = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumRevisionPathWin }, res => {
         var revision = '',
             contentReq,
             destination;
         res.on('data', chunk => revision += chunk.toString());
         res.on('end', () => {
-            readline.cursorTo(process.stdout, 40);
-            process.stdout.write('\033[32m' + revision + '\033[0m' + os.EOL);
+            process.stdout.write('Latest Chromium revision found is \033[32m' + revision + '\033[39m (Windows)' + os.EOL);
 
-            process.stdout.write('Downloading Chromium...');
+            process.stdout.write('Downloading Chromium... ');
             destination = fs.createWriteStream('./tmp/chromium.zip');
             contentReq = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumDownloadPathWin.replace('{REVISION}', revision) }, contentRes => {
                 var totalLength = 0,
@@ -37,25 +35,25 @@ module.exports.obtainChrome = function (callback) {
                     if (Math.round(tmpLength / 1000000) > 1) {
                         totalLength += tmpLength;
                         readline.cursorTo(process.stdout, 40);
-                        process.stdout.write('\033[32m' + Math.round(totalLength / 1000000) + ' MB  ');
+                        process.stdout.write('\033[32m' + Math.round(totalLength / 1000000) + '\033[37m MB');
                         tmpLength = 0;
                     }
                 });
                 contentRes.on('end', () => {
-                    process.stdout.write('\033[0m' + os.EOL);
+                    process.stdout.write('\033[37m' + os.EOL);
 
-                    process.stdout.write('Unzipping Chromium...\t');
+                    process.stdout.write('Unzipping Chromium...');
                     try {
                         var zip = new admZip('./tmp/chromium.zip');
                         zip.extractAllTo('./tmp/chromium', true);
                         readline.cursorTo(process.stdout, 40);
-                        process.stdout.write('\033[32mOK\033[0m' + os.EOL);
+                        process.stdout.write('\033[32mOK\033[37m' + os.EOL);
                         if (typeof callback === 'function') {
                             callback();
                         }
                     } catch (e) {
                         readline.cursorTo(process.stdout, 40);
-                        process.stdout.write('\033[31m' + e + '\033[0m' + os.EOL);
+                        process.stdout.write('\033[31m' + e + '\033[37m' + os.EOL);
                     }
                 });
             });
