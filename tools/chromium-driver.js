@@ -30,18 +30,15 @@ module.exports.obtainChrome = function (callback) {
 			destination = fs.createWriteStream('./tmp/chromium.zip');
 			contentReq = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumDownloadPathWin.replace('{REVISION}', revision) }, contentRes => {
 				var totalLength = 0,
-                    tmpLength = 0,
-                	strout;
+                    tmpLength = 0;
 				contentRes.pipe(destination);
 				contentRes.on('data', chunk => {
 					tmpLength += chunk.length;
 					if (Math.round(tmpLength / 1000000) > 1) {
 						totalLength += tmpLength;
-						strout = padNumber(Math.round(totalLength / 1000000), 4);
 						process.stdout.write('\x1B7');
-						process.stdout.write('\x1B[32m' + strout + '\x1B[37m MB');
+						process.stdout.write('\x1B[32m' + Math.round(totalLength / 1000000) + '\x1B[37m MB');
 						process.stdout.write('\x1B8');
-						//process.stdout.write('\x1B[7D');
 						tmpLength = 0;
 					}
 				});
@@ -67,11 +64,3 @@ module.exports.obtainChrome = function (callback) {
 	req.end();
 	req.on('error', error => console.error(error));
 };
-
-function padNumber(number, targetLength) {
-	let result = number.toString();
-	if (result.length < targetLength) {
-		result = ' '.repeat(targetLength - result.length) + result;
-	}
-	return result;
-}

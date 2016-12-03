@@ -25,8 +25,10 @@
 		setTimeout(function () {
 			if (s1.textContent !== user.name) fail(new Error('preliminary check failed'));
 			s1.dataset.tieText = 'userB:address.street';
-			if (s1.textContent !== user.address.street) fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
-			pass();
+			setTimeout(function () {
+				if (s1.textContent !== user.address.street) fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
+				pass();
+			}, 0);
 		}, 0);
 	});
 
