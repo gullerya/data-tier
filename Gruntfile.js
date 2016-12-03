@@ -1,6 +1,6 @@
 const os = require('os'),
-	builder = require('./tools/builder.js'),
-    chromeDriver = require('./tools/chromium-driver.js');
+	builder = require('./tests/tools/builder.js'),
+    chromeDriver = require('./tests/tools/chromium-driver.js');
 
 module.exports = function (grunt) {
 	grunt.initConfig({
@@ -8,7 +8,7 @@ module.exports = function (grunt) {
 			options: {
 				configFile: 'eslint.json'
 			},
-			src: ['Gruntfile.js', 'src/**/*.js']
+			src: ['src/**/*.js', 'Gruntfile.js']
 		},
 		uglify: {
 			build: {
