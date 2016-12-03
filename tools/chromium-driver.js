@@ -46,17 +46,15 @@ module.exports.obtainChrome = function (callback) {
 				contentRes.on('end', () => {
 					process.stdout.write('\x1B[37m' + os.EOL);
 
-					process.stdout.write('Unzipping Chromium...');
+					process.stdout.write('Unzipping Chromium... ');
 					try {
 						var zip = new admZip('./tmp/chromium.zip');
 						zip.extractAllTo('./tmp/chromium', true);
-						readline.cursorTo(process.stdout, 40);
 						process.stdout.write('\x1B[32mOK\x1B[37m' + os.EOL);
 						if (typeof callback === 'function') {
 							callback();
 						}
 					} catch (e) {
-						readline.cursorTo(process.stdout, 40);
 						process.stdout.write('\x1B[31m' + e + '\x1B[37m' + os.EOL);
 					}
 				});
