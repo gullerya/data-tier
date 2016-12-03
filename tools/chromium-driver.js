@@ -1,4 +1,6 @@
-﻿const os = require('os'),
+﻿'use strict';
+
+const os = require('os'),
     fs = require('fs'),
     path = require('path'),
     http = require('http'),
@@ -13,53 +15,63 @@
     chromiumDownloadPathWin = '/download/storage/v1/b/chromium-browser-snapshots/o/Win_x64%2F{REVISION}%2Fchrome-win32.zip?alt=media';
 
 module.exports.obtainChrome = function (callback) {
-    utils.removeFolderSync('./tmp');
-    fs.mkdirSync('./tmp');
+	utils.removeFolderSync('./tmp');
+	fs.mkdirSync('./tmp');
 
-    var req = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumRevisionPathWin }, res => {
-        var revision = '',
+	var req = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumRevisionPathWin }, res => {
+		var revision = '',
             contentReq,
             destination;
-        res.on('data', chunk => revision += chunk.toString());
-        res.on('end', () => {
-            process.stdout.write('Latest Chromium revision found is \033[32m' + revision + '\033[39m (Windows)' + os.EOL);
+		res.on('data', chunk => revision += chunk.toString());
+		res.on('end', () => {
+			process.stdout.write('Latest Chromium revision found is \x1B[32m' + revision + '\x1B[37m (Windows)' + os.EOL);
 
-            process.stdout.write('Downloading Chromium... ');
-            destination = fs.createWriteStream('./tmp/chromium.zip');
-            contentReq = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumDownloadPathWin.replace('{REVISION}', revision) }, contentRes => {
-                var totalLength = 0,
-                    tmpLength = 0;
-                contentRes.pipe(destination);
-                contentRes.on('data', chunk => {
-                    tmpLength += chunk.length;
-                    if (Math.round(tmpLength / 1000000) > 1) {
-                        totalLength += tmpLength;
-                        readline.cursorTo(process.stdout, 40);
-                        process.stdout.write('\033[32m' + Math.round(totalLength / 1000000) + '\033[37m MB');
-                        tmpLength = 0;
-                    }
-                });
-                contentRes.on('end', () => {
-                    process.stdout.write('\033[37m' + os.EOL);
+			process.stdout.write('Downloading Chromium... ');
+			destination = fs.createWriteStream('./tmp/chromium.zip');
+			contentReq = https.request({ method: 'GET', hostname: googleAPIs, path: chromiumDownloadPathWin.replace('{REVISION}', revision) }, contentRes => {
+				var totalLength = 0,
+                    tmpLength = 0,
+                	strout;
+				contentRes.pipe(destination);
+				contentRes.on('data', chunk => {
+					tmpLength += chunk.length;
+					if (Math.round(tmpLength / 1000000) > 1) {
+						totalLength += tmpLength;
+						strout = padNumber(Math.round(totalLength / 1000000), 4);
+						process.stdout.write('\x1B[32m' + strout + '\x1B[37m MB');
+						process.stdout.write('\x1B[7D');
+						tmpLength = 0;
+					}
+				});
+				contentRes.on('end', () => {
+					process.stdout.write('\x1B[37m' + os.EOL);
 
-                    process.stdout.write('Unzipping Chromium...');
-                    try {
-                        var zip = new admZip('./tmp/chromium.zip');
-                        zip.extractAllTo('./tmp/chromium', true);
-                        readline.cursorTo(process.stdout, 40);
-                        process.stdout.write('\033[32mOK\033[37m' + os.EOL);
-                        if (typeof callback === 'function') {
-                            callback();
-                        }
-                    } catch (e) {
-                        readline.cursorTo(process.stdout, 40);
-                        process.stdout.write('\033[31m' + e + '\033[37m' + os.EOL);
-                    }
-                });
-            });
-            contentReq.end();
-        });
-    });
-    req.end();
-    req.on('error', error => console.error(error));
+					process.stdout.write('Unzipping Chromium...');
+					try {
+						var zip = new admZip('./tmp/chromium.zip');
+						zip.extractAllTo('./tmp/chromium', true);
+						readline.cursorTo(process.stdout, 40);
+						process.stdout.write('\x1B[32mOK\x1B[37m' + os.EOL);
+						if (typeof callback === 'function') {
+							callback();
+						}
+					} catch (e) {
+						readline.cursorTo(process.stdout, 40);
+						process.stdout.write('\x1B[31m' + e + '\x1B[37m' + os.EOL);
+					}
+				});
+			});
+			contentReq.end();
+		});
+	});
+	req.end();
+	req.on('error', error => console.error(error));
 };
+
+function padNumber(number, targetLength) {
+	let result = number.toString();
+	if (result.length < targetLength) {
+		result = ' '.repeat(targetLength - result.length) + result;
+	}
+	return result;
+}
