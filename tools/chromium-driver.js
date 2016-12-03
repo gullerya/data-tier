@@ -38,9 +38,9 @@ module.exports.obtainChrome = function (callback) {
 					if (Math.round(tmpLength / 1000000) > 1) {
 						totalLength += tmpLength;
 						strout = padNumber(Math.round(totalLength / 1000000), 4);
-						process.stdout.write('\x1B[s');
+						process.stdout.write('\x1B[7');
 						process.stdout.write('\x1B[32m' + strout + '\x1B[37m MB');
-						process.stdout.write('\x1B[u');
+						process.stdout.write('\x1B[8');
 						//process.stdout.write('\x1B[7D');
 						tmpLength = 0;
 					}
