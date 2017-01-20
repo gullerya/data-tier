@@ -11,19 +11,17 @@ var sourcesWithOO,
 sourcesWithOO = [
     path.join('node_modules', 'object-observer', 'dist', 'object-observer.js'),
     path.join('src', 'ties-service.js'),
-    path.join('src', 'views-service.js'),
     path.join('src', 'rules-service.js'),
-    path.join('src', 'vanilla-rules.js'),
-    path.join('src', 'data-tier.js')
+    path.join('src', 'views-service.js'),
+    path.join('src', 'vanilla-rules.js')
 ];
 destinationWithOO = path.join('dist', 'data-tier.js');
 
 sourcesWithoutOO = [
     path.join('src', 'ties-service.js'),
     path.join('src', 'rules-service.js'),
-    path.join('src', 'vanilla-rules.js'),
     path.join('src', 'views-service.js'),
-    path.join('src', 'data-tier.js')
+    path.join('src', 'vanilla-rules.js')
 ];
 destinationWithoutOO = path.join('dist', 'data-tier-wo-oo.js');
 

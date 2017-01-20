@@ -1,24 +1,9 @@
 ﻿(function (scope) {
 	'use strict';
 
-	var internals, rules = {};
-
-	if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
+	var rules = {};
 
 	function Rule(name, options) {
-		if (typeof name !== 'string' || !name) {
-			throw new Error('name MUST be a non-empty string');
-		}
-		if (rules[name]) {
-			throw new Error('rule "' + name + '" already exists; you may want to reconfigure the existing rule');
-		}
-		if (typeof options !== 'object' || !options) {
-			throw new Error('options MUST be a non-null object');
-		}
-		if (typeof options.dataToView !== 'function') {
-			throw new Error('options MUST have a "dataToView" function defined');
-		}
-
 		//if (typeof setup === 'string') {
 		//    dtv = function (e, s) {
 		//        var d;
@@ -61,12 +46,22 @@
 		}
 	};
 
-	function addRule(rule) {
-		if (!rule || !(rule instanceof Rule)) {
-			throw new Error('rule MUST be an object of type Rule');
+	function addRule(name, configuration) {
+		if (typeof name !== 'string' || !name) {
+			throw new Error('name MUST be a non-empty string');
+		}
+		if (rules[name]) {
+			throw new Error('rule "' + name + '" already exists; you may want to reconfigure the existing rule');
+		}
+		if (typeof configuration !== 'object' || !configuration) {
+			throw new Error('configuration MUST be a non-null object');
+		}
+		if (typeof configuration.dataToView !== 'function') {
+			throw new Error('configuration MUST have a "dataToView" function defined');
 		}
 
-		rules[rule.name] = rule;
+		rules[name] = new Rule(name, configuration);
+		scope.DataTier.views.applyRule(rules[name]);
 	}
 
 	function getRule(name) {
@@ -126,20 +121,11 @@
 	//    }
 	//});
 
-	function RulesService(config) {
-		internals = config;
-		internals.rules = {};
+	Reflect.defineProperty(scope.DataTier, 'rules', { value: {} });
+	Reflect.defineProperty(scope.DataTier.rules, 'get', { value: getRule });
+	Reflect.defineProperty(scope.DataTier.rules, 'add', { value: addRule });
+	Reflect.defineProperty(scope.DataTier.rules, 'remove', { value: removeRule });
 
-		//	public APIs
-		Reflect.defineProperty(this, 'Rule', { value: Rule });
-		Reflect.defineProperty(this, 'get', { value: getRule });
-		Reflect.defineProperty(this, 'add', { value: addRule });
-		Reflect.defineProperty(this, 'remove', { value: removeRule });
-
-		//	internal APIs
-		Reflect.defineProperty(internals.rules, 'getApplicable', { value: getApplicable });
-	}
-
-	Reflect.defineProperty(scope.DataTier, 'RulesService', { value: RulesService });
+	Reflect.defineProperty(scope.DataTier.rules, 'getApplicable', { value: getApplicable });
 
 })(this);

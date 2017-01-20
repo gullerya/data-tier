@@ -36,10 +36,13 @@
 			});
 
 			if (c.childElementCount !== 2) fail('expected child elements of repeater to be 2, found: ' + c.childElementCount);
-			if (c.childNodes[1].childNodes[0].textContent !== 'A') fail('expected first repeated sub-child text to be "A", found: ' + c.childNodes[1].childNodes[0].textContent);
-			if (c.childNodes[1].childNodes[1].textContent !== '5') fail('expected first repeated sub-child text to be "5", found: ' + c.childNodes[1].childNodes[1].textContent);
-			if (c.childNodes[1].childNodes[2].textContent !== 'some street') fail('expected first repeated sub-child text to be "some street", found: ' + c.childNodes[1].childNodes[2].textContent);
-			pass();
+
+			setTimeout(function () {
+				if (c.childNodes[1].childNodes[0].textContent !== 'A') fail('expected first repeated sub-child text to be "A", found: ' + c.childNodes[1].childNodes[0].textContent);
+				if (c.childNodes[1].childNodes[1].textContent !== '5') fail('expected first repeated sub-child text to be "5", found: ' + c.childNodes[1].childNodes[1].textContent);
+				if (c.childNodes[1].childNodes[2].textContent !== 'some street') fail('expected first repeated sub-child text to be "some street", found: ' + c.childNodes[1].childNodes[2].textContent);
+				pass();
+			}, 0);
 		}, 0);
 	});
 
@@ -78,12 +81,14 @@
 			DataTier.ties.get('usersA').data = dO;
 
 			if (c.childElementCount !== 6) fail('expected child elements of repeater to be 6, found: ' + c.childElementCount);
-			for (var i = 0; i < d.length; i++) {
-				if (c.childNodes[i + 1].childNodes[0].textContent !== d[i].name) fail('unexpected text content of repeated element ' + i + ' sub-child 0');
-				if (c.childNodes[i + 1].childNodes[1].textContent !== d[i].age.toString()) fail('unexpected text content of repeated element ' + i + ' sub-child 1');
-				if (c.childNodes[i + 1].childNodes[2].textContent !== d[i].address.street) fail('unexpected text content of repeated element ' + i + ' sub-child 2');
-			}
-			pass();
+			setTimeout(function () {
+				for (var i = 0; i < d.length; i++) {
+					if (c.childNodes[i + 1].childNodes[0].textContent !== d[i].name) fail('unexpected text content of repeated element ' + i + ' sub-child 0');
+					if (c.childNodes[i + 1].childNodes[1].textContent !== d[i].age.toString()) fail('unexpected text content of repeated element ' + i + ' sub-child 1');
+					if (c.childNodes[i + 1].childNodes[2].textContent !== d[i].address.street) fail('unexpected text content of repeated element ' + i + ' sub-child 2');
+				}
+				pass();
+			}, 0);
 		}, 0);
 	});
 

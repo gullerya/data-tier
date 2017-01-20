@@ -1,6 +1,6 @@
 const os = require('os'),
-	builder = require('./tests/tools/builder.js'),
-    chromeDriver = require('./tests/tools/chromium-driver.js');
+	builder = require('./tools/builder.js'),
+    chromeDriver = require('./tools/chromium-driver.js');
 
 module.exports = function (grunt) {
 	grunt.initConfig({

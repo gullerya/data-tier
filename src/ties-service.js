@@ -1,15 +1,13 @@
 ﻿(function (scope) {
 	'use strict';
 
-	var internals, ties = {};
-
-	if (!scope.DataTier) { Reflect.defineProperty(scope, 'DataTier', { value: {} }); }
+	var ties = {};
 
 	function Tie(name, observable, options) {
 		var data;
 
 		function observer(changes) {
-			internals.views.processChanges(name, changes);
+			scope.DataTier.views.processChanges(name, changes);
 		}
 
 		if (options && typeof options === 'object') {
@@ -32,7 +30,7 @@
 				if (data) {
 					data.observe(observer);
 				}
-				internals.views.processChanges(name, [{ type: 'update', value: data, oldValue: oldData, path: [] }]);
+				scope.DataTier.views.processChanges(name, [{ type: 'update', value: data, oldValue: oldData, path: [] }]);
 			}
 		});
 
@@ -110,13 +108,10 @@
 	//	});
 	//}
 
-	function TiesService(config) {
-		internals = config;
-		Reflect.defineProperty(this, 'get', { value: function (name) { return ties[name]; } });
-		Reflect.defineProperty(this, 'create', { value: create });
-		Reflect.defineProperty(this, 'remove', { value: remove });
-	}
-
-	Reflect.defineProperty(scope.DataTier, 'TiesService', { value: TiesService });
+	Reflect.defineProperty(scope, 'DataTier', { value: {} });
+	Reflect.defineProperty(scope.DataTier, 'ties', { value: {} });
+	Reflect.defineProperty(scope.DataTier.ties, 'get', { value: function (name) { return ties[name]; } });
+	Reflect.defineProperty(scope.DataTier.ties, 'create', { value: create });
+	Reflect.defineProperty(scope.DataTier.ties, 'remove', { value: remove });
 
 })(this);
