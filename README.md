@@ -6,7 +6,7 @@
 `DataTier` ('tier' from 'to tie') is a service oriented framework, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
 This library works tightly with [`Observable`](https://github.com/gullerya/object-observer-js#observable-static-properties)-driven event cycle, therefore it comes with an embedded [`object-observer.js`](https://github.com/gullerya/object-observer-js) library.
 
-Yet, it is possible to provide any other `Observable` implementation, if it provides the same functionality. In this case you may want to import lightweigth `data-tier` distribution (bundled within npm module as well) without `object-observer.js`.
+Yet, it is possible to provide any other `Observable` implementation, if it provides the same functionality. In this case you may want to use lighter `data-tier` distribution (bundled within the same npm module) without `object-observer.js`.
 
 #### Support matrix: ![CHROME](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/firefox.png) <sub>42+</sub>, ![EDGE](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/explorer.png) <sub>13+</sub>
 Support matrix is currently as wide as that of [`object-observer.js`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
@@ -16,7 +16,7 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 
 #### Versions
 - __0.6.0__
-  - Since native `Object.observe` was deprecated and removed, moved to `object-observer.js` library as an observation engine. This has impact on both the API and the implementaion.
+  - Moved to `object-observer.js` library as an observation engine, were impacted both the API and the implementaion.
 - __0.5.41__
   - First version, based on native `Object.observe` technology.
 

@@ -88,39 +88,6 @@
 		return result;
 	}
 
-	//Object.defineProperties(this, {
-	//    add: {
-	//        value: function (id, setup) {
-	//            if (!id || !setup) throw new Error('bad parameters; f(string, string|function) expected');
-	//            if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
-	//            if (id in rules) throw new Error('rule with id "' + id + '" already exists');
-	//            rules[id] = new Rule(id, setup);
-	//            viewsService.relocateByRule(rules[id]);
-	//            return rules[id];
-	//        }
-	//    },
-	//    get: {
-	//        value: function (id, e) {
-	//            var r, p;
-	//            if (id.indexOf('tie') !== 0) {
-	//                console.error('invalid tie id supplied');
-	//            } else if (id in rules) {
-	//                r = rules[id];
-	//            } else {
-	//                if (id === 'tie') {
-	//                    p = e.ownerDocument.defaultView;
-	//                    if (!e || !e.nodeName) throw new Error('rule "' + id + '" not found, therefore valid DOM element MUST be supplied to grasp the default rule');
-	//                    if (e instanceof p.HTMLInputElement ||
-	//                        e instanceof p.HTMLSelectElement) return rules.tieValue;
-	//                    else if (e instanceof p.HTMLImageElement) return rules.tieImage;
-	//                    else return rules.tieText;
-	//                }
-	//            }
-	//            return r;
-	//        }
-	//    }
-	//});
-
 	Reflect.defineProperty(scope.DataTier, 'rules', { value: {} });
 	Reflect.defineProperty(scope.DataTier.rules, 'get', { value: getRule });
 	Reflect.defineProperty(scope.DataTier.rules, 'add', { value: addRule });
