@@ -4,16 +4,6 @@
 	var views = {},
         nlvs = {};
 
-	//function setPath(ref, path, value) {
-	//	var i;
-	//	for (i = 0; i < path.length - 1; i++) {
-	//		if (typeof ref[path[i]] === 'object') ref = ref[path[i]];
-	//		else if (!(path[i] in ref)) ref = (ref[path[i]] = {});
-	//		else throw new Error('the path is unavailable');
-	//	}
-	//	ref[path[i]] = value;
-	//}
-
 	function getPath(ref, path) {
 		var i;
 		if (!ref) return;
@@ -98,18 +88,6 @@
 			}
 		}
 	}
-
-	//function get(path) {
-	//	var p = Array.isArray(p) ? p : p.split('.'), r = [], tmp, key;
-	//	tmp = getPath(vs, p);
-	//	if (tmp) {
-	//		Object.keys(tmp).forEach(function (key) {
-	//			if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
-	//			else Array.prototype.push.apply(r, get(path + '.' + key));
-	//		});
-	//	}
-	//	return r;
-	//}
 
 	function update(view, ruleName) {
 		var r, p, t, data;

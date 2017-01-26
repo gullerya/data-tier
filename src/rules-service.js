@@ -4,24 +4,6 @@
 	var rules = {};
 
 	function Rule(name, options) {
-		//if (typeof setup === 'string') {
-		//    dtv = function (e, s) {
-		//        var d;
-		//        if (s) {
-		//            d = s.data;
-		//            d = typeof d === 'undefined' || d === null ? '' : d;
-		//            setPath(e, setup, d);
-		//        }
-		//    };
-		//    itd = function () { throw new Error('not yet implemented'); };
-		//} else if (typeof setup === 'function') {
-		//    dtv = setup;
-		//    itd = function () { throw new Error('no "inputToData" functionality defined in this rule'); };
-		//} else if (typeof setup === 'object') {
-		//    dtv = setup.dataToView;
-		//    itd = setup.inputToData;
-		//}
-
 		Reflect.defineProperty(this, 'name', { value: name });
 		Reflect.defineProperty(this, 'dataToView', { value: options.dataToView });
 		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }

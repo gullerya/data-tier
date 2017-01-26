@@ -536,41 +536,6 @@
 		}
 	}
 
-	//function isPathStartsWith(p1, p2) {
-	//	var i, l;
-	//	l = Math.min(p1.length, p2.length);
-	//	for (i = 0; i < l; i++) {
-	//		if (p1[i] !== p2[i]) return false;
-	//	}
-	//	return true;
-	//}
-
-	//function observer(changes) {
-	//	changes.forEach(function (change) {
-	//		var path = change.path.slice();
-
-	//		//	retrieve all views from this path and below
-	//		//	update all views accordingly to the new value
-	//		//	transfer update to update service
-	//		//	later use the specific data of the event to optimize update
-	//		api.viewsService.update()
-
-	//		var vs = api.viewsService.get(path), i, l, key, p;
-	//		for (i = 0, l = vs.length; i < l; i++) {
-	//			for (key in vs[i].dataset) {
-	//				if (key.indexOf('tie') === 0) {
-	//					p = api.rulesService.getRule(key).parseValue(vs[i]).dataPath;
-	//					if (isPathStartsWith(path, p)) {
-	//						//	TODO: use the knowledge of old value and new value here, rules like list may optimize for that
-	//						//	TODO: yet, myst pass via the formatters/vizualizers of Rule/Tie
-	//						api.viewsService.update(vs[i], key);
-	//					}
-	//				}
-	//			}
-	//		}
-	//	});
-	//}
-
 	Reflect.defineProperty(scope, 'DataTier', { value: {} });
 	Reflect.defineProperty(scope.DataTier, 'ties', { value: {} });
 	Reflect.defineProperty(scope.DataTier.ties, 'get', { value: function (name) { return ties[name]; } });
@@ -584,24 +549,6 @@
 	var rules = {};
 
 	function Rule(name, options) {
-		//if (typeof setup === 'string') {
-		//    dtv = function (e, s) {
-		//        var d;
-		//        if (s) {
-		//            d = s.data;
-		//            d = typeof d === 'undefined' || d === null ? '' : d;
-		//            setPath(e, setup, d);
-		//        }
-		//    };
-		//    itd = function () { throw new Error('not yet implemented'); };
-		//} else if (typeof setup === 'function') {
-		//    dtv = setup;
-		//    itd = function () { throw new Error('no "inputToData" functionality defined in this rule'); };
-		//} else if (typeof setup === 'object') {
-		//    dtv = setup.dataToView;
-		//    itd = setup.inputToData;
-		//}
-
 		Reflect.defineProperty(this, 'name', { value: name });
 		Reflect.defineProperty(this, 'dataToView', { value: options.dataToView });
 		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }
@@ -668,39 +615,6 @@
 		return result;
 	}
 
-	//Object.defineProperties(this, {
-	//    add: {
-	//        value: function (id, setup) {
-	//            if (!id || !setup) throw new Error('bad parameters; f(string, string|function) expected');
-	//            if (id.indexOf('tie') !== 0) throw new Error('rule id MUST begin with "tie"');
-	//            if (id in rules) throw new Error('rule with id "' + id + '" already exists');
-	//            rules[id] = new Rule(id, setup);
-	//            viewsService.relocateByRule(rules[id]);
-	//            return rules[id];
-	//        }
-	//    },
-	//    get: {
-	//        value: function (id, e) {
-	//            var r, p;
-	//            if (id.indexOf('tie') !== 0) {
-	//                console.error('invalid tie id supplied');
-	//            } else if (id in rules) {
-	//                r = rules[id];
-	//            } else {
-	//                if (id === 'tie') {
-	//                    p = e.ownerDocument.defaultView;
-	//                    if (!e || !e.nodeName) throw new Error('rule "' + id + '" not found, therefore valid DOM element MUST be supplied to grasp the default rule');
-	//                    if (e instanceof p.HTMLInputElement ||
-	//                        e instanceof p.HTMLSelectElement) return rules.tieValue;
-	//                    else if (e instanceof p.HTMLImageElement) return rules.tieImage;
-	//                    else return rules.tieText;
-	//                }
-	//            }
-	//            return r;
-	//        }
-	//    }
-	//});
-
 	Reflect.defineProperty(scope.DataTier, 'rules', { value: {} });
 	Reflect.defineProperty(scope.DataTier.rules, 'get', { value: getRule });
 	Reflect.defineProperty(scope.DataTier.rules, 'add', { value: addRule });
@@ -714,16 +628,6 @@
 
 	var views = {},
         nlvs = {};
-
-	//function setPath(ref, path, value) {
-	//	var i;
-	//	for (i = 0; i < path.length - 1; i++) {
-	//		if (typeof ref[path[i]] === 'object') ref = ref[path[i]];
-	//		else if (!(path[i] in ref)) ref = (ref[path[i]] = {});
-	//		else throw new Error('the path is unavailable');
-	//	}
-	//	ref[path[i]] = value;
-	//}
 
 	function getPath(ref, path) {
 		var i;
@@ -809,18 +713,6 @@
 			}
 		}
 	}
-
-	//function get(path) {
-	//	var p = Array.isArray(p) ? p : p.split('.'), r = [], tmp, key;
-	//	tmp = getPath(vs, p);
-	//	if (tmp) {
-	//		Object.keys(tmp).forEach(function (key) {
-	//			if (key === vpn) Array.prototype.push.apply(r, tmp[key]);
-	//			else Array.prototype.push.apply(r, get(path + '.' + key));
-	//		});
-	//	}
-	//	return r;
-	//}
 
 	function update(view, ruleName) {
 		var r, p, t, data;
