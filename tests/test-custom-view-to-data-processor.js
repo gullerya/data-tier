@@ -7,28 +7,28 @@
 			date: new Date()
 		});
 
-	suite.addTest({ name: 'testing setup of the processor from create' }, function (pass, fail) {
-		var ie = document.createElement('input'), tie, e;
+	suite.addTest({ name: 'testing setup of the processor from create', skip: true }, function (pass, fail) {
+		var ie = document.createElement('span'), tie, e;
 
 		function customVTDProc(input) {
 			//	assuming for the test purposes that the path is on single node
-			input.data[input.path[0]] = input.view.value.toUpperCase();
+			input.data[input.path[0]] = input.view.textContent.toUpperCase();
 		}
 
 		tie = window.DataTier.ties.create('testCustomVTDA', data);
-		tie.viewToDataProcessor = customVTDProc;
 
-		ie.dataset.tieValue = 'testCustomVTDA:text';
+		ie.dataset.tieText = 'testCustomVTDA:text';
 		document.body.appendChild(ie);
 
 		setTimeout(function () {
-			if (ie.value !== data.text) fail('test precondition failed; value expected to be ' + data.text + ', found: ' + ie.value);
+			if (ie.textContent !== data.text) fail('test precondition failed; value expected to be ' + data.text + ', found: ' + ie.textContent);
 
+			tie.viewToDataProcessor = customVTDProc;
 			e = new Event('change');
 			ie.dispatchEvent(e);
 
 			setTimeout(function () {
-				if (ie.value !== data.text.toUpperCase()) fail('value expected to be ' + data.text.toUpperCase() + ', found: ' + ie.value);
+				if (ie.textContent !== data.text.toUpperCase()) fail('value expected to be ' + data.text.toUpperCase() + ', found: ' + ie.textContent);
 
 				pass();
 			});

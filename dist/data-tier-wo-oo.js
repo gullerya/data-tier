@@ -266,7 +266,7 @@
 		var l;
 		if (rootElement &&
             rootElement.nodeType &&
-            (rootElement.nodeType === Element.DOCUMENT_NODE || rootElement.nodeType === Element.ELEMENT_NODE)) {
+            (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
 			l = rootElement.nodeName === 'IFRAME' ?
                 l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) :
                 l = Array.from(rootElement.getElementsByTagName('*'));
@@ -493,7 +493,7 @@
 					df = d.createDocumentFragment();
 					for (; i < tiedValue.length; i++) {
 						nv = d.importNode(template.content, true);
-						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
+						vs = nv.querySelectorAll('*');
 						vs.forEach(function (view) {
 							Object.keys(view.dataset).forEach(function (key) {
 								if (view.dataset[key].indexOf(itemId) === 0) {

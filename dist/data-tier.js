@@ -1,9 +1,9 @@
 ﻿(function (scope) {
 	'use strict';
 
-	var proxiesToTargetsMap = new WeakMap(),
-		targetsToObserved = new WeakMap(),
-        observedToObservable = new WeakMap(),
+	var proxiesToTargetsMap = new Map(),
+		targetsToObserved = new Map(),
+        observedToObservable = new Map(),
 		nonObservables = ['Date', 'Blob', 'Number', 'String', 'Boolean', 'Error', 'SyntaxError', 'TypeError', 'URIError', 'Function', 'Promise', 'RegExp'];
 
 	function copyShallow(target) {
@@ -102,8 +102,8 @@
 			};
 		} else if (key === 'reverse') {
 			result = function proxiedReverse() {
-				var reverseResult, changes = [], tmpObserved;
-				reverseResult = Reflect.apply(target[key], target, arguments);
+				var changes = [], tmpObserved;
+				Reflect.apply(target[key], target, arguments);
 				target.forEach(function (element, index) {
 					if (element && typeof element === 'object') {
 						tmpObserved = targetsToObserved.get(proxiesToTargetsMap.get(element));
@@ -116,12 +116,12 @@
 				});
 				changes.push(new ReverseChange());
 				publishChanges(observable.callbacks, changes);
-				return reverseResult;
+				return this;
 			};
 		} else if (key === 'sort') {
 			result = function proxiedSort() {
-				var sortResult, changes = [], tmpObserved;
-				sortResult = Reflect.apply(target[key], target, arguments);
+				var changes = [], tmpObserved;
+				Reflect.apply(target[key], target, arguments);
 				target.forEach(function (element, index) {
 					if (element && typeof element === 'object') {
 						tmpObserved = targetsToObserved.get(proxiesToTargetsMap.get(element));
@@ -134,15 +134,15 @@
 				});
 				changes.push(new ShuffleChange());
 				publishChanges(observable.callbacks, changes);
-				return sortResult;
+				return this;
 			};
 		} else if (key === 'fill') {
 			result = function proxiedFill() {
-				var fillResult, start, end, changes = [], prev;
+				var start, end, changes = [], prev;
 				start = arguments.length < 2 ? 0 : (arguments[1] < 0 ? target.length + arguments[1] : arguments[1]);
 				end = arguments.length < 3 ? target.length : (arguments[2] < 0 ? target.length + arguments[2] : arguments[2]);
 				prev = target.slice();
-				fillResult = Reflect.apply(target[key], target, arguments);
+				Reflect.apply(target[key], target, arguments);
 				for (var i = start; i < end; i++) {
 					if (target[i] && typeof target[i] === 'object') {
 						target[i] = new Observed(target[i], i, observed).proxy;
@@ -157,7 +157,7 @@
 					}
 				}
 				publishChanges(observable.callbacks, changes);
-				return fillResult;
+				return this;
 			};
 		} else if (key === 'splice') {
 			result = function proxiedSplice() {
@@ -729,7 +729,7 @@
 		var l;
 		if (rootElement &&
             rootElement.nodeType &&
-            (rootElement.nodeType === Element.DOCUMENT_NODE || rootElement.nodeType === Element.ELEMENT_NODE)) {
+            (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
 			l = rootElement.nodeName === 'IFRAME' ?
                 l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) :
                 l = Array.from(rootElement.getElementsByTagName('*'));
@@ -956,7 +956,7 @@
 					df = d.createDocumentFragment();
 					for (; i < tiedValue.length; i++) {
 						nv = d.importNode(template.content, true);
-						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
+						vs = nv.querySelectorAll('*');
 						vs.forEach(function (view) {
 							Object.keys(view.dataset).forEach(function (key) {
 								if (view.dataset[key].indexOf(itemId) === 0) {

@@ -87,7 +87,7 @@
 							});
 						});
 						df.appendChild(nv);
-						df.lastElementChild.dataset.listItemAid = template.dataset.listSourceAid;
+						df.lastChild.dataset.listItemAid = template.dataset.listSourceAid;
 					}
 					container.appendChild(df);
 				}
