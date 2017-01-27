@@ -19,7 +19,7 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 #### Versions
 
 - __0.6.0__
-  - Moved to `object-observer.js` library as an observation engine, were impacted both the API and the implementaion.
+  - Moved to `object-observer.js` library as an observation engine, were impacted both the API and the implementation.
 
 - __0.5.41__
   - First version, based on native `Object.observe` technology.
@@ -39,7 +39,7 @@ You have 2 ways to load the library: into a `window` global scope, or a custom s
 </script>
 ```
 
-* Following loader exemplifies how to load the library into a __custom scope__ (add error handling as appropriate):
+* The snippet below exemplifies how to load the library into a __custom scope__ (add error handling as appropriate):
 ```javascript
 var customNamespace = {},
     person = { name: 'Nava', age: 6 },
@@ -84,9 +84,9 @@ var user = {
 		apartment: 15
 	}
 },
-observableUser = window.Observable.from(user);
+observableUser = Observable.from(user);
 
-window.DataTier.ties.create('userInfo', observableUser);
+DataTier.ties.create('userInfo', observableUser);
 ```
 
 ### Declarative part
@@ -102,6 +102,5 @@ window.DataTier.ties.create('userInfo', observableUser);
 </div>
 ```
 
-TBD...
 
 For a more thorough API documentation see [API Reference](api_reference.md) page.
