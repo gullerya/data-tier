@@ -1,6 +1,6 @@
+<img width="90px" style="float:right" src="https://raw.githubusercontent.com/gullerya/data-tier/master/data-tier-logo.png"/>
 [![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
 [![Build Status](https://travis-ci.org/gullerya/data-tier.svg?branch=master)](https://travis-ci.org/gullerya/data-tier)
-<img width="90px" style="float:right" alt="DataTier" src="https://raw.githubusercontent.com/gullerya/data-tier/master/data-tier-logo.png"/>
 
 # Summary
 
