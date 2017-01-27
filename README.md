@@ -15,6 +15,9 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 
 #### Backlog:
 
+- Support custom pre-processors for both data-to-view and view-to-data flows
+- Add OOTB rule for HTML classes management
+- API reference
 
 #### Versions
 
