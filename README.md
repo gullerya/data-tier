@@ -1,7 +1,8 @@
+<img width="50px" src="https://raw.githubusercontent.com/gullerya/data-tier/master/data-tier-logo.png"/>
 [![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
 [![Build Status](https://travis-ci.org/gullerya/data-tier.svg?branch=master)](https://travis-ci.org/gullerya/data-tier)
 
-# Summary <img src="https://raw.githubusercontent.com/gullerya/data-tier/master/data-tier-logo.png"/>
+# Summary
 
 `DataTier` ('tier' from 'to tie') is a service oriented framework, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
 This library works tightly with [`Observable`](https://github.com/gullerya/object-observer-js#observable-static-properties)-driven event cycle, therefore it comes with an embedded [`object-observer.js`](https://github.com/gullerya/object-observer-js) library.
