@@ -1,4 +1,4 @@
-<img width="90px" style="float:right" src="https://raw.githubusercontent.com/gullerya/data-tier/master/data-tier-logo.png"/>
+<img width="90px" src="data-tier-logo.png"/>
 [![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
 [![Build Status](https://travis-ci.org/gullerya/data-tier.svg?branch=master)](https://travis-ci.org/gullerya/data-tier)
 
@@ -9,7 +9,7 @@ This library works tightly with [`Observable`](https://github.com/gullerya/objec
 
 Yet, it is possible to provide any other `Observable` implementation, if it provides the same functionality. In this case you may want to use lighter `data-tier` distribution (bundled within the same npm module) without `object-observer.js`.
 
-#### Support matrix: ![CHROME](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/firefox.png) <sub>42+</sub>, ![EDGE](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/explorer.png) <sub>13+</sub>
+#### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](tools/browser_icons/firefox.png) <sub>42+</sub>, ![EDGE](tools/browser_icons/explorer.png) <sub>13+</sub>
 Support matrix is currently as wide as that of [`object-observer.js`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
 `DataTier` supports custom elements as well, obviously this functionality is available only on supporting environments.
 
@@ -103,4 +103,4 @@ DataTier.ties.create('userInfo', observableUser);
 ```
 
 
-For a more thorough API documentation see [API Reference](api_reference.md) page.
+For a more thorough API documentation see [API Reference](api-reference.md) page.
