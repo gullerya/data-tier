@@ -1,6 +1,6 @@
 {
   "name": "data-tier",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "dist/data-tier.js",
   "files": [
     "dist"
