@@ -1,7 +1,7 @@
 [![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
 [![Build Status](https://travis-ci.org/gullerya/data-tier.svg?branch=master)](https://travis-ci.org/gullerya/data-tier)
 
-# Summary <img src="https://raw.githubusercontent.com/gullerya/data-tier/master/data-tier-logo.svg"/>
+# Summary <img src="https://raw.githubusercontent.com/gullerya/data-tier/master/data-tier-logo.png"/>
 
 `DataTier` ('tier' from 'to tie') is a service oriented framework, that provides two way binding (Model-View - View-Model, aka MVVM) in the domain of client HTML/Javascript applications.
 This library works tightly with [`Observable`](https://github.com/gullerya/object-observer-js#observable-static-properties)-driven event cycle, therefore it comes with an embedded [`object-observer.js`](https://github.com/gullerya/object-observer-js) library.
@@ -10,13 +10,16 @@ Yet, it is possible to provide any other `Observable` implementation, if it prov
 
 #### Support matrix: ![CHROME](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/firefox.png) <sub>42+</sub>, ![EDGE](https://raw.githubusercontent.com/gullerya/data-tier/master/tools/browser_icons/explorer.png) <sub>13+</sub>
 Support matrix is currently as wide as that of [`object-observer.js`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
+`DataTier` supports custom elements as well, obviously this functionality is available only on supporting environments.
 
 #### Backlog:
 
 
 #### Versions
+
 - __0.6.0__
   - Moved to `object-observer.js` library as an observation engine, were impacted both the API and the implementaion.
+
 - __0.5.41__
   - First version, based on native `Object.observe` technology.
 
