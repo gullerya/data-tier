@@ -16,6 +16,8 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 
 - Support custom pre-processors for both data-to-view and view-to-data flows
 - Add OOTB rule for HTML classes management
+- Add rule for `href` attribute
+- Get back to the API flavor where there is no colon in the paths, only dots from the tie name and further
 - API reference
 
 #### Versions
@@ -36,8 +38,8 @@ You have 2 ways to load the library: into a `window` global scope, or a custom s
 <script src="data-tier.js"></script>
 <script>
 	var person = { name: 'Uriya', age: 8 },
-	    observablePerson = window.Observable.from(person);
-	window.DataTier.ties.create('person', observablePerson);
+	    observablePerson = Observable.from(person);
+	DataTier.ties.create('person', observablePerson);
 </script>
 ```
 

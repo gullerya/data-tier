@@ -60,7 +60,7 @@
 
 	function getApplicable(element) {
 		var result = [];
-		if (element && element.nodeType === Node.ELEMENT_NODE) {
+		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
 			Reflect.ownKeys(element.dataset).forEach(function (key) {
 				if (rules[key]) {
 					result.push(rules[key]);
