@@ -475,7 +475,7 @@
 			return this.constructor.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
 		},
 		dataToView: function (tiedValue, template) {
-			var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df;
+			var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
 
 			function shortenListTo(cnt, aid) {
 				var a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
@@ -511,8 +511,13 @@
 								}
 							});
 						});
+						nv.dataset.listSourceAid = template.dataset.listSourceAid;
 						df.appendChild(nv);
-						df.lastChild.dataset.listItemAid = template.dataset.listSourceAid;
+						//lc = df.lastChild;
+						//while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
+						//	lc = lc.previousSibling;
+						//}
+						//lc.dataset.listItemAid = template.dataset.listSourceAid;
 					}
 					container.appendChild(df);
 				}

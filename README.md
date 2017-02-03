@@ -21,7 +21,7 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 
 #### Versions
 
-- __0.6.3__
+- __0.6.4__
   - Fixed a case that element having no dataset breaks the views collection flow (this is not a valid case, but see this [issue](https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/10790130/#) in Edge, so got to be defensive here)
   -	Added `tieSrc` rule and removed obsolete `tieImage` rule (did the same as `tieSrc`, just in a less general flavor)
   - Added `tieHRef` rule
