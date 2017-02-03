@@ -472,11 +472,9 @@
 		function observer(changes) {
 			scope.DataTier.views.processChanges(name, changes);
 		}
-
 		if (options && typeof options === 'object') {
 			//	TODO: process options
 		}
-
 		Reflect.defineProperty(this, 'name', { value: name });
 		Reflect.defineProperty(this, 'data', {
 			get: function () { return data; },
@@ -497,6 +495,7 @@
 			}
 		});
 
+		ties[name] = this;
 		this.data = observable;
 	}
 
@@ -507,7 +506,7 @@
 			throw new Error('existing tie (' + name + ') MAY NOT be re-created, use the tie\'s own APIs to reconfigure it');
 		}
 
-		return (ties[name] = new Tie(name, observable, options));
+		return new Tie(name, observable, options);
 	}
 
 	function remove(name) {
@@ -557,13 +556,8 @@
 	Rule.prototype.parseParam = function (ruleParam) {
 		var dataPath, tieName;
 		if (ruleParam) {
-			dataPath = ruleParam.split('.');
-			tieName = dataPath[0].split(':')[0];
-			if (dataPath[0] === tieName) {
-				dataPath = [];
-			} else {
-				dataPath[0] = dataPath[0].replace(tieName + ':', '');
-			}
+			dataPath = ruleParam.trim().split('.');
+			tieName = dataPath.shift();
 			return {
 				tieName: tieName,
 				dataPath: dataPath
@@ -605,7 +599,7 @@
 
 	function getApplicable(element) {
 		var result = [];
-		if (element && element.nodeType === Node.ELEMENT_NODE) {
+		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
 			Reflect.ownKeys(element.dataset).forEach(function (key) {
 				if (rules[key]) {
 					result.push(rules[key]);
@@ -905,9 +899,15 @@
 		}
 	});
 
-	add('tieImage', {
+	add('tieSrc', {
 		dataToView: function (data, view) {
 			view.src = data ? data : '';
+		}
+	});
+
+	add('tieHRef', {
+		dataToView: function (data, view) {
+			view.href = data ? data : '';
 		}
 	});
 
@@ -920,6 +920,16 @@
 	add('tieDateText', {
 		dataToView: function (data, view) {
 			view.textContent = data ? data.toLocaleString() : '';
+		}
+	});
+
+	add('tieClasses', {
+		dataToView: function (data, view) {
+			var newList = data && Array.isArray(data) ? data : [];
+			Array.from(view.classList).forEach(function (classToken) { view.classList.remove(classToken); });
+			if (newList.length) {
+				view.classList.add.apply(view.classList, newList);
+			}
 		}
 	});
 
@@ -956,16 +966,16 @@
 					df = d.createDocumentFragment();
 					for (; i < tiedValue.length; i++) {
 						nv = d.importNode(template.content, true);
-						vs = nv.querySelectorAll('*');
+						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
 						vs.forEach(function (view) {
 							Object.keys(view.dataset).forEach(function (key) {
 								if (view.dataset[key].indexOf(itemId) === 0) {
-									view.dataset[key] = view.dataset[key].replace(itemId + ':', ruleData[0] + ':' + i + '.');
+									view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
 								}
 							});
 						});
 						df.appendChild(nv);
-						df.lastElementChild.dataset.listItemAid = template.dataset.listSourceAid;
+						df.lastChild.dataset.listItemAid = template.dataset.listSourceAid;
 					}
 					container.appendChild(df);
 				}
