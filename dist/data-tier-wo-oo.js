@@ -511,13 +511,12 @@
 								}
 							});
 						});
-						nv.dataset.listSourceAid = template.dataset.listSourceAid;
 						df.appendChild(nv);
-						//lc = df.lastChild;
-						//while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
-						//	lc = lc.previousSibling;
-						//}
-						//lc.dataset.listItemAid = template.dataset.listSourceAid;
+						lc = df.lastChild;
+						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
+							lc = lc.previousSibling;
+						}
+						lc.dataset.listItemAid = template.dataset.listSourceAid;
 					}
 					container.appendChild(df);
 				}
