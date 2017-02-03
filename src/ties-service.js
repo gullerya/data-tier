@@ -9,11 +9,9 @@
 		function observer(changes) {
 			scope.DataTier.views.processChanges(name, changes);
 		}
-
 		if (options && typeof options === 'object') {
 			//	TODO: process options
 		}
-
 		Reflect.defineProperty(this, 'name', { value: name });
 		Reflect.defineProperty(this, 'data', {
 			get: function () { return data; },
@@ -34,6 +32,7 @@
 			}
 		});
 
+		ties[name] = this;
 		this.data = observable;
 	}
 
@@ -44,7 +43,7 @@
 			throw new Error('existing tie (' + name + ') MAY NOT be re-created, use the tie\'s own APIs to reconfigure it');
 		}
 
-		return (ties[name] = new Tie(name, observable, options));
+		return new Tie(name, observable, options);
 	}
 
 	function remove(name) {

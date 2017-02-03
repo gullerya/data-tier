@@ -27,9 +27,15 @@
 		}
 	});
 
-	add('tieImage', {
+	add('tieSrc', {
 		dataToView: function (data, view) {
 			view.src = data ? data : '';
+		}
+	});
+
+	add('tieHRef', {
+		dataToView: function (data, view) {
+			view.href = data ? data : '';
 		}
 	});
 
