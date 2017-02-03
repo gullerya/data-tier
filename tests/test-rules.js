@@ -49,26 +49,7 @@
 		}, 0)
 	});
 
-	suite.addTest({ name: 'testing adding rule AFTER the elements were added' }, function (pass, fail) {
-		var e = document.createElement('div');
-		e.dataset.tieUCText = 'testRulesA.text';
-		document.body.appendChild(e);
-		setTimeout(function () {
-			if (e.textContent !== '') fail('textContent of not yet defined rule expected to be empty');
-
-			window.DataTier.rules.add('tieUCText', {
-				dataToView: function (data, view) {
-					view.textContent = data ? data.toUpperCase() : '';
-				}
-			});
-
-			if (e.textContent !== testRulesTieA.data.text.toUpperCase()) fail('textContent expected to be ' + testRulesTieA.data.text.toUpperCase());
-
-			pass();
-		}, 0);
-	});
-
-	suite.addTest({ name: 'testing classes rule' }, function (pass, fail) {
+	suite.addTest({ name: 'testing basic rules: classes' }, function (pass, fail) {
 		var e = document.createElement('div'),
 			cl = Observable.from([]);
 		DataTier.ties.create('classesList', cl);
@@ -93,6 +74,25 @@
 			//	removing all of them
 			cl.splice(0, 3);
 			if (Array.from(e.classList).length) fail('a list of classes expected to be empty');
+
+			pass();
+		}, 0);
+	});
+
+	suite.addTest({ name: 'testing adding rule AFTER the elements were added' }, function (pass, fail) {
+		var e = document.createElement('div');
+		e.dataset.tieUCText = 'testRulesA.text';
+		document.body.appendChild(e);
+		setTimeout(function () {
+			if (e.textContent !== '') fail('textContent of not yet defined rule expected to be empty');
+
+			window.DataTier.rules.add('tieUCText', {
+				dataToView: function (data, view) {
+					view.textContent = data ? data.toUpperCase() : '';
+				}
+			});
+
+			if (e.textContent !== testRulesTieA.data.text.toUpperCase()) fail('textContent expected to be ' + testRulesTieA.data.text.toUpperCase());
 
 			pass();
 		}, 0);
