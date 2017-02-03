@@ -17,7 +17,7 @@
 
 		tie = window.DataTier.ties.create('testCustomVTDA', data);
 
-		ie.dataset.tieText = 'testCustomVTDA:text';
+		ie.dataset.tieText = 'testCustomVTDA.text';
 		document.body.appendChild(ie);
 
 		setTimeout(function () {

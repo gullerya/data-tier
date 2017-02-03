@@ -15,9 +15,7 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 #### Backlog:
 
 - Support custom pre-processors for both data-to-view and view-to-data flows
-- Add OOTB rule for HTML classes management
 - Add rule to change any arbitrary attribute
-- Get back to the API flavor where there is no colon in the paths, only dots from the tie name and further
 - Add rule for action (mouse? keyboard? any and provide the action with the event data?)
 - API reference
 
@@ -25,8 +23,9 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 
 - __0.6.2__
   - Fixed a case that element having no dataset breaks the views collection flow (this is not a valid case, but see this [issue](https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/10790130/#) in Edge, so got to be defensive here)
-  - Removed a `tieImage` OOTB rule in favor of more general `tieSrc` rule
+  - Removed a `tieImage` rule in favor of more general `tieSrc` rule
   - Added `tieHRef` rule
+  - Added `tieClasses` rule
 
 - __0.6.0__
   - Moved to `object-observer.js` library as an observation engine, were impacted both the API and the implementation.

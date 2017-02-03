@@ -51,6 +51,16 @@
 		}
 	});
 
+	add('tieClasses', {
+		dataToView: function (data, view) {
+			var newList = data && Array.isArray(data) ? data : [];
+			Array.from(view.classList).forEach(function (classToken) { view.classList.remove(classToken); });
+			if (newList.length) {
+				view.classList.add.apply(view.classList, newList);
+			}
+		}
+	});
+
 	add('tieList', {
 		parseParam: function (ruleValue) {
 			return this.constructor.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
@@ -88,7 +98,7 @@
 						vs.forEach(function (view) {
 							Object.keys(view.dataset).forEach(function (key) {
 								if (view.dataset[key].indexOf(itemId) === 0) {
-									view.dataset[key] = view.dataset[key].replace(itemId + ':', ruleData[0] + ':' + i + '.');
+									view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
 								}
 							});
 						});

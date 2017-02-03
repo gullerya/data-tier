@@ -9,7 +9,7 @@
 
 		DataTier.ties.create('tiesTestA', Observable.from({ name: text }));
 
-		newEl.dataset.tieText = 'tiesTestA:name';
+		newEl.dataset.tieText = 'tiesTestA.name';
 		document.body.appendChild(newEl);
 
 		setTimeout(function () {
@@ -22,7 +22,7 @@
 		var newEl = document.createElement('div'),
 			text = 'text test B';
 
-		newEl.dataset.tieText = 'tiesTestB:name';
+		newEl.dataset.tieText = 'tiesTestB.name';
 		document.body.appendChild(newEl);
 
 

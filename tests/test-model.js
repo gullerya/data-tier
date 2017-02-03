@@ -9,16 +9,16 @@
 
 	var s1, s2, s3, s4;
 	s1 = document.createElement('input');
-	s1.dataset.tieValue = 'userA:name';
+	s1.dataset.tieValue = 'userA.name';
 	document.body.appendChild(s1);
 	s2 = document.createElement('div');
-	s2.dataset.tieText = 'userA:age';
+	s2.dataset.tieText = 'userA.age';
 	document.body.appendChild(s2);
 	s3 = document.createElement('div');
-	s3.dataset.tieText = 'userA:address.street';
+	s3.dataset.tieText = 'userA.address.street';
 	document.body.appendChild(s3);
 	s4 = document.createElement('div');
-	s4.dataset.tieText = 'userA:address.apt';
+	s4.dataset.tieText = 'userA.address.apt';
 	document.body.appendChild(s4);
 
 	suite.addTest({ name: 'new model bound' }, function (pass, fail) {
@@ -70,7 +70,7 @@
 
 	suite.addTest({ name: 'binding view to object' }, function (pass, fail) {
 		var t = window.DataTier.ties.get('userA');
-		s3.dataset.tieText = 'userA:address';
+		s3.dataset.tieText = 'userA.address';
 		if (s3.textContent !== '') fail(new Error('expected the content to be empty, found: ' + s3.textContent));
 		t.data.address = { street: 'street name', apt: 17 };
 		t.data.address.toString = function () { return 'Street: ' + this.street + '; Apt: ' + this.apt };

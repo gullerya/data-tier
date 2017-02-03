@@ -12,13 +12,8 @@
 	Rule.prototype.parseParam = function (ruleParam) {
 		var dataPath, tieName;
 		if (ruleParam) {
-			dataPath = ruleParam.split('.');
-			tieName = dataPath[0].split(':')[0];
-			if (dataPath[0] === tieName) {
-				dataPath = [];
-			} else {
-				dataPath[0] = dataPath[0].replace(tieName + ':', '');
-			}
+			dataPath = ruleParam.trim().split('.');
+			tieName = dataPath.shift();
 			return {
 				tieName: tieName,
 				dataPath: dataPath
