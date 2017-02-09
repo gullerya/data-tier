@@ -501,7 +501,9 @@
 
 	function create(name, observable, options) {
 		validateTieName(name);
-		validateObservable(observable);
+		if (observable) {
+			validateObservable(observable);
+		}
 		if (ties[name]) {
 			throw new Error('existing tie (' + name + ') MAY NOT be re-created, use the tie\'s own APIs to reconfigure it');
 		}
