@@ -4,6 +4,7 @@
 	var views = {},
         nlvs = {};
 
+	//	TODO: this is similar to setPath in ties-service - unify
 	function getPath(ref, path) {
 		var i;
 		if (!ref) return;

@@ -35,6 +35,9 @@
 		ties[name] = this;
 		this.data = observable;
 	}
+	Tie.prototype.viewToDataProcessor = function vanillaViewToDataProcessor(event) {
+		setPath(event.data, event.path, event.view.value);
+	};
 
 	function create(name, observable, options) {
 		validateTieName(name);
@@ -72,6 +75,16 @@
 				typeof observable.revoke !== 'function') {
 			throw new Error(observable + ' is not a valid Observable');
 		}
+	}
+
+	//	TODO: this is similar to getPath in views-service - unify
+	function setPath(ref, path, value) {
+		var i;
+		if (!ref) return;
+		for (i = 0; i < path.length - 1; i++) {
+			ref = ref[path[i]] || {};
+		}
+		ref[path[i]] = value;
 	}
 
 	Reflect.defineProperty(scope, 'DataTier', { value: {} });
