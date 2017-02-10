@@ -6,16 +6,12 @@ The example is a simple application having:
 - global selector to change localization settings of the page
 - user selector from a given users list
 - simple user editor
-
-The idea is to see the binding a set of data definitions (languages, users, selected user) and the corresponding UI elements vizualizing it.
-
-In the HTML part below there are various `data-tie-...` attributes which are the declarative part of the tying process between the view and the model.
-Variations of the `data-tie-...` attributes are, in essence, the __rules__ which prescribe how the model will be vizualized.
-There is a set of [__predefined rules__](rules-reference.md) which are maintained by the author of the library, but even more important is the fact that there is an API to add a custom __rules__ 'on the fly' (even in the later phase of application lifecycle).
-
-__Rule__ notation `data-tie-text="currentUser.address.street"` says: bind the content of the `currentUser` tie (see below) in the path `address.street` to this element using a logic of `tieText` rule. This specific rule simple pastes the content into the `textContent` property of the element.
+Users content and localization part are not related to each other, it's just two independent use-cases exemplified here.
 
 ## HTML
+
+In the HTML part below there are various `data-tie-...` attributes which are the declarative part of the tying process between the view and the model.
+
 ```html
 <script src="../../dist/data-tier.js"></script>
 <div id="title-bar">
@@ -48,7 +44,18 @@ __Rule__ notation `data-tie-text="currentUser.address.street"` says: bind the co
 </div>
 ```
 
+
+
 ## JAVASCRIPT
+
+In the following section we are creating basic data sets of localization data and users.
+
+For the simplicity the content created statically inplace, in the real application one would fetch the data from the backend.
+Some of the data, localization strings for instance, would probably be fetched in a lazy way on demand, since for big applications that could be not a small piece.
+
+Most important part here is the __ties__ definitions and their manipulations within an event handlers, which effectively update the UI layer.
+See, for example, how in a single line of code one can translate the whole site, assuming that the binding was properly done, of course.
+
 ```javascript
 let strings = {
     en: {
@@ -96,3 +103,6 @@ document.getElementById('user-selector').addEventListener('change', function () 
     currentUserTie.data = Observable.from(users.find(user => user.id === parseInt(this.value)));
 });
 ```
+
+Although in the example above HTML part preceeded the __ties__ definitions, it can be reversed completely and the library will cope with that.
+You may add an elements in the even later phases of application lifecycle, or add tying attributes to the existing elements as well, and the new configuration will be picked up, tied and immediatelly reflected in UI if the __ties__ are already filled with data.
