@@ -11,7 +11,7 @@ The idea is to see the binding a set of data definitions (languages, users, sele
 
 In the HTML part below there are various `data-tie-...` attributes which are the declarative part of the tying process between the view and the model.
 Variations of the `data-tie-...` attributes are, in essence, the __rules__ which prescribe how the model will be vizualized.
-There is a set of [predefined rules](rules-reference.md) which are maintained by the author of the library, but even more important is the fact that there is an API to add a custom __rules__ 'on the fly' (even in the later phase of application lifecycle).
+There is a set of [__predefined rules__](rules-reference.md) which are maintained by the author of the library, but even more important is the fact that there is an API to add a custom __rules__ 'on the fly' (even in the later phase of application lifecycle).
 
 __Rule__ notation `data-tie-text="currentUser.address.street"` says: bind the content of the `currentUser` tie (see below) in the path `address.street` to this element using a logic of `tieText` rule. This specific rule simple pastes the content into the `textContent` property of the element.
 
