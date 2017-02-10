@@ -98,13 +98,17 @@ let bands = [
 ```
 Now one can create a tie named 'bandsTie' and set its data to be (an observable clone of) the bands array.
 Having that, any UI element would be tied to this dataset via the tie name and the path:
-- `bandsTie.length` - `length` inherited from the native `Array`
 - `bandsTie.0` - refer to the whole object at index 0 of our array
-- `bandsTie.0.name`
-- `bandsTie.0.albums.1.since` - it can get to any level of deepness
-The first item in the path is always the tie's name, after that are coming the keys of the model.
+- `bandsTie.length` - `length` property, inherited from the native `Array`, may also be used
+- `bandsTie.0.name` - path can get deeper...
+- `bandsTie.0.albums.1.since` - actially, it can get to any level of deepness
+Pay attention: the first item in the path is always the tie's name.
 
-One could create a single dataset for the whole application, make a single 'uber-tie' from it and operate all of the 
+Basically, it is possible to create a single dataset for the whole application, make a single 'uber-tie' from it and operate all of the ties from there, but it should be considered as a bad practice from design correctness point of view.
+Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.
+
+Tie object not meant to hold the link between the data and its namespace only, but also tie's specific configurations and customizations.
+Those features are under development and enhancements. For more details see [API reference](api-reference.md) page.
 
 ### Rule
 __Rule__ 
