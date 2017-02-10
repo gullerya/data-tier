@@ -73,6 +73,16 @@ fetch('data-tier.js').then(function (response) {
 - Minified version is also available for both distributions, with and without `object-observer.js`.
 
 
+# Base concepts
+
+The library works by means of 2 main concepts __Ties__ and __Rules__.
+
+###	Tie
+__Tie__ holds an observable data structure (object or array) associated with the tie's name. Ties are being 
+
+### Rule
+__Rule__ 
+
 # Basic example
 
 In essence, the purpose of the `DataTier` service is to tie model and view and sync between them automatically once changes detected in either one or another.
@@ -85,7 +95,7 @@ The above two may happen in any order, in any phase in the application lifecycle
 
 Let's review the actual example, where we have some `user` object which is our model and we want to bind it to some interactive view of it.
 
-### Functional part
+### Code part
 ```javascript
 var user = {
 	name: 'User Name',
@@ -101,7 +111,7 @@ observableUser = Observable.from(user);
 DataTier.ties.create('userInfo', observableUser);
 ```
 
-### Declarative part
+### HTML part
 ```html
 <div>
 	<span data-tie-text="userInfo:name"></span>
