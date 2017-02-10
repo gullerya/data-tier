@@ -78,7 +78,33 @@ fetch('data-tier.js').then(function (response) {
 The library works by means of 2 main concepts __Ties__ and __Rules__.
 
 ###	Tie
-__Tie__ holds an observable data structure (object or array) associated with the tie's name. Ties are being 
+__Tie__ holds an observable data structure (object or array) associated with tie's name.
+Thus, ties serve most and foremost data segregation and management purposes.
+
+Data within a tie is referenced by __path__: dot (`.`) separated keys along the object's hierarchy where in case of arrays index being the key. Consider the following data structure:
+```javascript
+let bands = [
+	{
+		id: 1234,
+		name: 'Dream Theater',
+		since: 1985,
+		albums: [
+			{ id: 2345, name: 'When Dream and Day Unite', since: 1988 },
+			{ id: 2346, name: 'Images and Words', since: 1991 }
+		]
+	},
+	...
+];
+```
+Now one can create a tie named 'bandsTie' and set its data to be (an observable clone of) the bands array.
+Having that, any UI element would be tied to this dataset via the tie name and the path:
+- `bandsTie.length` - `length` inherited from the native `Array`
+- `bandsTie.0` - refer to the whole object at index 0 of our array
+- `bandsTie.0.name`
+- `bandsTie.0.albums.1.since` - it can get to any level of deepness
+The first item in the path is always the tie's name, after that are coming the keys of the model.
+
+One could create a single dataset for the whole application, make a single 'uber-tie' from it and operate all of the 
 
 ### Rule
 __Rule__ 
