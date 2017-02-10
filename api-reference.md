@@ -1,3 +1,3 @@
-# APIs
+# API reference
 
 TBD
