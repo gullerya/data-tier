@@ -175,17 +175,17 @@ DataTier.ties.create('userInfo', observableUser);
 ### HTML part
 ```html
 <div>
-	<span data-tie-text="userInfo:name"></span>
-	<span data-tie-text="userInfo:age"></span>
-	<input type="checkbox" data-tie-value="userInfo:active">
+	<span data-tie-text="userInfo.name"></span>
+	<span data-tie-text="userInfo.age"></span>
+	<input type="checkbox" data-tie-value="userInfo.active">
 	<div>
-		<input type="text" data-tie-value="userInfo:address.street">
-		<input type="text" data-tie-value="userInfo:address.apartment">
+		<input type="text" data-tie-value="userInfo.address.street">
+		<input type="text" data-tie-value="userInfo.address.apartment">
 	</div>
 </div>
 ```
 
 
-For an extended tutorial see this [__Tutorial__](tutorial.md).
+For an extended tutorial see [__this__](tutorial.md) page.
 
 For a more thorough API documentation see [__API Reference__](api-reference.md).
