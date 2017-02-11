@@ -97,6 +97,7 @@ let bands = [
 	},
 	...
 ];
+bands.totalTooltip = generateTooltipText();
 ```
 Now one can create a tie named 'bandsTie' and set its data to be (an observable clone of) the bands array.
 Having that, any UI element would be tied to this dataset via the tie name and the path:
@@ -107,18 +108,18 @@ Having that, any UI element would be tied to this dataset via the tie name and t
 
 Important: the first item in the path is always the tie's name.
 
-Basically, it is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating all of the ties from there, but it should be considered as a bad practice from design correctness point of view.
+Basically, it is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating everything from there, but it should be considered as a bad practice.
 Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.
 
-Tie object not meant to hold the link between the data and its namespace only, but also tie's specific configurations and customizations.
-Currently in the backlog there are a such a features like supporting custom interceptors for both flows - data-to-view and view-to-data.
+Tie object not only meant to hold the link between the data and its namespace, but also tie's specific configurations and customizations.
+Currently in the backlog there are such a features like supporting custom interceptors for both flows - data-to-view and view-to-data.
 Those features are under ongoing development and enhancements. For more details see [__API reference__](api-reference.md).
 
 ### Rule
 __Rule__ is a definition of presentation logic, it's about __how__ to vizualize the data.
 
 Each rule has it's own unique name given to it upon registration.
-Rules are applied via the DOM's `data-*` attributes joining the `data-` prefix with rule's name: `data-tie-text` applies rule created with name 'tieRule'.
+Rules are applied via the DOM's `data-*` attributes joining the `data-` prefix with rule's name: `data-tie-text` applies the rule 'tieText'.
 Let's see the following example:
 ```html
 <span data-tie-text="bandsTie.length"
