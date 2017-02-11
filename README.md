@@ -118,21 +118,23 @@ __Rule__ is a definition of presentation logic, it's about __how__ to vizualize 
 
 Each rule has it's own unique name given to it upon registration.
 Rules are applied via the DOM's `data-*` attributes joining the `data-` prefix with rule's name: `data-tie-text` applies rule created with name 'tieRule'.
-Let's review the following example:
+Let's see the following example:
 ```html
 <span data-tie-text="bandsTie.length"
 	  data-tie-tooltip="bandsTie.totalTooltip">
 </span>
+...
 <div>
 	<template data-tie-list="bandsTie.0.albums => album">
 		<span data-tie-text="album.name"></span>
 	</template>
 </div>
 ```
-This definition ties between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 rules to say, how the value will be visualized.
+In the first part we tie between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 rules to say, how the value will be visualized.
 Attributes' values (`bandsTie.length`, `bandsTie.totalTooltip`) are rules' configurations for this specific instance and their syntax/content is part of each rule's API.
 In a most cases the tie name and the path to the data would be sufficient, but conceptually rule's configuration may be anything rule needs.
-For example, in the case of a `div` element above we used a 'tieList' rule on its template which expects more info in configuration: tie name, path and also the inner element name for each item (here - 'album', and see its usage in the inner span element).
+
+Thus, in the second part a `template` element tied by a 'tieList' rule. This rule expects more rich content in its configuration: tie name, path and also the inner element name for each item (here - 'album', and see its usage in the inner span element).
 
 //	TODO: ootb rules and 
 
