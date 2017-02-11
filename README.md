@@ -18,6 +18,8 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 - Add rule to change any arbitrary attribute
 - Add rule for action (mouse? keyboard? any and provide the action with the event data?)
 - API reference
+- Possibility to override global rules on tie level
+- Change rule detection and appliance inner interface to broaden the possibilities of rules configurations
 
 #### Versions
 
@@ -75,10 +77,10 @@ fetch('data-tier.js').then(function (response) {
 
 # Base concepts
 
-The library works by means of 2 main concepts __Ties__ and __Rules__.
+The library utilizes 2 main concepts __Ties__ and __Rules__.
 
 ###	Tie
-__Tie__ holds an observable data structure (object or array) associated with tie's name.
+__Tie__ holds an observable data structure (object or array) associated with tie's name, it's about __what__ to tie.
 Thus, ties serve most and foremost data segregation and management purposes.
 
 Data within a tie is referenced by __path__: dot (`.`) separated keys along the object's hierarchy where in case of arrays index being the key. Consider the following data structure:
@@ -101,25 +103,41 @@ Having that, any UI element would be tied to this dataset via the tie name and t
 - `bandsTie.0` - refer to the whole object at index 0 of our array
 - `bandsTie.length` - `length` property, inherited from the native `Array`, may also be used
 - `bandsTie.0.name` - path can get deeper...
-- `bandsTie.0.albums.1.since` - actially, it can get to any level of deepness
-Pay attention: the first item in the path is always the tie's name.
+- `bandsTie.0.albums.1.since` - ...actually, it can get to any level of deepness
 
-Basically, it is possible to create a single dataset for the whole application, make a single 'uber-tie' from it and operate all of the ties from there, but it should be considered as a bad practice from design correctness point of view.
+Important: the first item in the path is always the tie's name.
+
+Basically, it is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating all of the ties from there, but it should be considered as a bad practice from design correctness point of view.
 Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.
 
 Tie object not meant to hold the link between the data and its namespace only, but also tie's specific configurations and customizations.
-Those features are under development and enhancements. For more details see [API reference](api-reference.md) page.
+Those features are under ongoing development and enhancements. For more details see [API reference](api-reference.md) page.
 
 ### Rule
-__Rule__ 
+__Rule__ is a definition of presentation logic, it's about __how__ to vizualize the data.
+
+Each rule has it's own unique name given to it upon registration.
+Rules are applied via the DOM's `data-*` attributes joining the `data-` prefix with rule's name: `data-tie-text` applies rule created with name 'tieRule'.
+Let's review the following example:
+```html
+<span data-tie-text="bandsTie.length"
+	  data-tie-tooltip="bandsTie.totalTooltip">
+</span>
+```
+This definition ties between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 rules to state how the value will be visualized.
+Attributes' values (`bandsTie.length` and `bandsTie.totalTooltip`) are rules' configurations for this specific instance and their syntax/content is part of each rule's API.
+In a most cases the tie name and the path to the data would be sufficient, but conceptually rule's configuration may be anything rule needs.
+
+//	TODO: ootb rules and 
+
 
 # Basic example
 
 In essence, the purpose of the `DataTier` service is to tie model and view and sync between them automatically once changes detected in either one or another.
 
-In order to let this happen, two actions need to be done:
-1. any model to be shown should be registered in the `DataTier` service
-2. DOM elements intended to visualize the model need to be decorated with an appropriate declaration
+In order to make this happen, two things need to be done:
+- any model to be shown should be registered in the `DataTier` service
+- DOM elements intended to visualize the model need to be decorated with an appropriate declaration
 
 The above two may happen in any order, in any phase in the application lifecycle. `DataTier` supports lazy binding, watching for DOM changes as well as for a data changes and will pick up any new linking information relevant and tie the things up.
 
