@@ -14,7 +14,7 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 
 #### Backlog:
 
-- Support custom pre-processors for both data-to-view and view-to-data flows
+- Support custom pre-processors/interceptors for both data-to-view and view-to-data flows
 - Add rule to change any arbitrary attribute
 - Add rule for action (mouse? keyboard? any and provide the action with the event data?)
 - API reference
@@ -111,6 +111,7 @@ Basically, it is possible to create a single dataset for the whole application, 
 Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.
 
 Tie object not meant to hold the link between the data and its namespace only, but also tie's specific configurations and customizations.
+Currently in the backlog there are a such a features like supporting custom interceptors for both flows - data-to-view and view-to-data.
 Those features are under ongoing development and enhancements. For more details see [__API reference__](api-reference.md) page.
 
 ### Rule
@@ -136,7 +137,11 @@ In most cases the tie name and the path to the data would be sufficient, but con
 
 Thus, in the second part a `template` element tied by a 'tieList' rule. This rule expects more rich content in its configuration: tie name and path for sure, but also some name for an item within iteration (here - 'album', and see its usage in the inner span element).
 
-There is a set of rules bundled with the library, the are described in the [__Rules reference__](rules-reference.md).
+There is a set of rules bundled with the library, they are described in the [__Rules reference__](rules-reference.md).
+This set will eventually be updated and enhanced from time to time, upon a needs and feedbacks from real world usages.
+But even more important is the fact, that rules may be created and added by a consuming application.
+This can be done at any phase of application's lifecycle, so there is no special ceremony around it whatsoever.
+Rules management describes in the relevant section in [__API reference__](api-reference.md).
 
 
 # Basic example
