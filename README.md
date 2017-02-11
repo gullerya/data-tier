@@ -111,7 +111,7 @@ Basically, it is possible to create a single dataset for the whole application, 
 Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.
 
 Tie object not meant to hold the link between the data and its namespace only, but also tie's specific configurations and customizations.
-Those features are under ongoing development and enhancements. For more details see [API reference](api-reference.md) page.
+Those features are under ongoing development and enhancements. For more details see [__API reference__](api-reference.md) page.
 
 ### Rule
 __Rule__ is a definition of presentation logic, it's about __how__ to vizualize the data.
@@ -132,11 +132,11 @@ Let's see the following example:
 ```
 In the first part we tie between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 rules to say, how the value will be visualized.
 Attributes' values (`bandsTie.length`, `bandsTie.totalTooltip`) are rules' configurations for this specific instance and their syntax/content is part of each rule's API.
-In a most cases the tie name and the path to the data would be sufficient, but conceptually rule's configuration may be anything rule needs.
+In most cases the tie name and the path to the data would be sufficient, but conceptually rule's configuration may be anything rule needs.
 
-Thus, in the second part a `template` element tied by a 'tieList' rule. This rule expects more rich content in its configuration: tie name, path and also the inner element name for each item (here - 'album', and see its usage in the inner span element).
+Thus, in the second part a `template` element tied by a 'tieList' rule. This rule expects more rich content in its configuration: tie name and path for sure, but also some name for an item within iteration (here - 'album', and see its usage in the inner span element).
 
-//	TODO: ootb rules and 
+There is a set of rules bundled with the library, the are described in the [__Rules reference__](rules-reference.md).
 
 
 # Basic example
