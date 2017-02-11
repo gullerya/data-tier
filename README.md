@@ -123,10 +123,16 @@ Let's review the following example:
 <span data-tie-text="bandsTie.length"
 	  data-tie-tooltip="bandsTie.totalTooltip">
 </span>
+<div>
+	<template data-tie-list="bandsTie.0.albums => album">
+		<span data-tie-text="album.name"></span>
+	</template>
+</div>
 ```
-This definition ties between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 rules to state how the value will be visualized.
-Attributes' values (`bandsTie.length` and `bandsTie.totalTooltip`) are rules' configurations for this specific instance and their syntax/content is part of each rule's API.
+This definition ties between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 rules to say, how the value will be visualized.
+Attributes' values (`bandsTie.length`, `bandsTie.totalTooltip`) are rules' configurations for this specific instance and their syntax/content is part of each rule's API.
 In a most cases the tie name and the path to the data would be sufficient, but conceptually rule's configuration may be anything rule needs.
+For example, in the case of a `div` element above we used a 'tieList' rule on its template which expects more info in configuration: tie name, path and also the inner element name for each item (here - 'album', and see its usage in the inner span element).
 
 //	TODO: ootb rules and 
 
