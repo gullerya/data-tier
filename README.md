@@ -112,7 +112,7 @@ Having say that, I'll note, that there is no limitations on the size or the stru
 
 Tie object not meant to hold the link between the data and its namespace only, but also tie's specific configurations and customizations.
 Currently in the backlog there are a such a features like supporting custom interceptors for both flows - data-to-view and view-to-data.
-Those features are under ongoing development and enhancements. For more details see [__API reference__](api-reference.md) page.
+Those features are under ongoing development and enhancements. For more details see [__API reference__](api-reference.md).
 
 ### Rule
 __Rule__ is a definition of presentation logic, it's about __how__ to vizualize the data.
@@ -138,10 +138,10 @@ In most cases the tie name and the path to the data would be sufficient, but con
 Thus, in the second part a `template` element tied by a 'tieList' rule. This rule expects more rich content in its configuration: tie name and path for sure, but also some name for an item within iteration (here - 'album', and see its usage in the inner span element).
 
 There is a set of rules bundled with the library, they are described in the [__Rules reference__](rules-reference.md).
-This set will eventually be updated and enhanced from time to time, upon a needs and feedbacks from real world usages.
+This set will eventually be updated and enhanced upon a needs and feedbacks from real world usages.
 But even more important is the fact, that rules may be created and added by a consuming application.
 This can be done at any phase of application's lifecycle, so there is no special ceremony around it whatsoever.
-Rules management describes in the relevant section in [__API reference__](api-reference.md).
+Rules management described in the relevant section in [__API reference__](api-reference.md).
 
 
 # Basic example

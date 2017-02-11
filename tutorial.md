@@ -1,4 +1,4 @@
-﻿# TUTORIAL - Users selector with editor and localization
+﻿# Tutorial - users list, localization
 
 This tutorial exemplifies in a most general way the basic concepts and usage of DataTier library. You may easily play with this content: create empty HTML page, copy-paste the into it the HTML section below and copy-paste the JAVASCRIPT section into some `script` tag anywhere in that page.
 
