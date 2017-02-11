@@ -186,5 +186,5 @@ DataTier.ties.create('userInfo', observableUser);
 ```
 
 
-For an extended tutorial see [Tutorial](tutorial.md) page.
-For a more thorough API documentation see [API Reference](api-reference.md) page.
+For an extended tutorial see this [Tutorial](tutorial.md).
+For a more thorough API documentation see [API Reference](api-reference.md).
