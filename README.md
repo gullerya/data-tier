@@ -8,7 +8,7 @@ This library works tightly with [`Observable`](https://github.com/gullerya/objec
 
 Yet, it is possible to provide any other `Observable` implementation, if it provides the same functionality. In this case you may want to use lighter `data-tier` distribution (bundled within the same npm module) without `object-observer.js`.
 
-#### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](tools/browser_icons/firefox.png) <sub>42+</sub>, ![EDGE](tools/browser_icons/explorer.png) <sub>13+</sub>
+#### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](tools/browser_icons/firefox.png) <sub>44+</sub>, ![EDGE](tools/browser_icons/explorer.png) <sub>13+</sub>
 Support matrix is currently as wide as that of [`object-observer.js`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
 `DataTier` supports custom elements as well, obviously this functionality is available only on supporting environments.
 
@@ -47,7 +47,7 @@ You have 2 ways to load the library: into a `window` global scope, or a custom s
 ```html
 <script src="data-tier.js"></script>
 <script>
-	var person = { name: 'Uriya', age: 8 },
+	let person = { name: 'Uriya', age: 8 },
 	    observablePerson = Observable.from(person);
 	DataTier.ties.create('person', observablePerson);
 </script>
@@ -55,7 +55,7 @@ You have 2 ways to load the library: into a `window` global scope, or a custom s
 
 * The snippet below exemplifies how to load the library into a __custom scope__ (add error handling as appropriate):
 ```javascript
-var customNamespace = {},
+let customNamespace = {},
     person = { name: 'Nava', age: 6 },
     observablePerson;
 
@@ -94,8 +94,7 @@ let bands = [
 			{ id: 2345, name: 'When Dream and Day Unite', since: 1988 },
 			{ id: 2346, name: 'Images and Words', since: 1991 }
 		]
-	},
-	...
+	}
 ];
 bands.totalTooltip = generateTooltipText();
 ```
@@ -125,7 +124,7 @@ Let's see the following example:
 <span data-tie-text="bandsTie.length"
 	  data-tie-tooltip="bandsTie.totalTooltip">
 </span>
-...
+
 <div>
 	<template data-tie-list="bandsTie.0.albums => album">
 		<span data-tie-text="album.name"></span>
@@ -159,7 +158,7 @@ Let's review the actual example, where we have some `user` object which is our m
 
 ### Code part
 ```javascript
-var user = {
+let user = {
 	name: 'User Name',
 	age: 7,
 	active: true,

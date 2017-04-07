@@ -2,7 +2,8 @@
 	'use strict';
 
 	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays' }), users = [], oUsers = Observable.from(users);
-	window.DataTier.ties.create('users', oUsers);
+
+	DataTier.ties.create('users', oUsers);
 
 	var d = document.createElement('div'), e1, e2, e3;
 	e1 = document.createElement('div');

@@ -34,7 +34,7 @@
 					targetsToObserved.get(popResult).revoke();
 				}
 				changes = [new DeleteChange(observed.path.concat(poppedIndex), popResult)];
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 				return popResult;
 			};
 		} else if (key === 'push') {
@@ -49,7 +49,7 @@
 					changes.push(new InsertChange(observed.path.concat(startingLength + index), item));
 				});
 				pushResult = Reflect.apply(target[key], target, pushContent);
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 				return pushResult;
 			};
 		} else if (key === 'shift') {
@@ -71,7 +71,7 @@
 					}
 				});
 				changes = [new DeleteChange(observed.path.concat(0), shiftResult)];
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 				return shiftResult;
 			};
 		} else if (key === 'unshift') {
@@ -97,7 +97,7 @@
 				for (var i = 0; i < unshiftContent.length; i++) {
 					changes.push(new InsertChange(observed.path.concat(i), target[i]));
 				}
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 				return unshiftResult;
 			};
 		} else if (key === 'reverse') {
@@ -115,7 +115,7 @@
 					}
 				});
 				changes.push(new ReverseChange());
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 				return this;
 			};
 		} else if (key === 'sort') {
@@ -133,7 +133,7 @@
 					}
 				});
 				changes.push(new ShuffleChange());
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 				return this;
 			};
 		} else if (key === 'fill') {
@@ -156,7 +156,7 @@
 						changes.push(new InsertChange(observed.path.concat(i), target[i]));
 					}
 				}
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 				return this;
 			};
 		} else if (key === 'splice') {
@@ -210,7 +210,7 @@
 				for (; index < inserted; index++) {
 					changes.push(new InsertChange(observed.path.concat(startIndex + index), target[startIndex + index]));
 				}
-				publishChanges(observable.callbacks, changes);
+				observable.notify(changes);
 
 				return spliceResult;
 			};
@@ -225,30 +225,26 @@
 			oldValue = target[key],
 			result,
 			observed = targetsToObserved.get(target),
-			observable = observedToObservable.get(observed.root),
-			changes = [],
-			path;
+			observable = observedToObservable.get(observed.root);
 
-		result = Reflect.set(target, key, value);
-		if (observable.callbacks.length && result && value !== oldValue) {
-			path = observed.path.concat(key);
+		if (value && typeof value === 'object' && !isNonObservable(value)) {
+			result = Reflect.set(target, key, new Observed(value, key, observed).proxy);
+		} else {
+			result = Reflect.set(target, key, value);
+		}
 
-			if (oldValue && typeof oldValue === 'object') {
+		if (result) {
+			if (proxiesToTargetsMap.has(oldValue)) {
 				targetsToObserved.get(proxiesToTargetsMap.get(oldValue)).revoke();
-				if (proxiesToTargetsMap.has(oldValue)) {
-					proxiesToTargetsMap.delete(oldValue);
+				proxiesToTargetsMap.delete(oldValue);
+			}
+
+			if (observable.hasListeners) {
+				var path = observed.path.concat(key), changes = [];
+				changes.push(oldValuePresent ? new UpdateChange(path, value, oldValue) : new InsertChange(path, value));
+				if (!observed.preventCallbacks) {
+					observable.notify(changes);
 				}
-			}
-			if (value && typeof value === 'object') {
-				target[key] = new Observed(value, key, observed).proxy;
-			}
-			if (oldValuePresent) {
-				changes.push(new UpdateChange(path, value, oldValue));
-			} else {
-				changes.push(new InsertChange(path, value));
-			}
-			if (!observed.preventCallbacks) {
-				publishChanges(observable.callbacks, changes);
 			}
 		}
 		return result;
@@ -258,21 +254,22 @@
 		var oldValue = target[key],
 			result,
 			observed = targetsToObserved.get(target),
-			observable = observedToObservable.get(observed.root),
-			changes = [],
-			path;
+			observable = observedToObservable.get(observed.root);
 
 		result = Reflect.deleteProperty(target, key);
-		if (observable.callbacks.length && result) {
-			if (typeof oldValue === 'object' && oldValue) {
-				if (proxiesToTargetsMap.has(oldValue)) {
-					proxiesToTargetsMap.delete(oldValue);
-				}
+
+		if (result) {
+			if (proxiesToTargetsMap.has(oldValue)) {
+				targetsToObserved.get(proxiesToTargetsMap.get(oldValue)).revoke();
+				proxiesToTargetsMap.delete(oldValue);
 			}
-			path = observed.path.concat(key);
-			changes.push(new DeleteChange(path, oldValue));
-			if (!observed.preventCallbacks) {
-				publishChanges(observable.callbacks, changes);
+
+			if (observable.hasListeners) {
+				var path = observed.path.concat(key), changes = [];
+				changes.push(new DeleteChange(path, oldValue));
+				if (!observed.preventCallbacks) {
+					observable.notify(changes);
+				}
 			}
 		}
 		return result;
@@ -356,7 +353,7 @@
 			var proxy = this.proxy;
 			Reflect.ownKeys(proxy).forEach(function (key) {
 				var child = proxy[key];
-				if (child && typeof child === 'object') {
+				if (proxiesToTargetsMap.has(child)) {
 					targetsToObserved.get(proxiesToTargetsMap.get(child)).revoke();
 					proxiesToTargetsMap.get(proxy)[key] = proxiesToTargetsMap.get(child);
 				}
@@ -403,11 +400,22 @@
 			}
 		}
 
+		function notify(changes) {
+			callbacks.forEach(function (callback) {
+				try {
+					callback(changes);
+				} catch (e) {
+					console.error(e);
+				}
+			});
+		}
+
 		Reflect.defineProperty(observed.proxy, 'observe', { value: observe });
 		Reflect.defineProperty(observed.proxy, 'unobserve', { value: unobserve });
 		Reflect.defineProperty(observed.proxy, 'revoke', { value: revoke });
 
-		Reflect.defineProperty(this, 'callbacks', { value: callbacks });
+		Reflect.defineProperty(this, 'hasListeners', { get: function () { return callbacks.length > 0; } });
+		Reflect.defineProperty(this, 'notify', { value: notify });
 	}
 
 	function InsertChange(path, value) {
@@ -431,16 +439,6 @@
 	}
 	function ShuffleChange() {
 		Reflect.defineProperty(this, 'type', { value: 'shuffle' });
-	}
-
-	function publishChanges(callbacks, changes) {
-		for (var i = 0; i < callbacks.length; i++) {
-			try {
-				callbacks[i](changes);
-			} catch (e) {
-				console.error(e);
-			}
-		}
 	}
 
 	Reflect.defineProperty(Observable, 'from', {
@@ -560,7 +558,7 @@
 ﻿(function (scope) {
 	'use strict';
 
-	var rules = {};
+	const rules = {};
 
 	function Rule(name, options) {
 		Reflect.defineProperty(this, 'name', { value: name });
@@ -632,11 +630,11 @@
 	Reflect.defineProperty(scope.DataTier.rules, 'getApplicable', { value: getApplicable });
 
 })(this);
-﻿(function (scope) {
+﻿(function(scope) {
 	'use strict';
 
-	var views = {},
-        nlvs = {};
+	const views = {},
+		nlvs = {};
 
 	//	TODO: this is similar to setPath in ties-service - unify
 	function getPath(ref, path) {
@@ -650,14 +648,20 @@
 	}
 
 	function changeListener(event) {
-		scope.DataTier.rules.getApplicable(event.target).forEach(function (rule) {
+		scope.DataTier.rules.getApplicable(event.target).forEach(function(rule) {
 			if (rule.name === 'tieValue') {
 				var ruleParam = rule.parseParam(event.target.dataset[rule.name]),
 					tie = scope.DataTier.ties.get(ruleParam.tieName);
-				if (!ruleParam.dataPath) { console.error('path to data not available'); return; }
-				if (!tie) { console.error('tie "' + ruleParam.tieName + '" not found'); return; }
+				if (!ruleParam.dataPath) {
+					console.error('path to data not available');
+					return;
+				}
+				if (!tie) {
+					console.error('tie "' + ruleParam.tieName + '" not found');
+					return;
+				}
 
-				tie.viewToDataProcessor({ data: tie.data, path: ruleParam.dataPath, view: event.target });
+				tie.viewToDataProcessor({data: tie.data, path: ruleParam.dataPath, view: event.target});
 			}
 		});
 	}
@@ -675,13 +679,13 @@
 	function add(view) {
 		if (view.nodeName === 'IFRAME') {
 			initDocumentObserver(view.contentDocument);
-			view.addEventListener('load', function () {
+			view.addEventListener('load', function() {
 				initDocumentObserver(this.contentDocument);
 				collect(this.contentDocument);
 			});
 			collect(view.contentDocument);
 		} else {
-			scope.DataTier.rules.getApplicable(view).forEach(function (rule) {
+			scope.DataTier.rules.getApplicable(view).forEach(function(rule) {
 				var ruleParam = rule.parseParam(view.dataset[rule.name]),
 					pathString = ruleParam.dataPath.join('.'),
 					tieViews,
@@ -738,11 +742,11 @@
 	function collect(rootElement) {
 		var l;
 		if (rootElement &&
-            rootElement.nodeType &&
-            (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
+			rootElement.nodeType &&
+			(rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
 			l = rootElement.nodeName === 'IFRAME' ?
-                l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) :
-                l = Array.from(rootElement.getElementsByTagName('*'));
+				l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) :
+				l = Array.from(rootElement.getElementsByTagName('*'));
 			l.push(rootElement);
 			l.forEach(add);
 		}
@@ -753,8 +757,8 @@
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.from(rootElement.getElementsByTagName('*'));
 		l.push(rootElement);
-		l.forEach(function (e) {
-			scope.DataTier.rules.getApplicable(e).forEach(function (rule) {
+		l.forEach(function(e) {
+			scope.DataTier.rules.getApplicable(e).forEach(function(rule) {
 				param = rule.parseParam(e.dataset[rule.name]);
 				pathViews = views[param.tieName][rule.name][param.dataPath.join('.')];
 				i = pathViews.indexOf(e);
@@ -792,14 +796,14 @@
 	function processChanges(tieName, changes) {
 		var tieViews = views[tieName], ruleViews, pathString;
 		if (tieViews) {
-			changes.forEach(function (change) {
+			changes.forEach(function(change) {
 				pathString = change.path.join('.');
-				Object.keys(tieViews).forEach(function (ruleName) {
+				Object.keys(tieViews).forEach(function(ruleName) {
 					ruleViews = tieViews[ruleName];
 					if (ruleViews) {
-						Object.keys(ruleViews).forEach(function (path) {
+						Object.keys(ruleViews).forEach(function(path) {
 							if (path.indexOf(pathString) === 0 || path === '') {
-								ruleViews[path].forEach(function (view) {
+								ruleViews[path].forEach(function(view) {
 									update(view, ruleName);
 								});
 							}
@@ -807,15 +811,13 @@
 					}
 				});
 			});
-		} else {
-			console.debug('views of tie "' + tieName + '" are not defined');
 		}
 	}
 
 	function applyRule(rule) {
 		//	apply on a pending views
 		if (nlvs[rule.name]) {
-			nlvs[rule.name].forEach(function (view) {
+			nlvs[rule.name].forEach(function(view) {
 				add(view);
 			});
 			delete nlvs[rule.name];
@@ -831,7 +833,7 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			changes.forEach(function (change) {
+			changes.forEach(function(change) {
 				var tr = change.target, an = change.attributeName;
 				if (change.type === 'attributes' && an.indexOf('data-tie') === 0) {
 					move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
@@ -840,13 +842,13 @@
 				} else if (change.type === 'childList') {
 
 					//	process added nodes
-					Array.from(change.addedNodes).forEach(function (addedNode) {
+					Array.from(change.addedNodes).forEach(function(addedNode) {
 						if (addedNode.nodeName === 'IFRAME') {
 							if (addedNode.contentDocument) {
 								initDocumentObserver(addedNode.contentDocument);
 								collect(addedNode.contentDocument);
 							}
-							addedNode.addEventListener('load', function () {
+							addedNode.addEventListener('load', function() {
 								initDocumentObserver(this.contentDocument);
 								collect(this.contentDocument);
 							});
@@ -856,7 +858,7 @@
 					});
 
 					//	process removed nodes
-					Array.from(change.removedNodes).forEach(function (removedNode) {
+					Array.from(change.removedNodes).forEach(function(removedNode) {
 						if (removedNode.nodeName === 'IFRAME') {
 							discard(removedNode.contentDocument);
 						} else {
@@ -878,9 +880,9 @@
 		});
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'views', { value: {} });
-	Reflect.defineProperty(scope.DataTier.views, 'processChanges', { value: processChanges });
-	Reflect.defineProperty(scope.DataTier.views, 'applyRule', { value: applyRule });
+	Reflect.defineProperty(scope.DataTier, 'views', {value: {}});
+	Reflect.defineProperty(scope.DataTier.views, 'processChanges', {value: processChanges});
+	Reflect.defineProperty(scope.DataTier.views, 'applyRule', {value: applyRule});
 
 	initDocumentObserver(document);
 	collect(document);

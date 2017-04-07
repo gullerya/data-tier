@@ -1,8 +1,8 @@
-﻿(function (scope) {
+﻿(function(scope) {
 	'use strict';
 
-	var views = {},
-        nlvs = {};
+	const views = {},
+		nlvs = {};
 
 	//	TODO: this is similar to setPath in ties-service - unify
 	function getPath(ref, path) {
@@ -16,14 +16,20 @@
 	}
 
 	function changeListener(event) {
-		scope.DataTier.rules.getApplicable(event.target).forEach(function (rule) {
+		scope.DataTier.rules.getApplicable(event.target).forEach(function(rule) {
 			if (rule.name === 'tieValue') {
 				var ruleParam = rule.parseParam(event.target.dataset[rule.name]),
 					tie = scope.DataTier.ties.get(ruleParam.tieName);
-				if (!ruleParam.dataPath) { console.error('path to data not available'); return; }
-				if (!tie) { console.error('tie "' + ruleParam.tieName + '" not found'); return; }
+				if (!ruleParam.dataPath) {
+					console.error('path to data not available');
+					return;
+				}
+				if (!tie) {
+					console.error('tie "' + ruleParam.tieName + '" not found');
+					return;
+				}
 
-				tie.viewToDataProcessor({ data: tie.data, path: ruleParam.dataPath, view: event.target });
+				tie.viewToDataProcessor({data: tie.data, path: ruleParam.dataPath, view: event.target});
 			}
 		});
 	}
@@ -41,13 +47,13 @@
 	function add(view) {
 		if (view.nodeName === 'IFRAME') {
 			initDocumentObserver(view.contentDocument);
-			view.addEventListener('load', function () {
+			view.addEventListener('load', function() {
 				initDocumentObserver(this.contentDocument);
 				collect(this.contentDocument);
 			});
 			collect(view.contentDocument);
 		} else {
-			scope.DataTier.rules.getApplicable(view).forEach(function (rule) {
+			scope.DataTier.rules.getApplicable(view).forEach(function(rule) {
 				var ruleParam = rule.parseParam(view.dataset[rule.name]),
 					pathString = ruleParam.dataPath.join('.'),
 					tieViews,
@@ -104,11 +110,11 @@
 	function collect(rootElement) {
 		var l;
 		if (rootElement &&
-            rootElement.nodeType &&
-            (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
+			rootElement.nodeType &&
+			(rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
 			l = rootElement.nodeName === 'IFRAME' ?
-                l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) :
-                l = Array.from(rootElement.getElementsByTagName('*'));
+				l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) :
+				l = Array.from(rootElement.getElementsByTagName('*'));
 			l.push(rootElement);
 			l.forEach(add);
 		}
@@ -119,8 +125,8 @@
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.from(rootElement.getElementsByTagName('*'));
 		l.push(rootElement);
-		l.forEach(function (e) {
-			scope.DataTier.rules.getApplicable(e).forEach(function (rule) {
+		l.forEach(function(e) {
+			scope.DataTier.rules.getApplicable(e).forEach(function(rule) {
 				param = rule.parseParam(e.dataset[rule.name]);
 				pathViews = views[param.tieName][rule.name][param.dataPath.join('.')];
 				i = pathViews.indexOf(e);
@@ -158,14 +164,14 @@
 	function processChanges(tieName, changes) {
 		var tieViews = views[tieName], ruleViews, pathString;
 		if (tieViews) {
-			changes.forEach(function (change) {
+			changes.forEach(function(change) {
 				pathString = change.path.join('.');
-				Object.keys(tieViews).forEach(function (ruleName) {
+				Object.keys(tieViews).forEach(function(ruleName) {
 					ruleViews = tieViews[ruleName];
 					if (ruleViews) {
-						Object.keys(ruleViews).forEach(function (path) {
+						Object.keys(ruleViews).forEach(function(path) {
 							if (path.indexOf(pathString) === 0 || path === '') {
-								ruleViews[path].forEach(function (view) {
+								ruleViews[path].forEach(function(view) {
 									update(view, ruleName);
 								});
 							}
@@ -173,15 +179,13 @@
 					}
 				});
 			});
-		} else {
-			console.debug('views of tie "' + tieName + '" are not defined');
 		}
 	}
 
 	function applyRule(rule) {
 		//	apply on a pending views
 		if (nlvs[rule.name]) {
-			nlvs[rule.name].forEach(function (view) {
+			nlvs[rule.name].forEach(function(view) {
 				add(view);
 			});
 			delete nlvs[rule.name];
@@ -197,7 +201,7 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			changes.forEach(function (change) {
+			changes.forEach(function(change) {
 				var tr = change.target, an = change.attributeName;
 				if (change.type === 'attributes' && an.indexOf('data-tie') === 0) {
 					move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
@@ -206,13 +210,13 @@
 				} else if (change.type === 'childList') {
 
 					//	process added nodes
-					Array.from(change.addedNodes).forEach(function (addedNode) {
+					Array.from(change.addedNodes).forEach(function(addedNode) {
 						if (addedNode.nodeName === 'IFRAME') {
 							if (addedNode.contentDocument) {
 								initDocumentObserver(addedNode.contentDocument);
 								collect(addedNode.contentDocument);
 							}
-							addedNode.addEventListener('load', function () {
+							addedNode.addEventListener('load', function() {
 								initDocumentObserver(this.contentDocument);
 								collect(this.contentDocument);
 							});
@@ -222,7 +226,7 @@
 					});
 
 					//	process removed nodes
-					Array.from(change.removedNodes).forEach(function (removedNode) {
+					Array.from(change.removedNodes).forEach(function(removedNode) {
 						if (removedNode.nodeName === 'IFRAME') {
 							discard(removedNode.contentDocument);
 						} else {
@@ -244,9 +248,9 @@
 		});
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'views', { value: {} });
-	Reflect.defineProperty(scope.DataTier.views, 'processChanges', { value: processChanges });
-	Reflect.defineProperty(scope.DataTier.views, 'applyRule', { value: applyRule });
+	Reflect.defineProperty(scope.DataTier, 'views', {value: {}});
+	Reflect.defineProperty(scope.DataTier.views, 'processChanges', {value: processChanges});
+	Reflect.defineProperty(scope.DataTier.views, 'applyRule', {value: applyRule});
 
 	initDocumentObserver(document);
 	collect(document);

@@ -22,8 +22,7 @@
 	c.style.cssText = 'position:relative;height:200px;overflow:auto';
 	document.body.appendChild(c);
 
-	suite.addTest({ name: 'array binding - verification' }, function (pass, fail) {
-		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
+	suite.addTest({ name: 'array binding - verification array as top level object' }, function (pass, fail) {
 		setTimeout(function () {
 			if (e1.textContent !== '') fail('preliminary check failed');
 			if (e2.textContent !== '') fail('preliminary check failed');
@@ -41,6 +40,30 @@
 				if (c.childNodes[1].childNodes[0].textContent !== 'A') fail('expected first repeated sub-child text to be "A", found: ' + c.childNodes[1].childNodes[0].textContent);
 				if (c.childNodes[1].childNodes[1].textContent !== '5') fail('expected first repeated sub-child text to be "5", found: ' + c.childNodes[1].childNodes[1].textContent);
 				if (c.childNodes[1].childNodes[2].textContent !== 'some street') fail('expected first repeated sub-child text to be "some street", found: ' + c.childNodes[1].childNodes[2].textContent);
+				pass();
+			}, 0);
+		}, 0);
+	});
+
+	suite.addTest({ name: 'array binding - verification array as subgraph' }, function (pass, fail) {
+		var container = document.createElement('div'),
+			user = { roles: [] },
+			oUser = Observable.from(user);
+
+		DataTier.ties.create('userRoles', oUser);
+
+		container.innerHTML = '<template data-tie-list="userRoles.roles => role"><span data-tie-text="role.name"></span></template>';
+		document.body.appendChild(container);
+
+		setTimeout(function () {
+			if (container.children.length !== 1) fail('preliminary check failed, expected to have at this point only 1 child');
+
+			oUser.roles.push({
+				name: 'employee'
+			});
+
+			setTimeout(function () {
+				if (container.children.length !== 2) fail('expected to have 2 children');
 				pass();
 			}, 0);
 		}, 0);
@@ -92,12 +115,12 @@
 		}, 0);
 	});
 
-	suite.addTest({ name: 'array binding - huge bulk update (2000 rows)' }, function (pass, fail) {
+	suite.addTest({ name: 'array binding - huge bulk update (5000 rows)' }, function (pass, fail) {
 		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
 		setTimeout(function () {
 			var a = [], aO, i;
 
-			for (i = 0; i < 2000; i++) {
+			for (i = 0; i < 5000; i++) {
 				a.push({
 					name: 'A',
 					age: 6,
@@ -106,7 +129,7 @@
 			}
 			DataTier.ties.get('usersA').data = Observable.from(a);
 
-			if (c.childElementCount !== 2001) fail('expected child elements of repeater to be 2001, found: ' + c.childElementCount);
+			if (c.childElementCount !== 5001) fail('expected child elements of repeater to be 5001, found: ' + c.childElementCount);
 			//	TODO: ensure the content of the repeated child is as expected
 			pass();
 		}, 0);

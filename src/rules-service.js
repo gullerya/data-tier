@@ -1,7 +1,7 @@
 ﻿(function (scope) {
 	'use strict';
 
-	var rules = {};
+	const rules = {};
 
 	function Rule(name, options) {
 		Reflect.defineProperty(this, 'name', { value: name });
