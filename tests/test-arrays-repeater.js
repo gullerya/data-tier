@@ -1,7 +1,7 @@
-﻿(function () {
+﻿(function() {
 	'use strict';
 
-	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays with Repeaters' }), users = [], oUsers = Observable.from(users);
+	var suite = window.Utils.JustTest.createSuite({name: 'Testing Arrays with Repeaters'}), users = [], oUsers = Observable.from(users);
 	window.DataTier.ties.create('usersA', oUsers);
 
 	var c = document.createElement('div'), t, c1, e1, e2, e3;
@@ -22,8 +22,8 @@
 	c.style.cssText = 'position:relative;height:200px;overflow:auto';
 	document.body.appendChild(c);
 
-	suite.addTest({ name: 'array binding - verification array as top level object' }, function (pass, fail) {
-		setTimeout(function () {
+	suite.addTest({name: 'array binding - verification array as top level object'}, function(pass, fail) {
+		setTimeout(function() {
 			if (e1.textContent !== '') fail('preliminary check failed');
 			if (e2.textContent !== '') fail('preliminary check failed');
 			if (e3.textContent !== '') fail('preliminary check failed');
@@ -31,12 +31,11 @@
 			oUsers.push({
 				name: 'A',
 				age: 5,
-				address: { street: 'some street' }
+				address: {street: 'some street'}
 			});
 
-			if (c.childElementCount !== 2) fail('expected child elements of repeater to be 2, found: ' + c.childElementCount);
-
-			setTimeout(function () {
+			setTimeout(function() {
+				if (c.childElementCount !== 2) fail('expected child elements of repeater to be 2, found: ' + c.childElementCount);
 				if (c.childNodes[1].childNodes[0].textContent !== 'A') fail('expected first repeated sub-child text to be "A", found: ' + c.childNodes[1].childNodes[0].textContent);
 				if (c.childNodes[1].childNodes[1].textContent !== '5') fail('expected first repeated sub-child text to be "5", found: ' + c.childNodes[1].childNodes[1].textContent);
 				if (c.childNodes[1].childNodes[2].textContent !== 'some street') fail('expected first repeated sub-child text to be "some street", found: ' + c.childNodes[1].childNodes[2].textContent);
@@ -45,9 +44,9 @@
 		}, 0);
 	});
 
-	suite.addTest({ name: 'array binding - verification array as subgraph' }, function (pass, fail) {
+	suite.addTest({name: 'array binding - verification array as subgraph'}, function(pass, fail) {
 		var container = document.createElement('div'),
-			user = { roles: [] },
+			user = {roles: []},
 			oUser = Observable.from(user);
 
 		DataTier.ties.create('userRoles', oUser);
@@ -55,56 +54,56 @@
 		container.innerHTML = '<template data-tie-list="userRoles.roles => role"><span data-tie-text="role.name"></span></template>';
 		document.body.appendChild(container);
 
-		setTimeout(function () {
+		setTimeout(function() {
 			if (container.children.length !== 1) fail('preliminary check failed, expected to have at this point only 1 child');
 
 			oUser.roles.push({
 				name: 'employee'
 			});
 
-			setTimeout(function () {
+			setTimeout(function() {
 				if (container.children.length !== 2) fail('expected to have 2 children');
 				pass();
 			}, 0);
 		}, 0);
 	});
 
-	suite.addTest({ name: 'array binding - bulk update' }, function (pass, fail) {
+	suite.addTest({name: 'array binding - bulk update'}, function(pass, fail) {
 		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
-		setTimeout(function () {
+		setTimeout(function() {
 			var d = [
-			{
-				name: 'A',
-				age: 5,
-				address: { street: 'some street 1' }
-			},
-			{
-				name: 'B',
-				age: 8,
-				address: { street: 'some street 2' }
-			},
-			{
-				name: 'C',
-				age: 15,
-				address: { street: 'some street 3' }
-			},
-			{
-				name: 'D',
-				age: 54,
-				address: { street: 'some street 4' }
-			},
-			{
-				name: 'E',
-				age: 13,
-				address: { street: 'some street 5' }
-			}
-			],
-			dO = Observable.from(d);
+					{
+						name: 'A',
+						age: 5,
+						address: {street: 'some street 1'}
+					},
+					{
+						name: 'B',
+						age: 8,
+						address: {street: 'some street 2'}
+					},
+					{
+						name: 'C',
+						age: 15,
+						address: {street: 'some street 3'}
+					},
+					{
+						name: 'D',
+						age: 54,
+						address: {street: 'some street 4'}
+					},
+					{
+						name: 'E',
+						age: 13,
+						address: {street: 'some street 5'}
+					}
+				],
+				dO = Observable.from(d);
 
 			DataTier.ties.get('usersA').data = dO;
 
-			if (c.childElementCount !== 6) fail('expected child elements of repeater to be 6, found: ' + c.childElementCount);
-			setTimeout(function () {
+			setTimeout(function() {
+				if (c.childElementCount !== d.length + 1) fail('expected child elements of repeater to be ' + (d.length + 1) + ', found: ' + c.childElementCount);
 				for (var i = 0; i < d.length; i++) {
 					if (c.childNodes[i + 1].childNodes[0].textContent !== d[i].name) fail('unexpected text content of repeated element ' + i + ' sub-child 0');
 					if (c.childNodes[i + 1].childNodes[1].textContent !== d[i].age.toString()) fail('unexpected text content of repeated element ' + i + ' sub-child 1');
@@ -115,16 +114,16 @@
 		}, 0);
 	});
 
-	suite.addTest({ name: 'array binding - huge bulk update (5000 rows)' }, function (pass, fail) {
+	suite.addTest({name: 'array binding - huge bulk update (5000 rows)'}, function(pass, fail) {
 		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
-		setTimeout(function () {
+		setTimeout(function() {
 			var a = [], aO, i;
 
 			for (i = 0; i < 5000; i++) {
 				a.push({
 					name: 'A',
 					age: 6,
-					address: { street: 'some street 1' }
+					address: {street: 'some street 1'}
 				});
 			}
 			DataTier.ties.get('usersA').data = Observable.from(a);

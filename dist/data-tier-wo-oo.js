@@ -94,18 +94,26 @@
 	Reflect.defineProperty(scope.DataTier.ties, 'remove', { value: remove });
 
 })(this);
-﻿(function (scope) {
+﻿(function(scope) {
 	'use strict';
 
 	const rules = {};
 
 	function Rule(name, options) {
-		Reflect.defineProperty(this, 'name', { value: name });
-		Reflect.defineProperty(this, 'dataToView', { value: options.dataToView });
-		if (typeof options.inputToData === 'function') { Reflect.defineProperty(this, 'inputToData', { value: options.inputToData }); }
-		if (typeof options.parseParam === 'function') { Reflect.defineProperty(this, 'parseParam', { value: options.parseParam }); }
+		Reflect.defineProperty(this, 'name', {value: name});
+		Reflect.defineProperty(this, 'dataToView', {value: options.dataToView});
+		if (typeof options.inputToData === 'function') {
+			Reflect.defineProperty(this, 'inputToData', {value: options.inputToData});
+		}
+		if (typeof options.parseParam === 'function') {
+			Reflect.defineProperty(this, 'parseParam', {value: options.parseParam});
+		}
+		if (typeof options.isChangedPathRelevant === 'function') {
+			Reflect.defineProperty(this, 'isChangedPathRelevant', {value: options.isChangedPathRelevant});
+		}
 	}
-	Rule.prototype.parseParam = function (ruleParam) {
+
+	Rule.prototype.parseParam = function(ruleParam) {
 		var dataPath, tieName;
 		if (ruleParam) {
 			dataPath = ruleParam.trim().split('.');
@@ -117,6 +125,9 @@
 		} else {
 			console.error('valid rule value MUST be a non-empty string, found: ' + ruleParam);
 		}
+	};
+	Rule.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
+		return viewedPath.indexOf(changedPath) === 0;
 	};
 
 	function addRule(name, configuration) {
@@ -152,7 +163,7 @@
 	function getApplicable(element) {
 		var result = [];
 		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
-			Reflect.ownKeys(element.dataset).forEach(function (key) {
+			Object.keys(element.dataset).forEach(function(key) {
 				if (rules[key]) {
 					result.push(rules[key]);
 				}
@@ -161,12 +172,12 @@
 		return result;
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'rules', { value: {} });
-	Reflect.defineProperty(scope.DataTier.rules, 'get', { value: getRule });
-	Reflect.defineProperty(scope.DataTier.rules, 'add', { value: addRule });
-	Reflect.defineProperty(scope.DataTier.rules, 'remove', { value: removeRule });
+	Reflect.defineProperty(scope.DataTier, 'rules', {value: {}});
+	Reflect.defineProperty(scope.DataTier.rules, 'get', {value: getRule});
+	Reflect.defineProperty(scope.DataTier.rules, 'add', {value: addRule});
+	Reflect.defineProperty(scope.DataTier.rules, 'remove', {value: removeRule});
 
-	Reflect.defineProperty(scope.DataTier.rules, 'getApplicable', { value: getApplicable });
+	Reflect.defineProperty(scope.DataTier.rules, 'getApplicable', {value: getApplicable});
 
 })(this);
 ﻿(function(scope) {
@@ -257,12 +268,14 @@
 			});
 
 			//	collect potentially future rules element and put them into some tracking storage
-			for (var key in view.dataset) {
-				if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
-					console.warn('non-registerd rule "' + key + '" used, it may still be defined later in code and post-tied');
-					if (!nlvs[key]) nlvs[key] = [];
-					nlvs[key].push(view);
-				}
+			if (view.dataset) {
+				Object.keys(view.dataset).forEach(function(key) {
+					if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
+						console.warn('non-registerd rule "' + key + '" used, it may still be defined later in code and post-tied');
+						if (!nlvs[key]) nlvs[key] = [];
+						nlvs[key].push(view);
+					}
+				});
 			}
 		}
 	}
@@ -333,16 +346,17 @@
 	}
 
 	function processChanges(tieName, changes) {
-		var tieViews = views[tieName], ruleViews, pathString;
+		var tieViews = views[tieName], rule, ruleViews, changedPath;
 		if (tieViews) {
 			changes.forEach(function(change) {
-				pathString = change.path.join('.');
+				changedPath = change.path.join('.');
 				Object.keys(tieViews).forEach(function(ruleName) {
 					ruleViews = tieViews[ruleName];
 					if (ruleViews) {
-						Object.keys(ruleViews).forEach(function(path) {
-							if (path.indexOf(pathString) === 0 || path === '') {
-								ruleViews[path].forEach(function(view) {
+						rule = scope.DataTier.rules.get(ruleName);
+						Object.keys(ruleViews).forEach(function(viewedPath) {
+							if (rule.isChangedPathRelevant(changedPath, viewedPath)) {
+								ruleViews[viewedPath].forEach(function(view) {
 									update(view, ruleName);
 								});
 							}
@@ -427,63 +441,71 @@
 	collect(document);
 
 })(this);
-﻿(function (scope) {
+﻿(function(scope) {
 	'use strict';
 
 	var add = scope.DataTier.rules.add;
 
 	add('tieValue', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.value = data ? data : '';
 		}
 	});
 
 	add('tieText', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.textContent = data ? data.toString() : '';
 		}
 	});
 
 	add('tiePlaceholder', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.placeholder = data ? data : '';
 		}
 	});
 
 	add('tieTooltip', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.title = data ? data : '';
 		}
 	});
 
 	add('tieSrc', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.src = data ? data : '';
 		}
 	});
 
 	add('tieHRef', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.href = data ? data : '';
 		}
 	});
 
 	add('tieDateValue', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.value = data ? data.toLocaleString() : '';
 		}
 	});
 
 	add('tieDateText', {
-		dataToView: function (data, view) {
+		dataToView: function(data, view) {
 			view.textContent = data ? data.toLocaleString() : '';
 		}
 	});
 
 	add('tieClasses', {
-		dataToView: function (data, view) {
+		isChangedPathRelevant: function(changedPath, viewedPath) {
+			var subPath = changedPath.replace(viewedPath, '').split('.');
+			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
+				subPath.length === 1 ||
+				(subPath.length === 2 && subPath[0] === '');
+		},
+		dataToView: function(data, view) {
 			var newList = data && Array.isArray(data) ? data : [];
-			Array.from(view.classList).forEach(function (classToken) { view.classList.remove(classToken); });
+			Array.from(view.classList).forEach(function(classToken) {
+				view.classList.remove(classToken);
+			});
 			if (newList.length) {
 				view.classList.add.apply(view.classList, newList);
 			}
@@ -491,10 +513,16 @@
 	});
 
 	add('tieList', {
-		parseParam: function (ruleValue) {
+		parseParam: function(ruleValue) {
 			return this.constructor.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
 		},
-		dataToView: function (tiedValue, template) {
+		isChangedPathRelevant: function(changedPath, viewedPath) {
+			var subPath = changedPath.replace(viewedPath, '').split('.');
+			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
+				subPath.length === 1 ||
+				(subPath.length === 2 && subPath[0] === '');
+		},
+		dataToView: function(tiedValue, template) {
 			var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
 
 			function shortenListTo(cnt, aid) {
@@ -524,8 +552,8 @@
 					for (; i < tiedValue.length; i++) {
 						nv = d.importNode(template.content, true);
 						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
-						vs.forEach(function (view) {
-							Object.keys(view.dataset).forEach(function (key) {
+						vs.forEach(function(view) {
+							Object.keys(view.dataset).forEach(function(key) {
 								if (view.dataset[key].indexOf(itemId) === 0) {
 									view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
 								}

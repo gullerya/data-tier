@@ -86,12 +86,14 @@
 			});
 
 			//	collect potentially future rules element and put them into some tracking storage
-			for (var key in view.dataset) {
-				if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
-					console.warn('non-registerd rule "' + key + '" used, it may still be defined later in code and post-tied');
-					if (!nlvs[key]) nlvs[key] = [];
-					nlvs[key].push(view);
-				}
+			if (view.dataset) {
+				Object.keys(view.dataset).forEach(function(key) {
+					if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
+						console.warn('non-registerd rule "' + key + '" used, it may still be defined later in code and post-tied');
+						if (!nlvs[key]) nlvs[key] = [];
+						nlvs[key].push(view);
+					}
+				});
 			}
 		}
 	}
@@ -162,16 +164,17 @@
 	}
 
 	function processChanges(tieName, changes) {
-		var tieViews = views[tieName], ruleViews, pathString;
+		var tieViews = views[tieName], rule, ruleViews, changedPath;
 		if (tieViews) {
 			changes.forEach(function(change) {
-				pathString = change.path.join('.');
+				changedPath = change.path.join('.');
 				Object.keys(tieViews).forEach(function(ruleName) {
 					ruleViews = tieViews[ruleName];
 					if (ruleViews) {
-						Object.keys(ruleViews).forEach(function(path) {
-							if (path.indexOf(pathString) === 0 || path === '') {
-								ruleViews[path].forEach(function(view) {
+						rule = scope.DataTier.rules.get(ruleName);
+						Object.keys(ruleViews).forEach(function(viewedPath) {
+							if (rule.isChangedPathRelevant(changedPath, viewedPath)) {
+								ruleViews[viewedPath].forEach(function(view) {
 									update(view, ruleName);
 								});
 							}
