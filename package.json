@@ -1,11 +1,11 @@
 {
   "name": "data-tier",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "main": "dist/data-tier.js",
   "files": [
     "dist"
   ],
-  "description": "Tiny and fast two way (MV-VM) data binding framework implemented in pure JS for browser environments.",
+  "description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
   "keywords": [
     "two",
     "way",

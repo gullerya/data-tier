@@ -502,12 +502,14 @@
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		dataToView: function(data, view) {
-			var newList = data && Array.isArray(data) ? data : [];
-			Array.from(view.classList).forEach(function(classToken) {
-				view.classList.remove(classToken);
-			});
-			if (newList.length) {
-				view.classList.add.apply(view.classList, newList);
+			if (data && typeof data === 'object') {
+				Object.keys(data).forEach(function(key) {
+					if (data.key) {
+						view.classList.add(key);
+					} else {
+						view.classList.remove(key);
+					}
+				});
 			}
 		}
 	});
