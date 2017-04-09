@@ -1,11 +1,11 @@
-﻿(function () {
+﻿(function() {
 	'use strict';
 
-	var suite = window.Utils.JustTest.createSuite({ name: 'Testing Arrays' }), users = [], oUsers = Observable.from(users);
+	let suite = Utils.JustTest.createSuite({name: 'Testing Arrays'}), users = [], oUsers = Observable.from(users);
 
 	DataTier.ties.create('users', oUsers);
 
-	var d = document.createElement('div'), e1, e2, e3;
+	let d = document.createElement('div'), e1, e2, e3;
 	e1 = document.createElement('div');
 	e2 = document.createElement('div');
 	e3 = document.createElement('div');
@@ -17,8 +17,8 @@
 	d.appendChild(e3);
 	document.body.appendChild(d);
 
-	suite.addTest({ name: 'array binding - adding element' }, function (pass, fail) {
-		setTimeout(function () {
+	suite.addTest({name: 'array binding - adding element'}, function(pass, fail) {
+		setTimeout(function() {
 			if (e1.textContent !== '') fail('preliminary check failed');
 			if (e2.textContent !== '') fail('preliminary check failed');
 			if (e3.textContent !== '') fail('preliminary check failed');
@@ -32,7 +32,7 @@
 		}, 0);
 	});
 
-	suite.addTest({ name: 'array binding - replacing element directly' }, function (pass, fail) {
+	suite.addTest({name: 'array binding - replacing element directly'}, function(pass, fail) {
 		if (e1.textContent !== 'AA') fail('preliminary check failed');
 		oUsers[0] = {
 			name: 'B'
@@ -41,33 +41,33 @@
 		pass();
 	});
 
-	suite.addTest({ name: 'array binding - replacing element with splice' }, function (pass, fail) {
+	suite.addTest({name: 'array binding - replacing element with splice'}, function(pass, fail) {
 		if (e1.textContent !== 'B') fail('preliminary check failed');
 		oUsers.splice(0, 1, {
 			name: 'C'
 		});
-		setTimeout(function () {
+		setTimeout(function() {
 			if (e1.textContent !== 'C') fail('expected textContent to be C');
 			pass();
 		}, 0);
 	});
 
-	suite.addTest({ name: 'array binding - removing element via splice' }, function (pass, fail) {
+	suite.addTest({name: 'array binding - removing element via splice'}, function(pass, fail) {
 		if (e1.textContent !== 'C') fail('preliminary check failed');
 		oUsers.splice(0, 1);
-		setTimeout(function () {
+		setTimeout(function() {
 			if (e1.textContent !== '') fail('expected textContent to be empty');
 			pass();
 		}, 0);
 	});
 
-	suite.addTest({ name: 'array binding - removing element via pop' }, function (pass, fail) {
+	suite.addTest({name: 'array binding - removing element via pop'}, function(pass, fail) {
 		if (e1.textContent !== '') fail('preliminary check failed');
-		oUsers.push({ name: 'D' });
-		setTimeout(function () {
+		oUsers.push({name: 'D'});
+		setTimeout(function() {
 			if (e1.textContent !== 'D') fail('expected textContent to be D');
 			oUsers.pop();
-			setTimeout(function () {
+			setTimeout(function() {
 				if (e1.textContent !== '') fail('expected textContent to be empty');
 				pass();
 			}, 0);

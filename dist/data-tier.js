@@ -575,17 +575,15 @@
 	}
 
 	Rule.prototype.parseParam = function(ruleParam) {
-		var dataPath, tieName;
+		var tieName = '', dataPath = [];
 		if (ruleParam) {
 			dataPath = ruleParam.trim().split('.');
 			tieName = dataPath.shift();
-			return {
-				tieName: tieName,
-				dataPath: dataPath
-			};
-		} else {
-			console.error('valid rule value MUST be a non-empty string, found: ' + ruleParam);
 		}
+		return {
+			tieName: tieName,
+			dataPath: dataPath
+		};
 	};
 	Rule.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
 		return viewedPath.indexOf(changedPath) === 0;

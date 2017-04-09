@@ -1,10 +1,11 @@
 ﻿(function() {
 	'use strict';
 
-	var suite = window.Utils.JustTest.createSuite({name: 'Testing Arrays with Repeaters'}), users = [], oUsers = Observable.from(users);
-	window.DataTier.ties.create('usersA', oUsers);
+	let suite = Utils.JustTest.createSuite({name: 'Testing Arrays with Repeaters'}), users = [], oUsers = Observable.from(users);
 
-	var c = document.createElement('div'), t, c1, e1, e2, e3;
+	DataTier.ties.create('usersA', oUsers);
+
+	let c = document.createElement('div'), t, c1, e1, e2, e3;
 	t = document.createElement('template');
 	c1 = document.createElement('div');
 	e1 = document.createElement('span');
@@ -45,7 +46,7 @@
 	});
 
 	suite.addTest({name: 'array binding - verification array as subgraph'}, function(pass, fail) {
-		var container = document.createElement('div'),
+		let container = document.createElement('div'),
 			user = {roles: []},
 			oUser = Observable.from(user);
 
@@ -71,7 +72,7 @@
 	suite.addTest({name: 'array binding - bulk update'}, function(pass, fail) {
 		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
 		setTimeout(function() {
-			var d = [
+			let d = [
 					{
 						name: 'A',
 						age: 5,
@@ -104,7 +105,7 @@
 
 			setTimeout(function() {
 				if (c.childElementCount !== d.length + 1) fail('expected child elements of repeater to be ' + (d.length + 1) + ', found: ' + c.childElementCount);
-				for (var i = 0; i < d.length; i++) {
+				for (let i = 0; i < d.length; i++) {
 					if (c.childNodes[i + 1].childNodes[0].textContent !== d[i].name) fail('unexpected text content of repeated element ' + i + ' sub-child 0');
 					if (c.childNodes[i + 1].childNodes[1].textContent !== d[i].age.toString()) fail('unexpected text content of repeated element ' + i + ' sub-child 1');
 					if (c.childNodes[i + 1].childNodes[2].textContent !== d[i].address.street) fail('unexpected text content of repeated element ' + i + ' sub-child 2');
@@ -117,7 +118,7 @@
 	suite.addTest({name: 'array binding - huge bulk update (5000 rows)'}, function(pass, fail) {
 		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
 		setTimeout(function() {
-			var a = [], aO, i;
+			let a = [], aO, i;
 
 			for (i = 0; i < 5000; i++) {
 				a.push({

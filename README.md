@@ -24,7 +24,7 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 #### Versions
 
 - __0.6.8__
-  - Fixes: issue no. 4 (non working repeaters on subgraph list), issue no. 5 (improvements of `data-tie-classes`)
+  - Fixes: issue no. 2 (smooth handling of an empty values given to the rules definition), issue no. 4 (non working repeaters on subgraph list), issue no. 5 (improvements of `data-tie-classes`)
 
 - __0.6.7__
   - Added a possibility to create a tie without providing any initial data, for early setup with lazy data provisioning

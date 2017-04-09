@@ -1,16 +1,16 @@
 ﻿(function() {
 	'use strict';
 
-	var suite = window.Utils.JustTest.createSuite({name: 'Testing Rules appliance'}),
+	let suite = Utils.JustTest.createSuite({name: 'Testing Rules appliance'}),
 		data = {
 			text: 'some text',
 			date: new Date()
 		},
-		testRulesTieA = window.DataTier.ties.create('testRulesA', Observable.from(data)),
-		testRulesTieB = window.DataTier.ties.create('testRulesB', Observable.from(data));
+		testRulesTieA = DataTier.ties.create('testRulesA', Observable.from(data)),
+		testRulesTieB = DataTier.ties.create('testRulesB', Observable.from(data));
 
 	suite.addTest({name: 'testing basic rules: text content'}, function(pass, fail) {
-		var e = document.createElement('div');
+		let e = document.createElement('div');
 		e.dataset.tieText = 'testRulesA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
@@ -20,7 +20,7 @@
 	});
 
 	suite.addTest({name: 'testing basic rules: value'}, function(pass, fail) {
-		var e = document.createElement('input');
+		let e = document.createElement('input');
 		e.dataset.tieValue = 'testRulesA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
@@ -30,7 +30,7 @@
 	});
 
 	suite.addTest({name: 'testing basic rules: date text content'}, function(pass, fail) {
-		var e = document.createElement('div');
+		let e = document.createElement('div');
 		e.dataset.tieDateText = 'testRulesA.date';
 		document.body.appendChild(e);
 		setTimeout(function() {
@@ -40,7 +40,7 @@
 	});
 
 	suite.addTest({name: 'testing basic rules: date value'}, function(pass, fail) {
-		var e = document.createElement('div');
+		let e = document.createElement('div');
 		e.dataset.tieDateValue = 'testRulesA.date';
 		document.body.appendChild(e);
 		setTimeout(function() {
@@ -50,7 +50,7 @@
 	});
 
 	suite.addTest({name: 'testing basic rules: classes'}, function(pass, fail) {
-		var e = document.createElement('div'),
+		let e = document.createElement('div'),
 			cl = Observable.from({});
 		DataTier.ties.create('classesList', cl);
 		e.dataset.tieClasses = 'classesList';
@@ -88,7 +88,7 @@
 	});
 
 	suite.addTest({name: 'testing adding rule AFTER the elements were added'}, function(pass, fail) {
-		var e = document.createElement('div');
+		let e = document.createElement('div');
 		e.dataset.tieUCText = 'testRulesA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
