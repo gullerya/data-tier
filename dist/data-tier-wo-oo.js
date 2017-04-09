@@ -504,7 +504,7 @@
 		dataToView: function(data, view) {
 			if (data && typeof data === 'object') {
 				Object.keys(data).forEach(function(key) {
-					if (data.key) {
+					if (data[key]) {
 						view.classList.add(key);
 					} else {
 						view.classList.remove(key);
