@@ -35,7 +35,7 @@ module.exports.concatSources = function concatSources(grunt) {
 	} catch (e) {
 		cleanError = e;
 	}
-	process.stdout.write('\t' + (cleanError === null ? '\033[32mOK' : '\033[31mFAIL (' + cleanError + ')') + os.EOL);
+	process.stdout.write('\t' + (cleanError === null ? '\033[32mOK\033[0m' : '\033[31mFAIL\033[0m (' + cleanError + ')') + os.EOL);
 
 	//  create folder
 	process.stdout.write('Creating destination folder...');
@@ -44,7 +44,7 @@ module.exports.concatSources = function concatSources(grunt) {
 	} catch (e) {
 		cleanError = e;
 	}
-	process.stdout.write('\t' + (cleanError === null ? '\033[32mOK' : '\033[31mFAIL (' + cleanError + ')') + os.EOL);
+	process.stdout.write('\t' + (cleanError === null ? '\033[32mOK\033[0m' : '\033[31mFAIL\033[0m (' + cleanError + ')') + os.EOL);
 
 	//  concat & copy
 	process.stdout.write('Concat & copy (with embedded "object-observer"):' + os.EOL);
@@ -57,7 +57,7 @@ module.exports.concatSources = function concatSources(grunt) {
 		} catch (e) {
 			error = e;
 		}
-		process.stdout.write('\t' + (error === null ? '\033[32mOK' : '\033[31mFAIL (' + error + ')') + os.EOL);
+		process.stdout.write('\t' + (error === null ? '\033[32mOK\033[0m' : '\033[31mFAIL\033[0m (' + error + ')') + os.EOL);
 	});
 
 	process.stdout.write('Concat & copy (without embedded "object-observer"):' + os.EOL);
@@ -70,6 +70,6 @@ module.exports.concatSources = function concatSources(grunt) {
 		} catch (e) {
 			error = e;
 		}
-		process.stdout.write('\t' + (error === null ? '\033[32mOK' : '\033[31mFAIL (' + error + ')') + os.EOL);
+		process.stdout.write('\t' + (error === null ? '\033[32mOK\033[0m' : '\033[31mFAIL\033[0m (' + error + ')') + os.EOL);
 	});
 };
