@@ -446,7 +446,11 @@
 
 	add('tieValue', {
 		dataToView: function(data, view) {
-			view.value = data ? data : '';
+			if (view.type === 'checkbox') {
+				view.checked = data;
+			} else {
+				view.value = data ? data : '';
+			}
 		}
 	});
 

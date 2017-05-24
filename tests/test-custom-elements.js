@@ -10,25 +10,26 @@
 		testTieCustomElementsA = DataTier.ties.create('testCustomsA', oData),
 		testTieCustomElementsB = DataTier.ties.create('testCustomsB', oData);
 
-	document.registerElement('custom-element', {
-		prototype: Object.create(HTMLInputElement.prototype, {
-			createdCallback: {
-				value: function() {
-					this.style.cssText = 'display:block;width:200px;height:22px;border:1px solid #aaa;';
-					this.__value = '';
-				}
-			},
-			value: {
-				get: function() {
-					return this.__value;
-				},
-				set: function(v) {
-					this.__value = v.toUpperCase();
-					this.textContent = this.__value;
-				}
-			}
-		})
-	});
+	class CustomElement extends HTMLElement {
+		constructor() {
+			super();
+			this.__value = '';
+		}
+
+		connectedCallback() {
+			this.style.cssText = 'display:block;width:200px;height:22px;border:1px solid #aaa;';
+		}
+
+		get value() {
+			return this.__value;
+		}
+
+		set value(newSrc) {
+			this.__value = newSrc.toUpperCase();
+			this.textContent = this.__value;
+		}
+	}
+	customElements.define('custom-element', CustomElement);
 
 	suite.addTest({name: 'testing basic rules: binding value of custom element'}, function(pass, fail) {
 		let e = document.createElement('custom-element');

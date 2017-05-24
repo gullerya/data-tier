@@ -55,5 +55,17 @@
 		}, 0);
 	});
 
+	suite.addTest({name: 'adding checkbox view and verifying its value set correctly'}, function(pass, fail) {
+		let newEl = document.createElement('input');
+		newEl.type = 'checkbox';
+		newEl.dataset.tieValue = 'cbValueTest.test';
+		document.body.appendChild(newEl);
+		DataTier.ties.create('cbValueTest', Observable.from({test: true}));
+		setTimeout(function() {
+			if (newEl.checked !== true) fail(new Error('expected the value to be "true", but found "' + newEl.checked + '"'));
+			pass();
+		}, 0);
+	});
+
 	suite.run();
 })();
