@@ -1,3 +1,5 @@
+'use strict';
+
 const os = require('os'),
 	concater = require('./tools/build-concat.js'),
 	minifier = require('./tools/build-minify.js'),
