@@ -1,7 +1,7 @@
 ﻿(function(scope) {
 	'use strict';
 
-	var add = scope.DataTier.rules.add;
+	const add = scope.DataTier.rules.add;
 
 	add('tieValue', {
 		dataToView: function(data, view) {
@@ -57,7 +57,7 @@
 
 	add('tieClasses', {
 		isChangedPathRelevant: function(changedPath, viewedPath) {
-			var subPath = changedPath.replace(viewedPath, '').split('.');
+			let subPath = changedPath.replace(viewedPath, '').split('.');
 			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
 				subPath.length === 1 ||
 				(subPath.length === 2 && subPath[0] === '');
@@ -80,16 +80,16 @@
 			return this.constructor.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
 		},
 		isChangedPathRelevant: function(changedPath, viewedPath) {
-			var subPath = changedPath.replace(viewedPath, '').split('.');
+			let subPath = changedPath.replace(viewedPath, '').split('.');
 			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
 				subPath.length === 1 ||
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		dataToView: function(tiedValue, template) {
-			var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
+			let container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
 
 			function shortenListTo(cnt, aid) {
-				var a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
+				let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
 				while (a.length > cnt) {
 					container.removeChild(a.pop());
 				}

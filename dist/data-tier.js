@@ -462,10 +462,10 @@
 ﻿(function (scope) {
 	'use strict';
 
-	var ties = {};
+	const ties = {};
 
 	function Tie(name, observable, options) {
-		var data;
+		let data;
 
 		function observer(changes) {
 			scope.DataTier.views.processChanges(name, changes);
@@ -484,7 +484,7 @@
 					}
 				}
 
-				var oldData = data;
+				let oldData = data;
 				data = observable;
 				if (data) {
 					data.observe(observer);
@@ -540,7 +540,7 @@
 
 	//	TODO: this is similar to getPath in views-service - unify
 	function setPath(ref, path, value) {
-		var i;
+		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length - 1; i++) {
 			ref = ref[path[i]] || {};
@@ -575,7 +575,7 @@
 	}
 
 	Rule.prototype.parseParam = function(ruleParam) {
-		var tieName = '', dataPath = [];
+		let tieName = '', dataPath = [];
 		if (ruleParam) {
 			dataPath = ruleParam.trim().split('.');
 			tieName = dataPath.shift();
@@ -620,7 +620,7 @@
 	}
 
 	function getApplicable(element) {
-		var result = [];
+		let result = [];
 		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
 			Object.keys(element.dataset).forEach(function(key) {
 				if (rules[key]) {
@@ -647,7 +647,7 @@
 
 	//	TODO: this is similar to setPath in ties-service - unify
 	function getPath(ref, path) {
-		var i;
+		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length; i++) {
 			ref = ref[path[i]];
@@ -659,7 +659,7 @@
 	function changeListener(event) {
 		scope.DataTier.rules.getApplicable(event.target).forEach(function(rule) {
 			if (rule.name === 'tieValue') {
-				var ruleParam = rule.parseParam(event.target.dataset[rule.name]),
+				let ruleParam = rule.parseParam(event.target.dataset[rule.name]),
 					tie = scope.DataTier.ties.get(ruleParam.tieName);
 				if (!ruleParam.dataPath) {
 					console.error('path to data not available');
@@ -695,7 +695,7 @@
 			collect(view.contentDocument);
 		} else {
 			scope.DataTier.rules.getApplicable(view).forEach(function(rule) {
-				var ruleParam = rule.parseParam(view.dataset[rule.name]),
+				let ruleParam = rule.parseParam(view.dataset[rule.name]),
 					pathString = ruleParam.dataPath.join('.'),
 					tieViews,
 					ruleViews,
@@ -730,7 +730,6 @@
 			if (view.dataset) {
 				Object.keys(view.dataset).forEach(function(key) {
 					if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
-						console.warn('non-registerd rule "' + key + '" used, it may still be defined later in code and post-tied');
 						if (!nlvs[key]) nlvs[key] = [];
 						nlvs[key].push(view);
 					}
@@ -740,7 +739,7 @@
 	}
 
 	function update(view, ruleName) {
-		var r, p, t, data;
+		let r, p, t, data;
 		r = scope.DataTier.rules.get(ruleName);
 		p = r.parseParam(view.dataset[ruleName]);
 		t = scope.DataTier.ties.get(p.tieName);
@@ -751,7 +750,7 @@
 	}
 
 	function collect(rootElement) {
-		var l;
+		let l;
 		if (rootElement &&
 			rootElement.nodeType &&
 			(rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
@@ -764,7 +763,7 @@
 	}
 
 	function discard(rootElement) {
-		var l, param, pathViews, i;
+		let l, param, pathViews, i;
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.from(rootElement.getElementsByTagName('*'));
 		l.push(rootElement);
@@ -782,7 +781,7 @@
 	}
 
 	function move(view, ruleName, oldParam, newParam) {
-		var ruleParam, pathViews, i = -1;
+		let ruleParam, pathViews, i = -1;
 
 		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(oldParam);
 
@@ -805,7 +804,7 @@
 	}
 
 	function processChanges(tieName, changes) {
-		var tieViews = views[tieName], rule, ruleViews, changedPath;
+		let tieViews = views[tieName], rule, ruleViews, changedPath;
 		if (tieViews) {
 			changes.forEach(function(change) {
 				changedPath = change.path.join('.');
@@ -837,7 +836,7 @@
 	}
 
 	function dataAttrToProp(v) {
-		var i = 2, l = v.split('-'), r;
+		let i = 2, l = v.split('-'), r;
 		r = l[1];
 		while (i < l.length) r += l[i][0].toUpperCase() + l[i++].substr(1);
 		return r;
@@ -846,7 +845,7 @@
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
 			changes.forEach(function(change) {
-				var tr = change.target, an = change.attributeName;
+				let tr = change.target, an = change.attributeName;
 				if (change.type === 'attributes' && an.indexOf('data-tie') === 0) {
 					move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
 				} else if (change.type === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
@@ -881,7 +880,7 @@
 			});
 		}
 
-		var domObserver = new MutationObserver(processDomChanges);
+		let domObserver = new MutationObserver(processDomChanges);
 		domObserver.observe(document, {
 			childList: true,
 			subtree: true,
@@ -903,7 +902,7 @@
 ﻿(function(scope) {
 	'use strict';
 
-	var add = scope.DataTier.rules.add;
+	const add = scope.DataTier.rules.add;
 
 	add('tieValue', {
 		dataToView: function(data, view) {
@@ -959,7 +958,7 @@
 
 	add('tieClasses', {
 		isChangedPathRelevant: function(changedPath, viewedPath) {
-			var subPath = changedPath.replace(viewedPath, '').split('.');
+			let subPath = changedPath.replace(viewedPath, '').split('.');
 			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
 				subPath.length === 1 ||
 				(subPath.length === 2 && subPath[0] === '');
@@ -982,16 +981,16 @@
 			return this.constructor.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
 		},
 		isChangedPathRelevant: function(changedPath, viewedPath) {
-			var subPath = changedPath.replace(viewedPath, '').split('.');
+			let subPath = changedPath.replace(viewedPath, '').split('.');
 			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
 				subPath.length === 1 ||
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		dataToView: function(tiedValue, template) {
-			var container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
+			let container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
 
 			function shortenListTo(cnt, aid) {
-				var a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
+				let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
 				while (a.length > cnt) {
 					container.removeChild(a.pop());
 				}

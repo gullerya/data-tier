@@ -5,6 +5,11 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "concat": "node -e 'require(./tools/build-concat.js).execute()'",
+    "minify": "node -e 'require(./tools/build-minify.js).execute()'",
+    "build": "npm run concat && npm run minify"
+  },
   "description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
   "keywords": [
     "two",
@@ -37,9 +42,9 @@
     "adm-zip": "^0.4.7",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
-    "grunt-contrib-uglify": "^2.0.0",
-    "babel-eslint": "^7.1.1",
-    "eslint-plugin-react": "^6.9.0",
+    "uglify-es": "^3.0.15",
+    "babel-eslint": "^7.2.3",
+    "eslint-plugin-react": "^7.0.1",
     "gruntify-eslint": "^3.1.0"
   },
   "license": "MIT",

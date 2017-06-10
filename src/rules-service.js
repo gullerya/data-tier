@@ -18,7 +18,7 @@
 	}
 
 	Rule.prototype.parseParam = function(ruleParam) {
-		var tieName = '', dataPath = [];
+		let tieName = '', dataPath = [];
 		if (ruleParam) {
 			dataPath = ruleParam.trim().split('.');
 			tieName = dataPath.shift();
@@ -63,7 +63,7 @@
 	}
 
 	function getApplicable(element) {
-		var result = [];
+		let result = [];
 		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
 			Object.keys(element.dataset).forEach(function(key) {
 				if (rules[key]) {

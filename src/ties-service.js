@@ -1,10 +1,10 @@
 ﻿(function (scope) {
 	'use strict';
 
-	var ties = {};
+	const ties = {};
 
 	function Tie(name, observable, options) {
-		var data;
+		let data;
 
 		function observer(changes) {
 			scope.DataTier.views.processChanges(name, changes);
@@ -23,7 +23,7 @@
 					}
 				}
 
-				var oldData = data;
+				let oldData = data;
 				data = observable;
 				if (data) {
 					data.observe(observer);
@@ -79,7 +79,7 @@
 
 	//	TODO: this is similar to getPath in views-service - unify
 	function setPath(ref, path, value) {
-		var i;
+		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length - 1; i++) {
 			ref = ref[path[i]] || {};
