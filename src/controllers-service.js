@@ -1,9 +1,9 @@
 ﻿(function(scope) {
 	'use strict';
 
-	const rules = {};
+	const controllers = {};
 
-	function Rule(name, options) {
+	function Controller(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'dataToView', {value: options.dataToView});
 		if (typeof options.inputToData === 'function') {
@@ -17,10 +17,10 @@
 		}
 	}
 
-	Rule.prototype.parseParam = function(ruleParam) {
+	Controller.prototype.parseParam = function(controllerParam) {
 		let tieName = '', dataPath = [];
-		if (ruleParam) {
-			dataPath = ruleParam.trim().split('.');
+		if (controllerParam) {
+			dataPath = controllerParam.trim().split('.');
 			tieName = dataPath.shift();
 		}
 		return {
@@ -28,16 +28,16 @@
 			dataPath: dataPath
 		};
 	};
-	Rule.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
+	Controller.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
 		return viewedPath.indexOf(changedPath) === 0;
 	};
 
-	function addRule(name, configuration) {
+	function addController(name, configuration) {
 		if (typeof name !== 'string' || !name) {
 			throw new Error('name MUST be a non-empty string');
 		}
-		if (rules[name]) {
-			throw new Error('rule "' + name + '" already exists; you may want to reconfigure the existing rule');
+		if (controllers[name]) {
+			throw new Error('controller "' + name + '" already exists; you may want to reconfigure the existing controller');
 		}
 		if (typeof configuration !== 'object' || !configuration) {
 			throw new Error('configuration MUST be a non-null object');
@@ -46,39 +46,49 @@
 			throw new Error('configuration MUST have a "dataToView" function defined');
 		}
 
-		rules[name] = new Rule(name, configuration);
-		scope.DataTier.views.applyRule(rules[name]);
+		controllers[name] = new Controller(name, configuration);
+		scope.DataTier.views.applyController(controllers[name]);
 	}
 
-	function getRule(name) {
-		return rules[name];
+	function getController(name) {
+		return controllers[name];
 	}
 
-	function removeRule(name) {
+	function removeController(name) {
 		if (typeof name !== 'string' || !name) {
-			throw new Error('rule name MUST be a non-empty string');
+			throw new Error('controller name MUST be a non-empty string');
 		}
 
-		return delete rules[name];
+		return delete controllers[name];
 	}
 
 	function getApplicable(element) {
 		let result = [];
 		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
 			Object.keys(element.dataset).forEach(function(key) {
-				if (rules[key]) {
-					result.push(rules[key]);
+				if (controllers[key]) {
+					result.push(controllers[key]);
 				}
 			});
 		}
 		return result;
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'rules', {value: {}});
-	Reflect.defineProperty(scope.DataTier.rules, 'get', {value: getRule});
-	Reflect.defineProperty(scope.DataTier.rules, 'add', {value: addRule});
-	Reflect.defineProperty(scope.DataTier.rules, 'remove', {value: removeRule});
-
-	Reflect.defineProperty(scope.DataTier.rules, 'getApplicable', {value: getApplicable});
+	Reflect.defineProperty(scope.DataTier, 'controllers', {
+		value: {
+			get get() {
+				return getController;
+			},
+			get add() {
+				return addController;
+			},
+			get remove() {
+				return removeController;
+			},
+			get getApplicable() {
+				return getApplicable;
+			}
+		}
+	});
 
 })(this);

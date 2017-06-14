@@ -18,13 +18,13 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 - Add rule to change any arbitrary attribute
 - Add rule for action (mouse? keyboard? any and provide the action with the event data?)
 - API reference
-- Possibility to override global rules on tie level
-- Change rule detection and appliance inner interface to broaden the possibilities of rules configurations
+- Possibility to override global controllers on tie level
+- Change rule detection and appliance inner interface to broaden the possibilities of controllers configurations
 
 #### Versions
 
 - __0.6.8__
-  - Fixes: issue no. 2 (smooth handling of an empty values given to the rules definition), issue no. 4 (non working repeaters on subgraph list), issue no. 5 (improvements of `data-tie-classes`)
+  - Fixes: issue no. 2 (smooth handling of an empty values given to the controllers definition), issue no. 4 (non working repeaters on subgraph list), issue no. 5 (improvements of `data-tie-classes`)
 
 - __0.6.7__
   - Added a possibility to create a tie without providing any initial data, for early setup with lazy data provisioning
@@ -80,7 +80,7 @@ fetch('data-tier.js').then(function (response) {
 
 # Base concepts
 
-The library utilizes 2 main concepts __Ties__ and __Rules__.
+The library utilizes 2 main concepts __Ties__ and __Controllers__.
 
 ###	Tie
 __Tie__ holds an observable data structure (object or array) associated with tie's name, it's about __what__ to tie.
@@ -115,13 +115,13 @@ Having say that, I'll note, that there is no limitations on the size or the stru
 
 Tie object not only meant to hold the link between the data and its namespace, but also tie's specific configurations and customizations.
 Currently in the backlog there are such a features like supporting custom interceptors for both flows - data-to-view and view-to-data.
-Those features are under ongoing development and enhancements. For more details see [__API reference__](api-reference.md).
+Those features are under ongoing development and enhancements. For more details see [__API reference__](docs/api-reference.md).
 
-### Rule
-__Rule__ is a definition of presentation logic, it's about __how__ to vizualize the data.
+### Controller
+__Controller__ is a holder of transition logic, it's about __how__ to translate the data from/to view/data.
 
-Each rule has it's own unique name given to it upon registration.
-Rules are applied via the DOM's `data-*` attributes joining the `data-` prefix with rule's name: `data-tie-text` applies the rule 'tieText'.
+Each controller has it's own unique name given to it upon registration.
+Controllers are applied via the DOM's `data-*` attributes joining the `data-` prefix with rule's name: `data-tie-text` applies the controller 'tieText'.
 Let's see the following example:
 ```html
 <span data-tie-text="bandsTie.length"
@@ -134,17 +134,17 @@ Let's see the following example:
 	</template>
 </div>
 ```
-In the first part we tie between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 rules to say, how the value will be visualized.
-Attributes' values (`bandsTie.length`, `bandsTie.totalTooltip`) are rules' configurations for this specific instance and their syntax/content is part of each rule's API.
+In the first part we tie between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 controllers to say, how the value will be visualized.
+Attributes' values (`bandsTie.length`, `bandsTie.totalTooltip`) are controllers' configurations for this specific instance and their syntax/content is part of each rule's API.
 In most cases the tie name and the path to the data would be sufficient, but conceptually rule's configuration may be anything rule needs.
 
 Thus, in the second part a `template` element tied by a 'tieList' rule. This rule expects more rich content in its configuration: tie name and path for sure, but also some name for an item within iteration (here - 'album', and see its usage in the inner span element).
 
-There is a set of rules bundled with the library, they are described in the [__Rules reference__](rules-reference.md).
+There is a set of controllers bundled with the library, they are described in the [__Controllers reference__](docs/controllers-reference.md).
 This set will eventually be updated and enhanced upon a needs and feedbacks from real world usages.
-But even more important is the fact, that rules may be created and added by a consuming application.
+But even more important is the fact, that controllers may be created and added by a consuming application.
 This can be done at any phase of application's lifecycle, so there is no special ceremony around it whatsoever.
-Rules management described in the relevant section in [__API reference__](api-reference.md).
+Controllers management described in the relevant section in [__API reference__](docs/api-reference.md).
 
 
 # Basic example
@@ -189,6 +189,6 @@ DataTier.ties.create('userInfo', observableUser);
 ```
 
 
-For an extended tutorial see [__this__](tutorial.md) page.
+For an extended tutorial see [__this__](docs/tutorial.md) page.
 
-For a more thorough API documentation see [__API Reference__](api-reference.md).
+For a more thorough API documentation see [__API Reference__](docs/api-reference.md).

@@ -1,7 +1,7 @@
 ﻿(function(scope) {
 	'use strict';
 
-	const add = scope.DataTier.rules.add;
+	const add = scope.DataTier.controllers.add;
 
 	add('tieValue', {
 		dataToView: function(data, view) {

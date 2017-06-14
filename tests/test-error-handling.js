@@ -3,7 +3,7 @@
 
 	let suite = Utils.JustTest.createSuite({name: 'Testing erroneous cases'});
 
-	suite.addTest({name: 'adding view with empty rule value'}, function(pass, fail) {
+	suite.addTest({name: 'adding view with empty controller value'}, function(pass, fail) {
 		let elem = document.createElement('div');
 
 		elem.dataset.tieText = '';

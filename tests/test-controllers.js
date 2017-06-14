@@ -1,17 +1,17 @@
 ﻿(function() {
 	'use strict';
 
-	let suite = Utils.JustTest.createSuite({name: 'Testing Rules appliance'}),
+	let suite = Utils.JustTest.createSuite({name: 'Testing controllers appliance'}),
 		data = {
 			text: 'some text',
 			date: new Date()
 		},
-		testRulesTieA = DataTier.ties.create('testRulesA', Observable.from(data)),
-		testRulesTieB = DataTier.ties.create('testRulesB', Observable.from(data));
+		testControllersTieA = DataTier.ties.create('testControllersA', Observable.from(data)),
+		testControllersTieB = DataTier.ties.create('testControllersB', Observable.from(data));
 
-	suite.addTest({name: 'testing basic rules: text content'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: text content'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieText = 'testRulesA.text';
+		e.dataset.tieText = 'testControllersA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.textContent !== data.text) fail('textContent of the element expected to be ' + data.text + ', found: ' + e.textContent);
@@ -19,9 +19,9 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic rules: value'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: value'}, function(pass, fail) {
 		let e = document.createElement('input');
-		e.dataset.tieValue = 'testRulesA.text';
+		e.dataset.tieValue = 'testControllersA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.value !== data.text) fail('value of the element expected to be ' + data.text + ', found: ' + e.value);
@@ -29,9 +29,9 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic rules: date text content'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: date text content'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieDateText = 'testRulesA.date';
+		e.dataset.tieDateText = 'testControllersA.date';
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.textContent !== data.date.toLocaleString()) fail('textContent of the element expected to be ' + (data.date.toLocaleString()) + ', found: ' + e.textContent);
@@ -39,9 +39,9 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic rules: date value'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: date value'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieDateValue = 'testRulesA.date';
+		e.dataset.tieDateValue = 'testControllersA.date';
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.value !== data.date.toLocaleString()) fail('textContent of the element expected to be ' + (data.date.toLocaleString()) + ', found: ' + e.value);
@@ -49,7 +49,7 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic rules: classes'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: classes'}, function(pass, fail) {
 		let e = document.createElement('div'),
 			cl = Observable.from({});
 		DataTier.ties.create('classesList', cl);
@@ -87,20 +87,20 @@
 		}, 0);
 	});
 
-	suite.addTest({name: 'testing adding rule AFTER the elements were added'}, function(pass, fail) {
+	suite.addTest({name: 'testing adding controller AFTER the elements were added'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieUCText = 'testRulesA.text';
+		e.dataset.tieUCText = 'testControllersA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
-			if (e.textContent !== '') fail('textContent of not yet defined rule expected to be empty');
+			if (e.textContent !== '') fail('textContent of not yet defined controller expected to be empty');
 
-			window.DataTier.rules.add('tieUCText', {
+			window.DataTier.controllers.add('tieUCText', {
 				dataToView: function(data, view) {
 					view.textContent = data ? data.toUpperCase() : '';
 				}
 			});
 
-			if (e.textContent !== testRulesTieA.data.text.toUpperCase()) fail('textContent expected to be ' + testRulesTieA.data.text.toUpperCase());
+			if (e.textContent !== testControllersTieA.data.text.toUpperCase()) fail('textContent expected to be ' + testControllersTieA.data.text.toUpperCase());
 
 			pass();
 		}, 0);

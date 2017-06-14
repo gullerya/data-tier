@@ -16,20 +16,20 @@
 	}
 
 	function changeListener(event) {
-		scope.DataTier.rules.getApplicable(event.target).forEach(function(rule) {
-			if (rule.name === 'tieValue') {
-				let ruleParam = rule.parseParam(event.target.dataset[rule.name]),
-					tie = scope.DataTier.ties.get(ruleParam.tieName);
-				if (!ruleParam.dataPath) {
+		scope.DataTier.controllers.getApplicable(event.target).forEach(function(controller) {
+			if (controller.name === 'tieValue') {
+				let controllerParam = controller.parseParam(event.target.dataset[controller.name]),
+					tie = scope.DataTier.ties.get(controllerParam.tieName);
+				if (!controllerParam.dataPath) {
 					console.error('path to data not available');
 					return;
 				}
 				if (!tie) {
-					console.error('tie "' + ruleParam.tieName + '" not found');
+					console.error('tie "' + controllerParam.tieName + '" not found');
 					return;
 				}
 
-				tie.viewToDataProcessor({data: tie.data, path: ruleParam.dataPath, view: event.target});
+				tie.viewToDataProcessor({data: tie.data, path: controllerParam.dataPath, view: event.target});
 			}
 		});
 	}
@@ -53,42 +53,42 @@
 			});
 			collect(view.contentDocument);
 		} else {
-			scope.DataTier.rules.getApplicable(view).forEach(function(rule) {
-				let ruleParam = rule.parseParam(view.dataset[rule.name]),
-					pathString = ruleParam.dataPath.join('.'),
+			scope.DataTier.controllers.getApplicable(view).forEach(function(controller) {
+				let controllerParam = controller.parseParam(view.dataset[controller.name]),
+					pathString = controllerParam.dataPath.join('.'),
 					tieViews,
-					ruleViews,
+					controllerViews,
 					pathViews;
 
 				//	get tie views partition
-				if (!views[ruleParam.tieName]) {
-					views[ruleParam.tieName] = {};
+				if (!views[controllerParam.tieName]) {
+					views[controllerParam.tieName] = {};
 				}
-				tieViews = views[ruleParam.tieName];
+				tieViews = views[controllerParam.tieName];
 
-				//	get rule views partition (in tie)
-				if (!tieViews[rule.name]) {
-					tieViews[rule.name] = {};
+				//	get controller views partition (in tie)
+				if (!tieViews[controller.name]) {
+					tieViews[controller.name] = {};
 				}
-				ruleViews = tieViews[rule.name];
+				controllerViews = tieViews[controller.name];
 
 				//	get path views in this context
-				if (!ruleViews[pathString]) {
-					ruleViews[pathString] = [];
+				if (!controllerViews[pathString]) {
+					controllerViews[pathString] = [];
 				}
-				pathViews = ruleViews[pathString];
+				pathViews = controllerViews[pathString];
 
 				if (pathViews.indexOf(view) < 0) {
 					pathViews.push(view);
-					update(view, rule.name);
+					update(view, controller.name);
 					addChangeListener(view);
 				}
 			});
 
-			//	collect potentially future rules element and put them into some tracking storage
+			//	collect potentially future controllers element and put them into some tracking storage
 			if (view.dataset) {
 				Object.keys(view.dataset).forEach(function(key) {
-					if (key.indexOf('tie') === 0 && !scope.DataTier.rules.get(key)) {
+					if (key.indexOf('tie') === 0 && !scope.DataTier.controllers.get(key)) {
 						if (!nlvs[key]) nlvs[key] = [];
 						nlvs[key].push(view);
 					}
@@ -97,10 +97,10 @@
 		}
 	}
 
-	function update(view, ruleName) {
+	function update(view, controllerName) {
 		let r, p, t, data;
-		r = scope.DataTier.rules.get(ruleName);
-		p = r.parseParam(view.dataset[ruleName]);
+		r = scope.DataTier.controllers.get(controllerName);
+		p = r.parseParam(view.dataset[controllerName]);
 		t = scope.DataTier.ties.get(p.tieName);
 		if (t) {
 			data = getPath(t.data, p.dataPath);
@@ -113,9 +113,7 @@
 		if (rootElement &&
 			rootElement.nodeType &&
 			(rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-			l = rootElement.nodeName === 'IFRAME' ?
-				l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) :
-				l = Array.from(rootElement.getElementsByTagName('*'));
+			l = rootElement.nodeName === 'IFRAME' ? l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) : l = Array.from(rootElement.getElementsByTagName('*'));
 			l.push(rootElement);
 			l.forEach(add);
 		}
@@ -127,9 +125,9 @@
 		l = Array.from(rootElement.getElementsByTagName('*'));
 		l.push(rootElement);
 		l.forEach(function(e) {
-			scope.DataTier.rules.getApplicable(e).forEach(function(rule) {
-				param = rule.parseParam(e.dataset[rule.name]);
-				pathViews = views[param.tieName][rule.name][param.dataPath.join('.')];
+			scope.DataTier.controllers.getApplicable(e).forEach(function(controller) {
+				param = controller.parseParam(e.dataset[controller.name]);
+				pathViews = views[param.tieName][controller.name][param.dataPath.join('.')];
 				i = pathViews.indexOf(e);
 				if (i >= 0) {
 					pathViews.splice(i, 1);
@@ -139,14 +137,14 @@
 		});
 	}
 
-	function move(view, ruleName, oldParam, newParam) {
-		let ruleParam, pathViews, i = -1;
+	function move(view, controllerName, oldParam, newParam) {
+		let controllerParam, pathViews, i = -1;
 
-		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(oldParam);
+		controllerParam = scope.DataTier.controllers.get(controllerName).parseParam(oldParam);
 
 		//	delete old path
-		if (views[ruleParam.tieName] && views[ruleParam.tieName][ruleName]) {
-			pathViews = views[ruleParam.tieName][ruleName][ruleParam.dataPath];
+		if (views[controllerParam.tieName] && views[controllerParam.tieName][controllerName]) {
+			pathViews = views[controllerParam.tieName][controllerName][controllerParam.dataPath];
 			if (pathViews) i = pathViews.indexOf(view);
 			if (i >= 0) {
 				pathViews.splice(i, 1);
@@ -154,27 +152,27 @@
 		}
 
 		//	add new path
-		ruleParam = scope.DataTier.rules.get(ruleName).parseParam(newParam);
-		if (!views[ruleParam.tieName]) views[ruleParam.tieName] = {};
-		if (!views[ruleParam.tieName][ruleName]) views[ruleParam.tieName][ruleName] = {};
-		if (!views[ruleParam.tieName][ruleName][ruleParam.dataPath]) views[ruleParam.tieName][ruleName][ruleParam.dataPath] = [];
-		views[ruleParam.tieName][ruleName][ruleParam.dataPath].push(view);
-		update(view, ruleName);
+		controllerParam = scope.DataTier.controllers.get(controllerName).parseParam(newParam);
+		if (!views[controllerParam.tieName]) views[controllerParam.tieName] = {};
+		if (!views[controllerParam.tieName][controllerName]) views[controllerParam.tieName][controllerName] = {};
+		if (!views[controllerParam.tieName][controllerName][controllerParam.dataPath]) views[controllerParam.tieName][controllerName][controllerParam.dataPath] = [];
+		views[controllerParam.tieName][controllerName][controllerParam.dataPath].push(view);
+		update(view, controllerName);
 	}
 
 	function processChanges(tieName, changes) {
-		let tieViews = views[tieName], rule, ruleViews, changedPath;
+		let tieViews = views[tieName], controller, controllerViews, changedPath;
 		if (tieViews) {
 			changes.forEach(function(change) {
 				changedPath = change.path.join('.');
-				Object.keys(tieViews).forEach(function(ruleName) {
-					ruleViews = tieViews[ruleName];
-					if (ruleViews) {
-						rule = scope.DataTier.rules.get(ruleName);
-						Object.keys(ruleViews).forEach(function(viewedPath) {
-							if (rule.isChangedPathRelevant(changedPath, viewedPath)) {
-								ruleViews[viewedPath].forEach(function(view) {
-									update(view, ruleName);
+				Object.keys(tieViews).forEach(function(controllerName) {
+					controllerViews = tieViews[controllerName];
+					if (controllerViews) {
+						controller = scope.DataTier.controllers.get(controllerName);
+						Object.keys(controllerViews).forEach(function(viewedPath) {
+							if (controller.isChangedPathRelevant(changedPath, viewedPath)) {
+								controllerViews[viewedPath].forEach(function(view) {
+									update(view, controllerName);
 								});
 							}
 						});
@@ -184,13 +182,13 @@
 		}
 	}
 
-	function applyRule(rule) {
+	function applyController(controller) {
 		//	apply on a pending views
-		if (nlvs[rule.name]) {
-			nlvs[rule.name].forEach(function(view) {
+		if (nlvs[controller.name]) {
+			nlvs[controller.name].forEach(function(view) {
 				add(view);
 			});
-			delete nlvs[rule.name];
+			delete nlvs[controller.name];
 		}
 	}
 
@@ -250,9 +248,16 @@
 		});
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'views', {value: {}});
-	Reflect.defineProperty(scope.DataTier.views, 'processChanges', {value: processChanges});
-	Reflect.defineProperty(scope.DataTier.views, 'applyRule', {value: applyRule});
+	Reflect.defineProperty(scope.DataTier, 'views', {
+		value: {
+			get processChanges() {
+				return processChanges;
+			},
+			get applyController() {
+				return applyController;
+			}
+		}
+	});
 
 	initDocumentObserver(document);
 	collect(document);

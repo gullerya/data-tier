@@ -31,7 +31,7 @@
 	}
 	customElements.define('custom-element', CustomElement);
 
-	suite.addTest({name: 'testing basic rules: binding value of custom element'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: binding value of custom element'}, function(pass, fail) {
 		let e = document.createElement('custom-element');
 		e.dataset.tieValue = 'testCustomsA.text';
 		if (e.value !== '') fail('precondition of the test failed');
@@ -42,7 +42,7 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic rules: custom element within a repeater'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: custom element within a repeater'}, function(pass, fail) {
 		let c = document.createElement('div'),
 			t = document.createElement('template'),
 			e = document.createElement('custom-element'),
