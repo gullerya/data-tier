@@ -12,8 +12,6 @@
     "no-console": "off"
   },
   "globals": {
-    "Proxy": true,
-    "Reflect": true,
-    "WeakMap": true
+    "Reflect": true
   }
 }
