@@ -1,21 +1,25 @@
-﻿(function (scope) {
+﻿(() => {
 	'use strict';
 
-	const ties = {};
+	const namespace = this || window,
+		ties = {};
 
 	function Tie(name, observable, options) {
 		let data;
 
 		function observer(changes) {
-			scope.DataTier.views.processChanges(name, changes);
+			namespace.DataTier.views.processChanges(name, changes);
 		}
+
 		if (options && typeof options === 'object') {
 			//	TODO: process options
 		}
-		Reflect.defineProperty(this, 'name', { value: name });
+		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'data', {
-			get: function () { return data; },
-			set: function (observable) {
+			get: function() {
+				return data;
+			},
+			set: function(observable) {
 				if (observable) {
 					validateObservable(observable);
 					if (data) {
@@ -28,13 +32,19 @@
 				if (data) {
 					data.observe(observer);
 				}
-				scope.DataTier.views.processChanges(name, [{ type: 'update', value: data, oldValue: oldData, path: [] }]);
+				namespace.DataTier.views.processChanges(name, [{
+					type: 'update',
+					value: data,
+					oldValue: oldData,
+					path: []
+				}]);
 			}
 		});
 
 		ties[name] = this;
 		this.data = observable;
 	}
+
 	Tie.prototype.viewToDataProcessor = function vanillaViewToDataProcessor(event) {
 		setPath(event.data, event.path, event.view.value);
 	};
@@ -69,10 +79,10 @@
 
 	function validateObservable(observable) {
 		if (!observable ||
-				typeof observable !== 'object' ||
-				typeof observable.observe !== 'function' ||
-				typeof observable.unobserve !== 'function' ||
-				typeof observable.revoke !== 'function') {
+			typeof observable !== 'object' ||
+			typeof observable.observe !== 'function' ||
+			typeof observable.unobserve !== 'function' ||
+			typeof observable.revoke !== 'function') {
 			throw new Error(observable + ' is not a valid Observable');
 		}
 	}
@@ -87,17 +97,33 @@
 		ref[path[i]] = value;
 	}
 
-	Reflect.defineProperty(scope, 'DataTier', { value: {} });
-	Reflect.defineProperty(scope.DataTier, 'ties', { value: {} });
-	Reflect.defineProperty(scope.DataTier.ties, 'get', { value: function (name) { return ties[name]; } });
-	Reflect.defineProperty(scope.DataTier.ties, 'create', { value: create });
-	Reflect.defineProperty(scope.DataTier.ties, 'remove', { value: remove });
+	Reflect.defineProperty(namespace, 'DataTier', {value: {}});
+	Reflect.defineProperty(namespace.DataTier, 'ties', {
+		value: {
+			get get() {
+				return function(name) {
+					return ties[name]
+				};
+			},
+			get create() {
+				return create;
+			},
+			get remove() {
+				return remove
+			}
+		}
+	});
 
-})(this);
-﻿(function(scope) {
+})();
+﻿(() => {
 	'use strict';
 
-	const controllers = {};
+	const namespace = this || window,
+		controllers = {};
+
+	if (!namespace.DataTier) {
+		throw new Error('DataTier framework was not properly initialized');
+	}
 
 	function Controller(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
@@ -125,7 +151,7 @@
 		};
 	};
 	Controller.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
-		return viewedPath.indexOf(changedPath) === 0;
+		return viewedPath.startsWith(changedPath);
 	};
 
 	function addController(name, configuration) {
@@ -143,7 +169,7 @@
 		}
 
 		controllers[name] = new Controller(name, configuration);
-		scope.DataTier.views.applyController(controllers[name]);
+		namespace.DataTier.views.applyController(controllers[name]);
 	}
 
 	function getController(name) {
@@ -160,17 +186,16 @@
 
 	function getApplicable(element) {
 		let result = [];
-		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
-			Object.keys(element.dataset).forEach(function(key) {
-				if (controllers[key]) {
-					result.push(controllers[key]);
-				}
-			});
+		if (element && element.dataset) {
+			Object.keys(element.dataset)
+				.filter(key => key in controllers)
+				.map(key => controllers[key])
+				.forEach(controller => result.push(controller));
 		}
 		return result;
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'controllers', {
+	Reflect.defineProperty(namespace.DataTier, 'controllers', {
 		value: {
 			get get() {
 				return getController;
@@ -187,11 +212,19 @@
 		}
 	});
 
-})(this);
-﻿(function(scope) {
+})();
+﻿(() => {
 	'use strict';
 
-	const views = {},
+	const namespace = this || window;
+
+	if (!namespace.DataTier) {
+		throw new Error('DataTier framework was not properly initialized');
+	}
+
+	const ties = namespace.DataTier.ties,
+		controllers = namespace.DataTier.controllers,
+		views = {},
 		nlvs = {};
 
 	//	TODO: this is similar to setPath in ties-service - unify
@@ -206,10 +239,10 @@
 	}
 
 	function changeListener(event) {
-		scope.DataTier.controllers.getApplicable(event.target).forEach(function(controller) {
+		controllers.getApplicable(event.target).forEach(controller => {
 			if (controller.name === 'tieValue') {
 				let controllerParam = controller.parseParam(event.target.dataset[controller.name]),
-					tie = scope.DataTier.ties.get(controllerParam.tieName);
+					tie = ties.get(controllerParam.tieName);
 				if (!controllerParam.dataPath) {
 					console.error('path to data not available');
 					return;
@@ -242,56 +275,55 @@
 				collect(this.contentDocument);
 			});
 			collect(view.contentDocument);
-		} else {
-			scope.DataTier.controllers.getApplicable(view).forEach(function(controller) {
-				let controllerParam = controller.parseParam(view.dataset[controller.name]),
-					pathString = controllerParam.dataPath.join('.'),
-					tieViews,
-					controllerViews,
-					pathViews;
+		} else if (view.dataset) {
+			Object.keys(view.dataset).forEach(key => {
+				if (key.startsWith('tie')) {
+					let controller = controllers.get(key);
+					if (controller) {
+						let controllerParam = controller.parseParam(view.dataset[controller.name]),
+							pathString = controllerParam.dataPath.join('.'),
+							tieViews,
+							controllerViews,
+							pathViews;
 
-				//	get tie views partition
-				if (!views[controllerParam.tieName]) {
-					views[controllerParam.tieName] = {};
-				}
-				tieViews = views[controllerParam.tieName];
+						//	get tie views partition
+						if (!views[controllerParam.tieName]) {
+							views[controllerParam.tieName] = {};
+						}
+						tieViews = views[controllerParam.tieName];
 
-				//	get controller views partition (in tie)
-				if (!tieViews[controller.name]) {
-					tieViews[controller.name] = {};
-				}
-				controllerViews = tieViews[controller.name];
+						//	get controller views partition (in tie)
+						if (!tieViews[controller.name]) {
+							tieViews[controller.name] = {};
+						}
+						controllerViews = tieViews[controller.name];
 
-				//	get path views in this context
-				if (!controllerViews[pathString]) {
-					controllerViews[pathString] = [];
-				}
-				pathViews = controllerViews[pathString];
+						//	get path views in this context
+						if (!controllerViews[pathString]) {
+							controllerViews[pathString] = [];
+						}
+						pathViews = controllerViews[pathString];
 
-				if (pathViews.indexOf(view) < 0) {
-					pathViews.push(view);
-					update(view, controller.name);
-					addChangeListener(view);
-				}
-			});
-
-			//	collect potentially future controllers element and put them into some tracking storage
-			if (view.dataset) {
-				Object.keys(view.dataset).forEach(function(key) {
-					if (key.indexOf('tie') === 0 && !scope.DataTier.controllers.get(key)) {
+						if (pathViews.indexOf(view) < 0) {
+							pathViews.push(view);
+							update(view, controller.name);
+							addChangeListener(view);
+						}
+					} else {
+						//	collect potentially future controllers element and put them into some tracking storage
 						if (!nlvs[key]) nlvs[key] = [];
 						nlvs[key].push(view);
 					}
-				});
-			}
+				}
+			});
 		}
 	}
 
 	function update(view, controllerName) {
 		let r, p, t, data;
-		r = scope.DataTier.controllers.get(controllerName);
+		r = controllers.get(controllerName);
 		p = r.parseParam(view.dataset[controllerName]);
-		t = scope.DataTier.ties.get(p.tieName);
+		t = ties.get(p.tieName);
 		if (t) {
 			data = getPath(t.data, p.dataPath);
 			r.dataToView(data, view);
@@ -299,11 +331,13 @@
 	}
 
 	function collect(rootElement) {
-		let l;
-		if (rootElement &&
-			rootElement.nodeType &&
-			(rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-			l = rootElement.nodeName === 'IFRAME' ? l = Array.from(rootElement.contentDocument.getElementsByTagName('*')) : l = Array.from(rootElement.getElementsByTagName('*'));
+		if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
+			let l;
+			if (rootElement.nodeName === 'IFRAME') {
+				l = Array.from(rootElement.contentDocument.getElementsByTagName('*'));
+			} else {
+				l = Array.from(rootElement.getElementsByTagName('*'));
+			}
 			l.push(rootElement);
 			l.forEach(add);
 		}
@@ -314,14 +348,14 @@
 		if (!rootElement || !rootElement.getElementsByTagName) return;
 		l = Array.from(rootElement.getElementsByTagName('*'));
 		l.push(rootElement);
-		l.forEach(function(e) {
-			scope.DataTier.controllers.getApplicable(e).forEach(function(controller) {
-				param = controller.parseParam(e.dataset[controller.name]);
+		l.forEach(element => {
+			controllers.getApplicable(element).forEach(controller => {
+				param = controller.parseParam(element.dataset[controller.name]);
 				pathViews = views[param.tieName][controller.name][param.dataPath.join('.')];
-				i = pathViews.indexOf(e);
+				i = pathViews.indexOf(element);
 				if (i >= 0) {
 					pathViews.splice(i, 1);
-					delChangeListener(e);
+					delChangeListener(element);
 				}
 			});
 		});
@@ -330,7 +364,7 @@
 	function move(view, controllerName, oldParam, newParam) {
 		let controllerParam, pathViews, i = -1;
 
-		controllerParam = scope.DataTier.controllers.get(controllerName).parseParam(oldParam);
+		controllerParam = controllers.get(controllerName).parseParam(oldParam);
 
 		//	delete old path
 		if (views[controllerParam.tieName] && views[controllerParam.tieName][controllerName]) {
@@ -342,7 +376,7 @@
 		}
 
 		//	add new path
-		controllerParam = scope.DataTier.controllers.get(controllerName).parseParam(newParam);
+		controllerParam = controllers.get(controllerName).parseParam(newParam);
 		if (!views[controllerParam.tieName]) views[controllerParam.tieName] = {};
 		if (!views[controllerParam.tieName][controllerName]) views[controllerParam.tieName][controllerName] = {};
 		if (!views[controllerParam.tieName][controllerName][controllerParam.dataPath]) views[controllerParam.tieName][controllerName][controllerParam.dataPath] = [];
@@ -355,13 +389,13 @@
 		if (tieViews) {
 			changes.forEach(function(change) {
 				changedPath = change.path.join('.');
-				Object.keys(tieViews).forEach(function(controllerName) {
+				Object.keys(tieViews).forEach(controllerName => {
 					controllerViews = tieViews[controllerName];
 					if (controllerViews) {
-						controller = scope.DataTier.controllers.get(controllerName);
-						Object.keys(controllerViews).forEach(function(viewedPath) {
+						controller = controllers.get(controllerName);
+						Object.keys(controllerViews).forEach(viewedPath => {
 							if (controller.isChangedPathRelevant(changedPath, viewedPath)) {
-								controllerViews[viewedPath].forEach(function(view) {
+								controllerViews[viewedPath].forEach(view => {
 									update(view, controllerName);
 								});
 							}
@@ -375,9 +409,7 @@
 	function applyController(controller) {
 		//	apply on a pending views
 		if (nlvs[controller.name]) {
-			nlvs[controller.name].forEach(function(view) {
-				add(view);
-			});
+			nlvs[controller.name].forEach(add);
 			delete nlvs[controller.name];
 		}
 	}
@@ -391,36 +423,38 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			changes.forEach(function(change) {
-				let tr = change.target, an = change.attributeName;
-				if (change.type === 'attributes' && an.indexOf('data-tie') === 0) {
-					move(tr, dataAttrToProp(an), change.oldValue, tr.getAttribute(an));
-				} else if (change.type === 'attributes' && an === 'src' && tr.nodeName === 'IFRAME') {
-					discard(tr.contentDocument);
+			changes.forEach(change => {
+				if (change.type === 'attributes') {
+					let target = change.target, attributeName = change.attributeName;
+					if (attributeName.indexOf('data-tie') === 0) {
+						move(target, dataAttrToProp(attributeName), change.oldValue, target.getAttribute(attributeName));
+					} else if (attributeName === 'src' && target.nodeName === 'IFRAME') {
+						discard(target.contentDocument);
+					}
 				} else if (change.type === 'childList') {
 
 					//	process added nodes
-					Array.from(change.addedNodes).forEach(function(addedNode) {
-						if (addedNode.nodeName === 'IFRAME') {
-							if (addedNode.contentDocument) {
-								initDocumentObserver(addedNode.contentDocument);
-								collect(addedNode.contentDocument);
+					Array.from(change.addedNodes).forEach(node => {
+						if (node.nodeName === 'IFRAME') {
+							if (node.contentDocument) {
+								initDocumentObserver(node.contentDocument);
+								collect(node.contentDocument);
 							}
-							addedNode.addEventListener('load', function() {
+							node.addEventListener('load', function() {
 								initDocumentObserver(this.contentDocument);
 								collect(this.contentDocument);
 							});
 						} else {
-							collect(addedNode);
+							collect(node);
 						}
 					});
 
 					//	process removed nodes
-					Array.from(change.removedNodes).forEach(function(removedNode) {
-						if (removedNode.nodeName === 'IFRAME') {
-							discard(removedNode.contentDocument);
+					Array.from(change.removedNodes).forEach(node => {
+						if (node.nodeName === 'IFRAME') {
+							discard(node.contentDocument);
 						} else {
-							discard(removedNode);
+							discard(node);
 						}
 					});
 				}
@@ -430,15 +464,15 @@
 		let domObserver = new MutationObserver(processDomChanges);
 		domObserver.observe(document, {
 			childList: true,
-			subtree: true,
 			attributes: true,
-			attributeOldValue: true,
 			characterData: false,
+			subtree: true,
+			attributeOldValue: true,
 			characterDataOldValue: false
 		});
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'views', {
+	Reflect.defineProperty(namespace.DataTier, 'views', {
 		value: {
 			get processChanges() {
 				return processChanges;
@@ -452,11 +486,16 @@
 	initDocumentObserver(document);
 	collect(document);
 
-})(this);
-﻿(function(scope) {
+})();
+﻿(() => {
 	'use strict';
 
-	const add = scope.DataTier.controllers.add;
+	const namespace = this || window,
+		add = namespace.DataTier.controllers.add;
+
+	if (!namespace.DataTier) {
+		throw new Error('DataTier framework was not properly initialized');
+	}
 
 	add('tieValue', {
 		dataToView: function(data, view) {
@@ -470,7 +509,7 @@
 
 	add('tieText', {
 		dataToView: function(data, view) {
-			view.textContent = data ? data.toString() : '';
+			view.textContent = data ? data : '';
 		}
 	});
 
@@ -541,7 +580,7 @@
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		dataToView: function(tiedValue, template) {
-			let container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
+			let container = template.parentNode, i, nv, ruleData, itemId, d, df, lc;
 
 			function shortenListTo(cnt, aid) {
 				let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
@@ -567,16 +606,19 @@
 					itemId = ruleData[2];
 					d = template.ownerDocument;
 					df = d.createDocumentFragment();
+
 					for (; i < tiedValue.length; i++) {
 						nv = d.importNode(template.content, true);
-						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
-						vs.forEach(function(view) {
-							Object.keys(view.dataset).forEach(function(key) {
-								if (view.dataset[key].indexOf(itemId) === 0) {
-									view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
-								}
+						Array.from(nv.querySelectorAll('*'))
+							.forEach(view => {
+								Object.keys(view.dataset)
+									.forEach(key => {
+										let value = view.dataset[key];
+										if (value.startsWith(itemId)) {
+											view.dataset[key] = value.replace(itemId, ruleData[0] + '.' + i);
+										}
+									});
 							});
-						});
 						df.appendChild(nv);
 						lc = df.lastChild;
 						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
@@ -590,4 +632,4 @@
 		}
 	});
 
-})(this);
+})();

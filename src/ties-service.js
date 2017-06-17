@@ -1,21 +1,25 @@
-﻿(function (scope) {
+﻿(() => {
 	'use strict';
 
-	const ties = {};
+	const namespace = this || window,
+		ties = {};
 
 	function Tie(name, observable, options) {
 		let data;
 
 		function observer(changes) {
-			scope.DataTier.views.processChanges(name, changes);
+			namespace.DataTier.views.processChanges(name, changes);
 		}
+
 		if (options && typeof options === 'object') {
 			//	TODO: process options
 		}
-		Reflect.defineProperty(this, 'name', { value: name });
+		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'data', {
-			get: function () { return data; },
-			set: function (observable) {
+			get: function() {
+				return data;
+			},
+			set: function(observable) {
 				if (observable) {
 					validateObservable(observable);
 					if (data) {
@@ -28,13 +32,19 @@
 				if (data) {
 					data.observe(observer);
 				}
-				scope.DataTier.views.processChanges(name, [{ type: 'update', value: data, oldValue: oldData, path: [] }]);
+				namespace.DataTier.views.processChanges(name, [{
+					type: 'update',
+					value: data,
+					oldValue: oldData,
+					path: []
+				}]);
 			}
 		});
 
 		ties[name] = this;
 		this.data = observable;
 	}
+
 	Tie.prototype.viewToDataProcessor = function vanillaViewToDataProcessor(event) {
 		setPath(event.data, event.path, event.view.value);
 	};
@@ -69,10 +79,10 @@
 
 	function validateObservable(observable) {
 		if (!observable ||
-				typeof observable !== 'object' ||
-				typeof observable.observe !== 'function' ||
-				typeof observable.unobserve !== 'function' ||
-				typeof observable.revoke !== 'function') {
+			typeof observable !== 'object' ||
+			typeof observable.observe !== 'function' ||
+			typeof observable.unobserve !== 'function' ||
+			typeof observable.revoke !== 'function') {
 			throw new Error(observable + ' is not a valid Observable');
 		}
 	}
@@ -87,10 +97,21 @@
 		ref[path[i]] = value;
 	}
 
-	Reflect.defineProperty(scope, 'DataTier', { value: {} });
-	Reflect.defineProperty(scope.DataTier, 'ties', { value: {} });
-	Reflect.defineProperty(scope.DataTier.ties, 'get', { value: function (name) { return ties[name]; } });
-	Reflect.defineProperty(scope.DataTier.ties, 'create', { value: create });
-	Reflect.defineProperty(scope.DataTier.ties, 'remove', { value: remove });
+	Reflect.defineProperty(namespace, 'DataTier', {value: {}});
+	Reflect.defineProperty(namespace.DataTier, 'ties', {
+		value: {
+			get get() {
+				return function(name) {
+					return ties[name]
+				};
+			},
+			get create() {
+				return create;
+			},
+			get remove() {
+				return remove
+			}
+		}
+	});
 
-})(this);
+})();

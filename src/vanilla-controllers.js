@@ -1,7 +1,12 @@
-﻿(function(scope) {
+﻿(() => {
 	'use strict';
 
-	const add = scope.DataTier.controllers.add;
+	const namespace = this || window,
+		add = namespace.DataTier.controllers.add;
+
+	if (!namespace.DataTier) {
+		throw new Error('DataTier framework was not properly initialized');
+	}
 
 	add('tieValue', {
 		dataToView: function(data, view) {
@@ -15,7 +20,7 @@
 
 	add('tieText', {
 		dataToView: function(data, view) {
-			view.textContent = data ? data.toString() : '';
+			view.textContent = data ? data : '';
 		}
 	});
 
@@ -86,7 +91,7 @@
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		dataToView: function(tiedValue, template) {
-			let container = template.parentNode, i, nv, ruleData, itemId, vs, d, df, lc;
+			let container = template.parentNode, i, nv, ruleData, itemId, d, df, lc;
 
 			function shortenListTo(cnt, aid) {
 				let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
@@ -112,16 +117,19 @@
 					itemId = ruleData[2];
 					d = template.ownerDocument;
 					df = d.createDocumentFragment();
+
 					for (; i < tiedValue.length; i++) {
 						nv = d.importNode(template.content, true);
-						vs = Array.prototype.slice.call(nv.querySelectorAll('*'), 0);
-						vs.forEach(function(view) {
-							Object.keys(view.dataset).forEach(function(key) {
-								if (view.dataset[key].indexOf(itemId) === 0) {
-									view.dataset[key] = view.dataset[key].replace(itemId, ruleData[0] + '.' + i);
-								}
+						Array.from(nv.querySelectorAll('*'))
+							.forEach(view => {
+								Object.keys(view.dataset)
+									.forEach(key => {
+										let value = view.dataset[key];
+										if (value.startsWith(itemId)) {
+											view.dataset[key] = value.replace(itemId, ruleData[0] + '.' + i);
+										}
+									});
 							});
-						});
 						df.appendChild(nv);
 						lc = df.lastChild;
 						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
@@ -135,4 +143,4 @@
 		}
 	});
 
-})(this);
+})();

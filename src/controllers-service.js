@@ -1,7 +1,12 @@
-﻿(function(scope) {
+﻿(() => {
 	'use strict';
 
-	const controllers = {};
+	const namespace = this || window,
+		controllers = {};
+
+	if (!namespace.DataTier) {
+		throw new Error('DataTier framework was not properly initialized');
+	}
 
 	function Controller(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
@@ -29,7 +34,7 @@
 		};
 	};
 	Controller.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
-		return viewedPath.indexOf(changedPath) === 0;
+		return viewedPath.startsWith(changedPath);
 	};
 
 	function addController(name, configuration) {
@@ -47,7 +52,7 @@
 		}
 
 		controllers[name] = new Controller(name, configuration);
-		scope.DataTier.views.applyController(controllers[name]);
+		namespace.DataTier.views.applyController(controllers[name]);
 	}
 
 	function getController(name) {
@@ -64,17 +69,16 @@
 
 	function getApplicable(element) {
 		let result = [];
-		if (element && element.nodeType === Node.ELEMENT_NODE && element.dataset) {
-			Object.keys(element.dataset).forEach(function(key) {
-				if (controllers[key]) {
-					result.push(controllers[key]);
-				}
-			});
+		if (element && element.dataset) {
+			Object.keys(element.dataset)
+				.filter(key => key in controllers)
+				.map(key => controllers[key])
+				.forEach(controller => result.push(controller));
 		}
 		return result;
 	}
 
-	Reflect.defineProperty(scope.DataTier, 'controllers', {
+	Reflect.defineProperty(namespace.DataTier, 'controllers', {
 		value: {
 			get get() {
 				return getController;
@@ -91,4 +95,4 @@
 		}
 	});
 
-})(this);
+})();

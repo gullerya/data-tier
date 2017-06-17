@@ -1,23 +1,27 @@
 ﻿(function() {
 	'use strict';
 
-	let suite = Utils.JustTest.createSuite({name: 'Testing Arrays with Repeaters'}), users = [], oUsers = Observable.from(users);
+	let suite = Utils.JustTest.createSuite({name: 'Testing Arrays with Repeaters'}), users = [],
+		oUsers = Observable.from(users);
 
 	DataTier.ties.create('usersA', oUsers);
 
-	let c = document.createElement('div'), t, c1, e1, e2, e3;
+	let c = document.createElement('div'), t, c1, e1, e2, e3, e4;
 	t = document.createElement('template');
 	c1 = document.createElement('div');
 	e1 = document.createElement('span');
 	e2 = document.createElement('span');
 	e3 = document.createElement('span');
+	e4 = document.createElement('span');
 	t.dataset.tieList = 'usersA => user';
 	e1.dataset.tieText = 'user.name';
 	e2.dataset.tieText = 'user.age';
 	e3.dataset.tieText = 'user.address.street';
+	e4.textContent = 'Some plain text to test with';
 	c1.appendChild(e1);
 	c1.appendChild(e2);
 	c1.appendChild(e3);
+	c1.appendChild(e4);
 	t.content.appendChild(c1);
 	c.appendChild(t);
 	c.style.cssText = 'position:relative;height:200px;overflow:auto';
@@ -115,12 +119,13 @@
 		}, 0);
 	});
 
-	suite.addTest({name: 'array binding - huge bulk update (5000 rows)'}, function(pass, fail) {
+	suite.addTest({name: 'array binding - huge bulk update (20000 rows)'}, function(pass, fail) {
 		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
 		setTimeout(function() {
-			let a = [], aO, i;
+			let a = [], i,
+				rowsNumber = 20000;
 
-			for (i = 0; i < 5000; i++) {
+			for (i = 0; i < rowsNumber; i++) {
 				a.push({
 					name: 'A',
 					age: 6,
@@ -129,7 +134,7 @@
 			}
 			DataTier.ties.get('usersA').data = Observable.from(a);
 
-			if (c.childElementCount !== 5001) fail('expected child elements of repeater to be 5001, found: ' + c.childElementCount);
+			if (c.childElementCount !== rowsNumber + 1) fail('expected child elements of repeater to be ' + (rowsNumber + 1) + ', found: ' + c.childElementCount);
 			//	TODO: ensure the content of the repeated child is as expected
 			pass();
 		}, 0);
