@@ -14,6 +14,7 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 
 #### Backlog:
 
+- Invest/rework `Controller` part of the API as part of extensibility improvements
 - Support custom pre-processors/interceptors for both data-to-view and view-to-data flows
 - Add rule to change any arbitrary attribute
 - Add rule for action (mouse? keyboard? any and provide the action with the event data?)
@@ -22,6 +23,10 @@ Support matrix is currently as wide as that of [`object-observer.js`](https://gi
 - Change rule detection and appliance inner interface to broaden the possibilities of controllers configurations
 
 #### Versions
+
+- __0.6.9__
+  - Fixed [issue no. 6](https://github.com/gullerya/data-tier/issues/6), some performance improvements made for a large scale DOM manipulations
+  - Conceptually `Rule` has been replaced by `Controller`. There are still no API changes with regard to that, nor any API are yet published, but there will be some refactoring in this area in future releases
 
 - __0.6.8__
   - Fixes: issue no. 2 (smooth handling of an empty values given to the controllers definition), issue no. 4 (non working repeaters on subgraph list), issue no. 5 (improvements of `data-tie-classes`)
@@ -82,6 +87,7 @@ fetch('data-tier.js').then(function (response) {
 
 The library utilizes 2 main concepts __Ties__ and __Controllers__.
 
+
 ###	Tie
 __Tie__ holds an observable data structure (object or array) associated with tie's name, it's about __what__ to tie.
 Thus, ties serve most and foremost data segregation and management purposes.
@@ -116,6 +122,7 @@ Having say that, I'll note, that there is no limitations on the size or the stru
 Tie object not only meant to hold the link between the data and its namespace, but also tie's specific configurations and customizations.
 Currently in the backlog there are such a features like supporting custom interceptors for both flows - data-to-view and view-to-data.
 Those features are under ongoing development and enhancements. For more details see [__API reference__](docs/api-reference.md).
+
 
 ### Controller
 __Controller__ is a holder of transition logic, it's about __how__ to translate the data from/to view/data.
@@ -159,6 +166,7 @@ The above two may happen in any order, in any phase in the application lifecycle
 
 Let's review the actual example, where we have some `user` object which is our model and we want to bind it to some interactive view of it.
 
+
 ### Code part
 ```javascript
 let user = {
@@ -175,6 +183,7 @@ observableUser = Observable.from(user);
 DataTier.ties.create('userInfo', observableUser);
 ```
 
+
 ### HTML part
 ```html
 <div>
@@ -189,6 +198,7 @@ DataTier.ties.create('userInfo', observableUser);
 ```
 
 
-For an extended tutorial see [__this__](docs/tutorial.md) page.
+### Documentation
+[__Tutorials__](docs/tutorials.md) page.
 
-For a more thorough API documentation see [__API Reference__](docs/api-reference.md).
+[__API Reference__](docs/api-reference.md) page.

@@ -172,7 +172,7 @@
 	function processChanges(tieName, changes) {
 		let tieViews = views[tieName], controller, controllerViews, changedPath;
 		if (tieViews) {
-			changes.forEach(function(change) {
+			changes.forEach(change => {
 				changedPath = change.path.join('.');
 				Object.keys(tieViews).forEach(controllerName => {
 					controllerViews = tieViews[controllerName];
