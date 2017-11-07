@@ -9,24 +9,18 @@ This library works tightly with [`Observable`](https://github.com/gullerya/objec
 Yet, it is possible to provide any other `Observable` implementation, if it provides the same functionality. In this case you may want to use lighter `data-tier` distribution (bundled within the same npm module) without `object-observer.js`.
 
 #### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](tools/browser_icons/firefox.png) <sub>44+</sub>, ![EDGE](tools/browser_icons/explorer.png) <sub>13+</sub>
-Support matrix is currently as wide as that of [`object-observer.js`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object-observer, but will use an embedded one.
+Support matrix is currently as wide as that of [`object-observer.js`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object observer, but will use an embedded one.
 `DataTier` supports custom elements as well, obviously this functionality is available only on supporting environments.
-
-#### Backlog:
-
-- Invest/rework `Controller` part of the API as part of extensibility improvements
-- Support custom pre-processors/interceptors for both data-to-view and view-to-data flows
-- Add rule to change any arbitrary attribute
-- Add rule for action (mouse? keyboard? any and provide the action with the event data?)
-- API reference
-- Possibility to override global controllers on tie level
-- Change rule detection and appliance inner interface to broaden the possibilities of controllers configurations
 
 #### Versions
 
+- __0.6.10__
+  - Added a possibility to create/update Tie's data with a plain JS object, in this case `DataTier` will attempt to auto-create and use `Observable` from it, using an embedded `Observable` implementation   
+  - Fixed [issue no. 7](https://github.com/gullerya/data-tier/issues/7)
+
 - __0.6.9__
-  - Fixed [issue no. 6](https://github.com/gullerya/data-tier/issues/6), some performance improvements made for a large scale DOM manipulations
   - Conceptually `Rule` has been replaced by `Controller`. There are still no API changes with regard to that, nor any API are yet published, but there will be some refactoring in this area in future releases
+  - Fixed [issue no. 6](https://github.com/gullerya/data-tier/issues/6), some performance improvements made for a large scale DOM manipulations
 
 - __0.6.8__
   - Fixes: issue no. 2 (smooth handling of an empty values given to the controllers definition), issue no. 4 (non working repeaters on subgraph list), issue no. 5 (improvements of `data-tie-classes`)

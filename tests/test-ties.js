@@ -25,7 +25,6 @@
 		newEl.dataset.tieText = 'tiesTestB.name';
 		document.body.appendChild(newEl);
 
-
 		setTimeout(function() {
 			DataTier.ties.create('tiesTestB', Observable.from({name: text}));
 			if (newEl.textContent !== text) fail(new Error('expected the content to be "' + text + '", found: ' + newEl.textContent));
@@ -61,6 +60,33 @@
 			if (newEl.textContent != o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 			pass();
 		}, 0);
+	});
+
+	suite.addTest({name: 'setting a tie with a non Observable object'}, function(pass, fail) {
+		let newEl = document.createElement('div'),
+			o = {text: 'text test E'},
+			t = DataTier.ties.create('tiesTestE', o);
+		newEl.dataset.tieText = 'tiesTestE.text';
+		document.body.appendChild(newEl);
+
+		setTimeout(function() {
+			if (newEl.textContent != o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
+
+			t.data = {text: 'text test E new'};
+			setTimeout(function() {
+				if (newEl.textContent != o.text) fail(new Error('expected the content to be "text test E new"; found: ' + newEl.textContent));
+				pass();
+			}, 0);
+		}, 0);
+	});
+
+	suite.addTest({name: 'setting a tie with a non object value - negative'}, function(pass, fail) {
+		try {
+			DataTier.ties.create('tiesTestE', 5);
+			fail('flow was not supposed to get to this point');
+		} catch (e) {
+			pass();
+		}
 	});
 
 	suite.run();

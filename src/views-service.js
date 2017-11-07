@@ -17,8 +17,8 @@
 		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length; i++) {
-			ref = ref[path[i]];
-			if (!ref) return;
+			if (path[i] in ref) ref = ref[path[i]];
+			else return;
 		}
 		return ref;
 	}

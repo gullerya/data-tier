@@ -67,5 +67,31 @@
 		}, 0);
 	});
 
+	suite.addTest({name: 'verify that falsish values (0, false, \'\') are visualized correctly'}, function(pass, fail) {
+		let newEl = document.createElement('div');
+		DataTier.ties.create('falsishTest', Observable.from({test: 0}));
+		document.body.appendChild(newEl);
+		newEl.dataset.tieText = 'falsishTest.test';
+		setTimeout(function() {
+			if (newEl.textContent !== '0') fail(new Error('expected the value to be "0", but found "' + newEl.textContent + '"'));
+
+			DataTier.ties.get('falsishTest').data.test = false;
+			setTimeout(function() {
+				if (newEl.textContent !== 'false') fail(new Error('expected the value to be "false", but found "' + newEl.textContent + '"'));
+
+				DataTier.ties.get('falsishTest').data.test = '';
+				setTimeout(function() {
+					if (newEl.textContent !== '') fail(new Error('expected the value to be "", but found "' + newEl.textContent + '"'));
+
+					DataTier.ties.get('falsishTest').data.test = null;
+					setTimeout(function() {
+						if (newEl.textContent !== '') fail(new Error('expected the value to be "", but found "' + newEl.textContent + '"'));
+						pass();
+					}, 0);
+				}, 0);
+			}, 0);
+		}, 0);
+	});
+
 	suite.run();
 })();

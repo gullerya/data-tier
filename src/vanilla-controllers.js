@@ -13,50 +13,50 @@
 			if (view.type === 'checkbox') {
 				view.checked = data;
 			} else {
-				view.value = data ? data : '';
+				view.value = typeof data !== 'undefined' && data !== null ? data : '';
 			}
 		}
 	});
 
 	add('tieText', {
 		dataToView: function(data, view) {
-			view.textContent = data ? data : '';
+			view.textContent = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tiePlaceholder', {
 		dataToView: function(data, view) {
-			view.placeholder = data ? data : '';
+			view.placeholder = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieTooltip', {
 		dataToView: function(data, view) {
-			view.title = data ? data : '';
+			view.title = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieSrc', {
 		dataToView: function(data, view) {
-			view.src = data ? data : '';
+			view.src = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieHRef', {
 		dataToView: function(data, view) {
-			view.href = data ? data : '';
+			view.href = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieDateValue', {
 		dataToView: function(data, view) {
-			view.value = data ? data.toLocaleString() : '';
+			view.value = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
 
 	add('tieDateText', {
 		dataToView: function(data, view) {
-			view.textContent = data ? data.toLocaleString() : '';
+			view.textContent = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
 

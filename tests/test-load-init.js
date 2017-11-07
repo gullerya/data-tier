@@ -5,6 +5,7 @@
 
 	suite.addTest({name: 'basic loading test'}, function(pass, fail) {
 		if (!DataTier) fail('expected the library to exist in the default namespace but not found');
+		if (!Observable) fail('expected the default Observable implementing library to exist in the given namespace, but not found');
 		pass();
 	});
 
@@ -21,6 +22,7 @@
 			.then(script => {
 				Function(script).call(ns);
 				if (!ns.DataTier) fail('expected the library to exist in the given namespace, but not found');
+				if (!ns.Observable) fail('expected the default Observable implementing library to exist in the given namespace, but not found');
 				pass();
 			})
 			.catch(fail);

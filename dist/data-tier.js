@@ -480,19 +480,12 @@
 			get: function() {
 				return data;
 			},
-			set: function(observable) {
-				if (observable) {
-					validateObservable(observable);
-					if (data) {
-						data.revoke();
-					}
-				}
-
-				let oldData = data;
-				data = observable;
-				if (data) {
-					data.observe(observer);
-				}
+			set: function(input) {
+				let oldData = data,
+					newData = ensureObservable(input);
+				if (data) data.revoke();
+				data = newData;
+				if (data) data.observe(observer);
 				namespace.DataTier.views.processChanges(name, [{
 					type: 'update',
 					value: data,
@@ -510,16 +503,12 @@
 		setPath(event.data, event.path, event.view.value);
 	};
 
-	function create(name, observable, options) {
+	function create(name, input, options) {
 		validateTieName(name);
-		if (observable) {
-			validateObservable(observable);
-		}
 		if (ties[name]) {
 			throw new Error('existing tie (' + name + ') MAY NOT be re-created, use the tie\'s own APIs to reconfigure it');
 		}
-
-		return new Tie(name, observable, options);
+		return new Tie(name, ensureObservable(input), options);
 	}
 
 	function remove(name) {
@@ -538,13 +527,19 @@
 		}
 	}
 
-	function validateObservable(observable) {
-		if (!observable ||
-			typeof observable !== 'object' ||
-			typeof observable.observe !== 'function' ||
-			typeof observable.unobserve !== 'function' ||
-			typeof observable.revoke !== 'function') {
-			throw new Error(observable + ' is not a valid Observable');
+	function ensureObservable(o) {
+		if (typeof o === 'undefined' || o === null) {
+			return o;
+		} else if (typeof o !== 'object') {
+			throw new Error(o + ' is not of type Observable and not an object');
+		} else if (typeof o.observe === 'function' && typeof o.unobserve === 'function' && typeof o.revoke === 'function') {
+			return o;
+		} else if (!namespace.Observable) {
+			throw new Error(o + ' is not of type Observable and no embedded Observable implementation found');
+		} else if (typeof o.observe === 'function' || typeof o.unobserve === 'function' || typeof o.revoke === 'function') {
+			throw new Error(o + ' is not of type Observable and can not be transformed into Observable (some of its functions already implemented?)');
+		} else {
+			return namespace.Observable.from(o);
 		}
 	}
 
@@ -553,7 +548,7 @@
 		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length - 1; i++) {
-			ref = ref[path[i]] || {};
+			ref = path[i] in ref ? ref[path[i]] : {};
 		}
 		ref[path[i]] = value;
 	}
@@ -693,8 +688,8 @@
 		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length; i++) {
-			ref = ref[path[i]];
-			if (!ref) return;
+			if (path[i] in ref) ref = ref[path[i]];
+			else return;
 		}
 		return ref;
 	}
@@ -848,7 +843,7 @@
 	function processChanges(tieName, changes) {
 		let tieViews = views[tieName], controller, controllerViews, changedPath;
 		if (tieViews) {
-			changes.forEach(function(change) {
+			changes.forEach(change => {
 				changedPath = change.path.join('.');
 				Object.keys(tieViews).forEach(controllerName => {
 					controllerViews = tieViews[controllerName];
@@ -963,50 +958,50 @@
 			if (view.type === 'checkbox') {
 				view.checked = data;
 			} else {
-				view.value = data ? data : '';
+				view.value = typeof data !== 'undefined' && data !== null ? data : '';
 			}
 		}
 	});
 
 	add('tieText', {
 		dataToView: function(data, view) {
-			view.textContent = data ? data : '';
+			view.textContent = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tiePlaceholder', {
 		dataToView: function(data, view) {
-			view.placeholder = data ? data : '';
+			view.placeholder = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieTooltip', {
 		dataToView: function(data, view) {
-			view.title = data ? data : '';
+			view.title = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieSrc', {
 		dataToView: function(data, view) {
-			view.src = data ? data : '';
+			view.src = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieHRef', {
 		dataToView: function(data, view) {
-			view.href = data ? data : '';
+			view.href = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieDateValue', {
 		dataToView: function(data, view) {
-			view.value = data ? data.toLocaleString() : '';
+			view.value = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
 
 	add('tieDateText', {
 		dataToView: function(data, view) {
-			view.textContent = data ? data.toLocaleString() : '';
+			view.textContent = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
 
