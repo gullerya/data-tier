@@ -42,7 +42,7 @@
 		setTimeout(function() {
 			if (newEl.textContent) fail(new Error('preliminary expectation failed: expected the content to be empty'));
 			t.data = Observable.from(o);
-			if (newEl.textContent != o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
+			if (newEl.textContent !== o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 			pass();
 		}, 0);
 	});
@@ -57,7 +57,7 @@
 		setTimeout(function() {
 			if (newEl.textContent) fail(new Error('preliminary expectation failed: expected the content to be empty'));
 			t.data = Observable.from(o);
-			if (newEl.textContent != o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
+			if (newEl.textContent !== o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 			pass();
 		}, 0);
 	});
@@ -70,11 +70,12 @@
 		document.body.appendChild(newEl);
 
 		setTimeout(function() {
-			if (newEl.textContent != o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
+			if (newEl.textContent !== o.text) fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 
-			t.data = {text: 'text test E new'};
+			let newO = {text: 'text test E new'};
+			t.data = newO;
 			setTimeout(function() {
-				if (newEl.textContent != o.text) fail(new Error('expected the content to be "text test E new"; found: ' + newEl.textContent));
+				if (newEl.textContent !== newO.text) fail(new Error('expected the content to be "text test E new"; found: ' + newEl.textContent));
 				pass();
 			}, 0);
 		}, 0);
