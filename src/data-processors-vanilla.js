@@ -2,14 +2,14 @@
 	'use strict';
 
 	const namespace = this || window,
-		add = namespace.DataTier.controllers.add;
+		add = namespace.DataTier.processors.add;
 
 	if (!namespace.DataTier) {
 		throw new Error('DataTier framework was not properly initialized');
 	}
 
 	add('tieValue', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			if (view.type === 'checkbox') {
 				view.checked = data;
 			} else {
@@ -19,43 +19,43 @@
 	});
 
 	add('tieText', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			view.textContent = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tiePlaceholder', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			view.placeholder = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieTooltip', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			view.title = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieSrc', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			view.src = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieHRef', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			view.href = typeof data !== 'undefined' && data !== null ? data : '';
 		}
 	});
 
 	add('tieDateValue', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			view.value = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
 
 	add('tieDateText', {
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			view.textContent = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
@@ -67,7 +67,7 @@
 				subPath.length === 1 ||
 				(subPath.length === 2 && subPath[0] === '');
 		},
-		dataToView: function(data, view) {
+		toView: function(data, view) {
 			if (data && typeof data === 'object') {
 				Object.keys(data).forEach(function(key) {
 					if (data[key]) {
@@ -90,7 +90,7 @@
 				subPath.length === 1 ||
 				(subPath.length === 2 && subPath[0] === '');
 		},
-		dataToView: function(tiedValue, template) {
+		toView: function(tiedValue, template) {
 			let container = template.parentNode, i, nv, ruleData, itemId, d, df, lc;
 
 			function shortenListTo(cnt, aid) {

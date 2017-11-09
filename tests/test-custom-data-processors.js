@@ -7,7 +7,7 @@
 			date: new Date()
 		});
 
-	suite.addTest({name: 'testing setup of the processor from create', skip: true}, function(pass, fail) {
+	suite.addTest({name: 'testing setup of the processor from create'}, function(pass, fail) {
 		let ie = document.createElement('span'), tie, e;
 
 		function customVTDProc(input) {

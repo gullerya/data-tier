@@ -13,17 +13,17 @@ let sourcesWithOO,
 sourcesWithOO = [
 	path.join('node_modules', 'object-observer', 'dist', 'object-observer.js'),
 	path.join('src', 'ties-service.js'),
-	path.join('src', 'controllers-service.js'),
+	path.join('src', 'data-processors-service.js'),
 	path.join('src', 'views-service.js'),
-	path.join('src', 'vanilla-controllers.js')
+	path.join('src', 'data-processors-vanilla.js')
 ];
 destinationWithOO = path.join('dist', 'data-tier.js');
 
 sourcesWithoutOO = [
 	path.join('src', 'ties-service.js'),
-	path.join('src', 'controllers-service.js'),
+	path.join('src', 'data-processors-service.js'),
 	path.join('src', 'views-service.js'),
-	path.join('src', 'vanilla-controllers.js')
+	path.join('src', 'data-processors-vanilla.js')
 ];
 destinationWithoutOO = path.join('dist', 'data-tier-wo-oo.js');
 
