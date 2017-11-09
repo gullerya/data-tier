@@ -1,11 +1,22 @@
-﻿(() => {
+﻿//	tie should provide it's own processors API
+//	if tie has no requested processor - it should fall back to the global processors service
+//	this API should be used internally for update as well as publicly available for maintenance/management
+//	for the debugging purposes it should be possible to easily understand which processor actually handled the data
+
+//	test cases:
+//	- OOTB processors
+//	- non-existing processors
+//	- overriding global processors
+//	- overriding global processors on tie level (global processor is still used for other ties)
+
+(() => {
 	'use strict';
 
 	const namespace = this || window,
 		ties = {};
 
 	function Tie(name, observable, options) {
-		let data;
+		let data, dataProcessors = {};
 
 		function observer(changes) {
 			namespace.DataTier.views.processChanges(name, changes);
