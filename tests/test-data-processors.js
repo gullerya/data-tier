@@ -6,8 +6,7 @@
 			text: 'some text',
 			date: new Date()
 		},
-		testProcessorsTieA = DataTier.ties.create('testProcessorsA', data),
-		testProcessorsTieB = DataTier.ties.create('testProcessorsB', data);
+		testProcessorsTieA = DataTier.ties.create('testProcessorsA', data);
 
 	suite.addTest({name: 'testing basic processors: text content'}, function(pass, fail) {
 		let e = document.createElement('div');

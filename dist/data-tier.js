@@ -477,7 +477,7 @@
 		ties = {};
 
 	function Tie(name, observable, options) {
-		let data, dataProcessors = {};
+		let data;
 
 		function observer(changes) {
 			namespace.DataTier.views.processChanges(name, changes);
@@ -657,7 +657,7 @@
 			Object.keys(element.dataset)
 				.filter(key => key in processors)
 				.map(key => processors[key])
-				.forEach(result.push);
+				.forEach(processor => result.push(processor));
 		}
 		return result;
 	}

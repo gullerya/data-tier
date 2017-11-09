@@ -73,7 +73,7 @@
 			Object.keys(element.dataset)
 				.filter(key => key in processors)
 				.map(key => processors[key])
-				.forEach(result.push);
+				.forEach(processor => result.push(processor));
 		}
 		return result;
 	}
