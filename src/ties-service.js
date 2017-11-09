@@ -16,7 +16,7 @@
 		ties = {};
 
 	function Tie(name, observable, options) {
-		let data, dataProcessors = {};
+		let data;
 
 		function observer(changes) {
 			namespace.DataTier.views.processChanges(name, changes);
