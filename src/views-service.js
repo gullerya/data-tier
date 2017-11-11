@@ -12,7 +12,7 @@
 		views = {},
 		nlvs = {};
 
-	//	TODO: this is similar to setPath in ties-service - unify
+	//	TODO: this is similar to setPath in processors-service - unify
 	function getPath(ref, path) {
 		let i;
 		if (!ref) return;
