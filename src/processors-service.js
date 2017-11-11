@@ -5,7 +5,7 @@
 		processors = {};
 
 	if (!namespace.DataTier) {
-		throw new Error('DataTier framework was not properly initialized');
+		throw new Error('data-tier framework was not properly initialized');
 	}
 
 	function DataProcessor(name, options) {
@@ -35,6 +35,9 @@
 	};
 	DataProcessor.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
 		return viewedPath.startsWith(changedPath);
+	};
+	DataProcessor.prototype.toData = function(event) {
+		setPath(event.data, event.path, event.view.value);
 	};
 
 	function add(name, configuration) {
@@ -78,6 +81,15 @@
 		return result;
 	}
 
+	function setPath(ref, path, value) {
+		let i;
+		if (!ref) return;
+		for (i = 0; i < path.length - 1; i++) {
+			ref = path[i] in ref ? ref[path[i]] : {};
+		}
+		ref[path[i]] = value;
+	}
+
 	Reflect.defineProperty(namespace.DataTier, 'processors', {
 		value: {
 			get get() { return get; },
@@ -86,5 +98,4 @@
 			get getApplicable() { return getApplicable; }
 		}
 	});
-
 })();

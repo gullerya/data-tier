@@ -5,7 +5,7 @@
 		add = namespace.DataTier.processors.add;
 
 	if (!namespace.DataTier) {
-		throw new Error('DataTier framework was not properly initialized');
+		throw new Error('data-tier framework was not properly initialized');
 	}
 
 	add('tieValue', {

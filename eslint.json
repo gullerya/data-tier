@@ -12,6 +12,7 @@
     "no-console": "off"
   },
   "globals": {
+    "Symbol": true,
     "Reflect": true
   }
 }

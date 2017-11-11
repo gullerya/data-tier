@@ -459,19 +459,15 @@
 
 	Reflect.defineProperty(scope, 'Observable', { value: Observable });
 })(this);
-﻿//	tie should provide it's own processors API
-//	if tie has no requested processor - it should fall back to the global processors service
-//	this API should be used internally for update as well as publicly available for maintenance/management
-//	for the debugging purposes it should be possible to easily understand which processor actually handled the data
-
-//	test cases:
-//	- OOTB processors
-//	- non-existing processors
-//	- overriding global processors
-//	- overriding global processors on tie level (global processor is still used for other ties)
-
-(() => {
+﻿(options => {
 	'use strict';
+
+	if (options && options[0] && typeof options[0].disableExclusivenessCheck === 'boolean' && !options[0].disableExclusivenessCheck) {
+		let w = window, s = Symbol.for('data-tier');
+		while (w.parent !== w) w = w.parent;
+		if (w[s]) throw new Error('data-tier found to already being running within this application, cancelling current execution');
+		else w[s] = true;
+	}
 
 	const namespace = this || window,
 		ties = {};
@@ -508,11 +504,8 @@
 
 		ties[name] = this;
 		this.data = observable;
+		Object.seal(this);
 	}
-
-	Tie.prototype.viewToDataProcessor = function vanillaViewToDataProcessor(event) {
-		setPath(event.data, event.path, event.view.value);
-	};
 
 	function create(name, input, options) {
 		validateTieName(name);
@@ -554,16 +547,6 @@
 		}
 	}
 
-	//	TODO: this is similar to getPath in views-service - unify
-	function setPath(ref, path, value) {
-		let i;
-		if (!ref) return;
-		for (i = 0; i < path.length - 1; i++) {
-			ref = path[i] in ref ? ref[path[i]] : {};
-		}
-		ref[path[i]] = value;
-	}
-
 	Reflect.defineProperty(namespace, 'DataTier', {value: {}});
 	Reflect.defineProperty(namespace.DataTier, 'ties', {
 		value: {
@@ -589,7 +572,7 @@
 		processors = {};
 
 	if (!namespace.DataTier) {
-		throw new Error('DataTier framework was not properly initialized');
+		throw new Error('data-tier framework was not properly initialized');
 	}
 
 	function DataProcessor(name, options) {
@@ -619,6 +602,9 @@
 	};
 	DataProcessor.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
 		return viewedPath.startsWith(changedPath);
+	};
+	DataProcessor.prototype.toData = function(event) {
+		setPath(event.data, event.path, event.view.value);
 	};
 
 	function add(name, configuration) {
@@ -662,6 +648,15 @@
 		return result;
 	}
 
+	function setPath(ref, path, value) {
+		let i;
+		if (!ref) return;
+		for (i = 0; i < path.length - 1; i++) {
+			ref = path[i] in ref ? ref[path[i]] : {};
+		}
+		ref[path[i]] = value;
+	}
+
 	Reflect.defineProperty(namespace.DataTier, 'processors', {
 		value: {
 			get get() { return get; },
@@ -670,7 +665,6 @@
 			get getApplicable() { return getApplicable; }
 		}
 	});
-
 })();
 ﻿(() => {
 	'use strict';
@@ -711,7 +705,7 @@
 					return;
 				}
 
-				tie.viewToDataProcessor({data: tie.data, path: processorParam.dataPath, view: event.target});
+				processor.toData({data: tie.data, path: processorParam.dataPath, view: event.target});
 			}
 		});
 	}
@@ -735,8 +729,9 @@
 			});
 			collect(view.contentDocument);
 		} else if (view.dataset) {
-			Object.keys(view.dataset).forEach(key => {
-				if (key.startsWith('tie')) {
+			Object.keys(view.dataset)
+				.filter(key => key.startsWith('tie'))
+				.forEach(key => {
 					let processor = processors.get(key);
 					if (processor) {
 						let processorParam = processor.parseParam(view.dataset[processor.name]),
@@ -773,8 +768,7 @@
 						if (!nlvs[key]) nlvs[key] = [];
 						nlvs[key].push(view);
 					}
-				}
-			});
+				});
 		}
 	}
 
@@ -948,7 +942,7 @@
 		add = namespace.DataTier.processors.add;
 
 	if (!namespace.DataTier) {
-		throw new Error('DataTier framework was not properly initialized');
+		throw new Error('data-tier framework was not properly initialized');
 	}
 
 	add('tieValue', {

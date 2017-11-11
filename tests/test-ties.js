@@ -90,5 +90,15 @@
 		}
 	});
 
+	suite.addTest({name: 'tie should be sealed - negative'}, function(pass, fail) {
+		try {
+			let tie = DataTier.ties.create('tiesTestSealed', {});
+			tie.someProp = 'text';
+			fail('flow was not supposed to get to this point');
+		} catch (e) {
+			pass();
+		}
+	});
+
 	suite.run();
 })();

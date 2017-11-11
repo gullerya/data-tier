@@ -10,12 +10,12 @@ It is possible to provide custom `Observable` implementation. In this case you m
 
 #### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](tools/browser_icons/firefox.png) <sub>44+</sub>, ![EDGE](tools/browser_icons/explorer.png) <sub>13+</sub>
 Support matrix is currently as wide as that of [`object-observer`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object observer, but will use an embedded one.
-`DataTier` supports custom elements as well, obviously this functionality is available only on supporting environments.
+`data-tier` supports custom elements as well, obviously this functionality is available only on supporting environments.
 
 #### Versions
 
 __0.6.10__
-  - Added a possibility to create/update Tie's data with a plain JS object, in this case `DataTier` will attempt to auto-create and use `Observable` from it, using an embedded `Observable` implementation   
+  - Added a possibility to create/update Tie's data with a plain JS object, in this case `data-tier` will attempt to auto-create and use `Observable` from it, using an embedded `Observable` implementation   
   - Fixed [issue no. 7](https://github.com/gullerya/data-tier/issues/7)
 
 __0.6.9__

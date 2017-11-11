@@ -37,7 +37,7 @@
 					return;
 				}
 
-				tie.viewToDataProcessor({data: tie.data, path: processorParam.dataPath, view: event.target});
+				processor.toData({data: tie.data, path: processorParam.dataPath, view: event.target});
 			}
 		});
 	}
@@ -61,8 +61,9 @@
 			});
 			collect(view.contentDocument);
 		} else if (view.dataset) {
-			Object.keys(view.dataset).forEach(key => {
-				if (key.startsWith('tie')) {
+			Object.keys(view.dataset)
+				.filter(key => key.startsWith('tie'))
+				.forEach(key => {
 					let processor = processors.get(key);
 					if (processor) {
 						let processorParam = processor.parseParam(view.dataset[processor.name]),
@@ -99,8 +100,7 @@
 						if (!nlvs[key]) nlvs[key] = [];
 						nlvs[key].push(view);
 					}
-				}
-			});
+				});
 		}
 	}
 
