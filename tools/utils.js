@@ -1,4 +1,6 @@
-﻿const fs = require('fs'),
+﻿'use strict';
+
+const fs = require('fs'),
 	path = require('path');
 
 module.exports.cleanFolderSync = function(folder) {
