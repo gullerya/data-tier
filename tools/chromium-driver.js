@@ -1,4 +1,6 @@
-﻿const os = require('os'),
+﻿'use strict';
+
+const os = require('os'),
 	fs = require('fs'),
 	path = require('path'),
 	http = require('http'),
