@@ -85,7 +85,7 @@
 		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length - 1; i++) {
-			ref = path[i] in ref ? ref[path[i]] : {};
+			ref = ref[path[i]] && typeof ref[path[i]] === 'object' ? ref[path[i]] : ref[path[i]] = {};
 		}
 		ref[path[i]] = value;
 	}
