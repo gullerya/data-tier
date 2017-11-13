@@ -117,9 +117,7 @@
 	function DataProcessor(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'toView', {value: options.toView});
-		if (typeof options.toData === 'function') {
-			Reflect.defineProperty(this, 'toData', {value: options.toData});
-		}
+		Reflect.defineProperty(this, 'toData', {value: typeof options.toData === 'function' ? options.toData : defaultToData});
 		if (typeof options.parseParam === 'function') {
 			Reflect.defineProperty(this, 'parseParam', {value: options.parseParam});
 		}
@@ -128,23 +126,24 @@
 		}
 	}
 
-	DataProcessor.prototype.parseParam = function(param) {
-		let tieName = '', dataPath = [];
-		if (param) {
-			dataPath = param.trim().split('.');
-			tieName = dataPath.shift();
+	Reflect.defineProperty(DataProcessor.prototype, 'parseParam', {
+		value: (param) => {
+			let tieName = '', dataPath = [];
+			if (param) {
+				dataPath = param.trim().split('.');
+				tieName = dataPath.shift();
+			}
+			return {
+				tieName: tieName,
+				dataPath: dataPath
+			};
 		}
-		return {
-			tieName: tieName,
-			dataPath: dataPath
-		};
-	};
-	DataProcessor.prototype.isChangedPathRelevant = function(changedPath, viewedPath) {
-		return viewedPath.startsWith(changedPath);
-	};
-	DataProcessor.prototype.toData = function(event) {
-		setPath(event.data, event.path, event.view.value);
-	};
+	});
+	Reflect.defineProperty(DataProcessor.prototype, 'isChangedPathRelevant', {
+		value: (changedPath, viewedPath) => {
+			return viewedPath.startsWith(changedPath);
+		}
+	});
 
 	function add(name, configuration) {
 		if (typeof name !== 'string' || !name) {
@@ -187,11 +186,15 @@
 		return result;
 	}
 
+	function defaultToData(event) {
+		setPath(event.data, event.path, event.view.value);
+	}
+
 	function setPath(ref, path, value) {
 		let i;
 		if (!ref) return;
 		for (i = 0; i < path.length - 1; i++) {
-			ref = path[i] in ref ? ref[path[i]] : {};
+			ref = ref[path[i]] && typeof ref[path[i]] === 'object' ? ref[path[i]] : ref[path[i]] = {};
 		}
 		ref[path[i]] = value;
 	}

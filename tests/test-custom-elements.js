@@ -1,14 +1,14 @@
-﻿(function() {
+﻿(() => {
 	'use strict';
 
 	let suite = Utils.JustTest.createSuite({name: 'Testing Custom Elements behavior'}),
 		data = {
 			text: 'some text',
 			date: new Date()
-		},
-		oData = Observable.from(data),
-		testTieCustomElementsA = DataTier.ties.create('testCustomsA', oData),
-		testTieCustomElementsB = DataTier.ties.create('testCustomsB', oData);
+		};
+
+	DataTier.ties.create('testCustomsA', data);
+	DataTier.ties.create('testCustomsB', data);
 
 	class CustomElement extends HTMLElement {
 		constructor() {
@@ -32,7 +32,15 @@
 
 	customElements.define('custom-element', CustomElement);
 
-	suite.addTest({name: 'testing basic processors: binding value of custom element'}, function(pass, fail) {
+	class CustomInput extends HTMLInputElement {
+		constructor() {
+			super();
+		}
+	}
+
+	customElements.define('custom-input', CustomInput, {extends: 'input'});
+
+	suite.addTest({name: 'testing basic processors: binding value of custom element'}, (pass, fail) => {
 		let e = document.createElement('custom-element');
 		e.dataset.tieValue = 'testCustomsA.text';
 		if (e.value !== '') fail('precondition of the test failed');
@@ -43,25 +51,55 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic processors: custom element within a repeater'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic processors: custom element within a repeater'}, (pass, fail) => {
 		let c = document.createElement('div'),
 			t = document.createElement('template'),
 			e = document.createElement('custom-element'),
-			tie;
-		tie = window.DataTier.ties.create('repeaterWithCustomEls', Observable.from([
-			{text: 'some'},
-			{text: 'more'}
-		]));
+			tie = DataTier.ties.create('repeaterWithCustomEls', [
+				{text: 'some'},
+				{text: 'more'}
+			]);
 		t.dataset.tieList = 'repeaterWithCustomEls => item';
 		e.dataset.tieValue = 'item.text';
 		t.content.appendChild(e);
 		c.appendChild(t);
 		document.body.appendChild(c);
 		setTimeout(function() {
-			Array.prototype.slice.call(c.getElementsByTagName('custom-element'), 0).forEach(function(item, index) {
+			Array.prototype.slice.call(c.getElementsByTagName('custom-element'), 0).forEach((item, index) => {
 				if (item.textContent !== tie.data[index].text.toUpperCase()) fail('value of the element expected to be ' + tie.data[index].text.toUpperCase() + ', found: ' + item.textContent);
 			});
 			pass();
+		}, 0)
+	});
+
+	suite.addTest({name: 'testing basic processors: custom input'}, (pass, fail) => {
+		let e = document.createElement('input', {is: 'custom-input'}),
+			tie = DataTier.ties.create('customInsTie', [
+				{text: 'some'},
+				{text: 'more'}
+			]);
+		e.dataset.tieMyValue = 'customInsTie.1.text';
+		document.body.appendChild(e);
+
+		DataTier.processors.add('tieMyValue', {
+			toView: (data, view) => {
+				view.value = ('' + data).toLowerCase();
+			},
+			toData: (params) => {
+				params.data[params.path[0]] = params.view.value.toUpperCase();
+			}
+		});
+
+		setTimeout(() => {
+			if (e.value !== tie.data[1].text) fail('value of the element expected to be ' + tie.data[index].text.toUpperCase() + ', found: ' + item.textContent);
+
+			let ev = new Event('change');
+			e.dispatchEvent(ev);
+
+			setTimeout(() => {
+
+				pass();
+			}, 0);
 		}, 0)
 	});
 
