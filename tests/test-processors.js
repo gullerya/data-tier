@@ -19,11 +19,19 @@
 	});
 
 	suite.addTest({name: 'testing basic processors: value'}, function(pass, fail) {
-		let e = document.createElement('input');
-		e.dataset.tieValue = 'testProcessorsA.text';
+		let e = document.createElement('input'),
+			o = {inner: {more: {text: 'test value'}}};
+		DataTier.ties.create('inputTestTie', o);
+		e.dataset.tieValue = 'inputTestTie.inner.more.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
-			if (e.value !== data.text) fail('value of the element expected to be ' + data.text + ', found: ' + e.value);
+			if (e.value !== o.inner.more.text) fail('value of the element expected to be ' + o.inner.more.text + ', found: ' + e.value);
+
+			e.value = 'value changed';
+			e.dispatchEvent(new Event('change'));
+
+			if (DataTier.ties.get('inputTestTie').data.inner.more.text !== e.value) fail('data value expected to be ' + e.value + ', found: ' + o.inner.more.text);
+
 			pass();
 		}, 0)
 	});
