@@ -12,32 +12,29 @@
 		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'toView', {value: options.toView});
 		Reflect.defineProperty(this, 'toData', {value: typeof options.toData === 'function' ? options.toData : defaultToData});
-		if (typeof options.parseParam === 'function') {
-			Reflect.defineProperty(this, 'parseParam', {value: options.parseParam});
-		}
-		if (typeof options.isChangedPathRelevant === 'function') {
-			Reflect.defineProperty(this, 'isChangedPathRelevant', {value: options.isChangedPathRelevant});
-		}
+		Reflect.defineProperty(this, 'changeDOMEventType', {value: typeof options.changeDOMEventType === 'string' ? options.changeDOMEventType : null});
+		Reflect.defineProperty(this, 'parseParam', {value: typeof options.parseParam === 'function' ? options.parseParam : defaultParseParam});
+		Reflect.defineProperty(this, 'isChangedPathRelevant', {value: typeof options.isChangedPathRelevant === 'function' ? options.isChangedPathRelevant : defaultIsChangedPathRelevant});
 	}
 
-	Reflect.defineProperty(DataProcessor.prototype, 'parseParam', {
-		value: (param) => {
-			let tieName = '', dataPath = [];
-			if (param) {
-				dataPath = param.trim().split('.');
-				tieName = dataPath.shift();
-			}
-			return {
-				tieName: tieName,
-				dataPath: dataPath
-			};
+	function defaultParseParam(param) {
+		let tieName = '', dataPath = [];
+		if (param) {
+			dataPath = param.trim().split('.');
+			tieName = dataPath.shift();
 		}
-	});
-	Reflect.defineProperty(DataProcessor.prototype, 'isChangedPathRelevant', {
-		value: (changedPath, viewedPath) => {
-			return viewedPath.startsWith(changedPath);
-		}
-	});
+		return {
+			tieName: tieName,
+			dataPath: dataPath
+		};
+	}
+
+	function defaultIsChangedPathRelevant(changedPath, viewedPath) {
+		return viewedPath.startsWith(changedPath);
+	}
+
+	Reflect.defineProperty(DataProcessor.prototype, 'parseParam', {value: defaultParseParam});
+	Reflect.defineProperty(DataProcessor.prototype, 'isChangedPathRelevant', {value: defaultIsChangedPathRelevant});
 
 	function add(name, configuration) {
 		if (typeof name !== 'string' || !name) {

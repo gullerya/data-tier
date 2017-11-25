@@ -15,7 +15,8 @@
 			} else {
 				view.value = typeof data !== 'undefined' && data !== null ? data : '';
 			}
-		}
+		},
+		changeDOMEventType: 'change'
 	});
 
 	add('tieText', {
@@ -91,15 +92,8 @@
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		toView: function(tiedValue, template) {
-			let container = template.parentNode, i, nv, ruleData, itemId, d, df, lc;
-
-			function shortenListTo(cnt, aid) {
-				let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
-				while (a.length > cnt) {
-					container.removeChild(a.pop());
-				}
-				return a.length;
-			}
+			let container = template.parentNode, nv, ruleData, itemId, d, df, lc;
+			let i1, i2, i3;
 
 			//	TODO: this check should be moved to earlier phase of processing, this requires enhancement of rule API in general
 			if (template.nodeName !== 'TEMPLATE') {
@@ -108,8 +102,13 @@
 			if (!template.dataset.listSourceAid) {
 				template.dataset.listSourceAid = new Date().getTime();
 			}
-			i = shortenListTo(tiedValue ? tiedValue.length : 0, template.dataset.listSourceAid);
-			if (tiedValue && i < tiedValue.length) {
+
+			//	shorten the DOM list if bigger than the new array
+			let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + template.dataset.listSourceAid + '"]'));
+			while (a.length > tiedValue ? tiedValue.length : 0) container.removeChild(a.pop());
+			i1 = a.length;
+
+			if (tiedValue && i1 < tiedValue.length) {
 				ruleData = template.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 					console.error('invalid parameter for "tieList" rule specified');
@@ -117,19 +116,21 @@
 					itemId = ruleData[2];
 					d = template.ownerDocument;
 					df = d.createDocumentFragment();
+					let views, keys, value;
 
-					for (; i < tiedValue.length; i++) {
+					//	[YG] TODO: cache static data, we are basically working on the same dataset all of the iterations below
+					for (; i1 < tiedValue.length; i1++) {
 						nv = d.importNode(template.content, true);
-						Array.from(nv.querySelectorAll('*'))
-							.forEach(view => {
-								Object.keys(view.dataset)
-									.forEach(key => {
-										let value = view.dataset[key];
-										if (value.startsWith(itemId)) {
-											view.dataset[key] = value.replace(itemId, ruleData[0] + '.' + i);
-										}
-									});
-							});
+						views = Array.from(nv.querySelectorAll('*'));
+						for (i2 = 0; i2 < views.length; i2++) {
+							keys = Object.keys(views[i2].dataset);
+							for (i3 = 0; i3 < keys.length; i3++) {
+								value = views[i2].dataset[keys[i3]];
+								if (value.startsWith(itemId)) {
+									views[i2].dataset[keys[i3]] = value.replace(itemId, ruleData[0] + '.' + i1);
+								}
+							}
+						}
 						df.appendChild(nv);
 						lc = df.lastChild;
 						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {

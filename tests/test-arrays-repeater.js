@@ -120,7 +120,7 @@
 	});
 
 	suite.addTest({name: 'array binding - huge bulk update (20000 rows)'}, function(pass, fail) {
-		//	timeout need since the initial setup includes injection of the html about and it's preprocessing, which is made in async way
+		//	timeout need since the initial setup includes injection of the html about and it's pre-processing, which is made in async way
 		setTimeout(function() {
 			let a = [], i,
 				rowsNumber = 20000;

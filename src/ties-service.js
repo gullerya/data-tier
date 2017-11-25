@@ -1,12 +1,12 @@
-﻿(options => {
+﻿(() => {
 	'use strict';
 
-	if (options && options[0] && typeof options[0].disableExclusivenessCheck === 'boolean' && !options[0].disableExclusivenessCheck) {
+	(() => {
 		let w = window, s = Symbol.for('data-tier');
 		while (w.parent !== w) w = w.parent;
 		if (w[s]) throw new Error('data-tier found to already being running within this application, cancelling current execution');
 		else w[s] = true;
-	}
+	})();
 
 	const namespace = this || window,
 		ties = {};

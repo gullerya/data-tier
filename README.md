@@ -14,6 +14,11 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 
 #### Versions
 
+__0.6.11__
+  - Fixed [issue no. 8](https://github.com/gullerya/data-tier/issues/8)
+  - Fixed [issue no. 9](https://github.com/gullerya/data-tier/issues/9)
+  - Minor performance improvements
+
 __0.6.10__
   - Added a possibility to create/update Tie's data with a plain JS object, in this case `data-tier` will attempt to auto-create and use `Observable` from it, using an embedded `Observable` implementation   
   - Fixed [issue no. 7](https://github.com/gullerya/data-tier/issues/7)

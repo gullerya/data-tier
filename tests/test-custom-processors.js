@@ -18,7 +18,8 @@
 			toData: input => {
 				//	assuming for the test purposes that the path is on single node
 				input.data[input.path[0]] = input.view.value.toUpperCase();
-			}
+			},
+			changeDOMEventType: 'myChange'
 		});
 
 		ie.dataset.tieMyValue1 = 'testCustomVTDA.text';
@@ -27,7 +28,7 @@
 		setTimeout(function() {
 			if (ie.value !== data.text) fail('test precondition failed; value expected to be ' + data.text + ', found: ' + ie.value);
 
-			e = new Event('change');
+			e = new Event('myChange');
 			ie.dispatchEvent(e);
 
 			setTimeout(function() {

@@ -4,7 +4,7 @@
 	const namespace = this || window;
 
 	if (!namespace.DataTier) {
-		throw new Error('DataTier framework was not properly initialized');
+		throw new Error('data-tier framework was not properly initialized');
 	}
 
 	const ties = namespace.DataTier.ties,
@@ -14,9 +14,8 @@
 
 	//	TODO: this is similar to setPath in processors-service - unify
 	function getPath(ref, path) {
-		let i;
 		if (!ref) return;
-		for (i = 0; i < path.length; i++) {
+		for (let i = 0; i < path.length; i++) {
 			if (path[i] in ref) ref = ref[path[i]];
 			else return;
 		}
@@ -25,7 +24,7 @@
 
 	function changeListener(event) {
 		processors.getApplicable(event.target).forEach(processor => {
-			if (processor.name === 'tieValue') {
+			if (event.type === processor.changeDOMEventType) {
 				let processorParam = processor.parseParam(event.target.dataset[processor.name]),
 					tie = ties.get(processorParam.tieName);
 				if (!processorParam.dataPath) {
@@ -42,14 +41,12 @@
 		});
 	}
 
-	function addChangeListener(view) {
-		if (view.nodeName === 'INPUT' || view.nodeName === 'SELECT') {
-			view.addEventListener('change', changeListener);
-		}
+	function addChangeListener(view, changeDOMEventType) {
+		view.addEventListener(changeDOMEventType, changeListener);
 	}
 
-	function delChangeListener(v) {
-		v.removeEventListener('change', changeListener);
+	function delChangeListener(view, changeDOMEventType) {
+		view.removeEventListener(changeDOMEventType, changeListener);
 	}
 
 	function add(view) {
@@ -61,46 +58,49 @@
 			});
 			collect(view.contentDocument);
 		} else if (view.dataset) {
-			Object.keys(view.dataset)
-				.filter(key => key.startsWith('tie'))
-				.forEach(key => {
-					let processor = processors.get(key);
-					if (processor) {
-						let processorParam = processor.parseParam(view.dataset[processor.name]),
-							pathString = processorParam.dataPath.join('.'),
-							tieViews,
-							processorRelatedViews,
-							pathViews;
+			let i1;
+			let keys = Object.keys(view.dataset);
+			for (i1 = 0; i1 < keys.length; i1++) {
+				if (!keys[i1].startsWith('tie')) continue;
+				let processor = processors.get(keys[i1]);
+				if (processor) {
+					let processorParam = processor.parseParam(view.dataset[processor.name]),
+						pathString = processorParam.dataPath.join('.'),
+						tieViews,
+						processorRelatedViews,
+						pathViews;
 
-						//	get tie views partition
-						if (!views[processorParam.tieName]) {
-							views[processorParam.tieName] = {};
-						}
-						tieViews = views[processorParam.tieName];
-
-						//	get processor's views partition (in tie)
-						if (!tieViews[processor.name]) {
-							tieViews[processor.name] = {};
-						}
-						processorRelatedViews = tieViews[processor.name];
-
-						//	get path views in this context
-						if (!processorRelatedViews[pathString]) {
-							processorRelatedViews[pathString] = [];
-						}
-						pathViews = processorRelatedViews[pathString];
-
-						if (pathViews.indexOf(view) < 0) {
-							pathViews.push(view);
-							update(view, processor.name);
-							addChangeListener(view);
-						}
-					} else {
-						//	collect potentially future processor's element and put them into some tracking storage
-						if (!nlvs[key]) nlvs[key] = [];
-						nlvs[key].push(view);
+					//	get tie views partition
+					if (!views[processorParam.tieName]) {
+						views[processorParam.tieName] = {};
 					}
-				});
+					tieViews = views[processorParam.tieName];
+
+					//	get processor's views partition (in tie)
+					if (!tieViews[processor.name]) {
+						tieViews[processor.name] = {};
+					}
+					processorRelatedViews = tieViews[processor.name];
+
+					//	get path views in this context
+					if (!processorRelatedViews[pathString]) {
+						processorRelatedViews[pathString] = [];
+					}
+					pathViews = processorRelatedViews[pathString];
+
+					if (pathViews.indexOf(view) < 0) {
+						pathViews.push(view);
+						update(view, processor.name);
+						if (processor.changeDOMEventType) {
+							addChangeListener(view, processor.changeDOMEventType);
+						}
+					}
+				} else {
+					//	collect potentially future processor's element and put them into some tracking storage
+					if (!nlvs[keys[i1]]) nlvs[keys[i1]] = [];
+					nlvs[keys[i1]].push(view);
+				}
+			}
 		}
 	}
 
@@ -140,7 +140,9 @@
 				i = pathViews.indexOf(element);
 				if (i >= 0) {
 					pathViews.splice(i, 1);
-					delChangeListener(element);
+					if (processor.changeDOMEventType) {
+						delChangeListener(element, processor.changeDOMEventType);
+					}
 				}
 			});
 		});
@@ -208,18 +210,22 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			changes.forEach(change => {
-				if (change.type === 'attributes') {
-					let target = change.target, attributeName = change.attributeName;
+			let i1, i2, i3;
+			let node;
+			for (i1 = 0; i1 < changes.length; i1++) {
+				if (changes[i1].type === 'attributes') {
+					let target = changes[i1].target,
+						attributeName = changes[i1].attributeName;
 					if (attributeName.indexOf('data-tie') === 0) {
-						move(target, dataAttrToProp(attributeName), change.oldValue, target.getAttribute(attributeName));
+						move(target, dataAttrToProp(attributeName), changes[i1].oldValue, target.getAttribute(attributeName));
 					} else if (attributeName === 'src' && target.nodeName === 'IFRAME') {
 						discard(target.contentDocument);
 					}
-				} else if (change.type === 'childList') {
+				} else if (changes[i1].type === 'childList') {
 
 					//	process added nodes
-					Array.from(change.addedNodes).forEach(node => {
+					for (i2 = 0; i2 < changes[i1].addedNodes.length; i2++) {
+						node = changes[i1].addedNodes[i2];
 						if (node.nodeName === 'IFRAME') {
 							if (node.contentDocument) {
 								initDocumentObserver(node.contentDocument);
@@ -232,18 +238,19 @@
 						} else {
 							collect(node);
 						}
-					});
+					}
 
 					//	process removed nodes
-					Array.from(change.removedNodes).forEach(node => {
+					for (i3 = 0; i3 < changes[i1].removedNodes; i3++) {
+						node = changes[i1].removedNodes[i3];
 						if (node.nodeName === 'IFRAME') {
 							discard(node.contentDocument);
 						} else {
 							discard(node);
 						}
-					});
+					}
 				}
-			});
+			}
 		}
 
 		let domObserver = new MutationObserver(processDomChanges);

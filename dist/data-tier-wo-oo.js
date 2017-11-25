@@ -1,12 +1,12 @@
-﻿(options => {
+﻿(() => {
 	'use strict';
 
-	if (options && options[0] && typeof options[0].disableExclusivenessCheck === 'boolean' && !options[0].disableExclusivenessCheck) {
+	(() => {
 		let w = window, s = Symbol.for('data-tier');
 		while (w.parent !== w) w = w.parent;
 		if (w[s]) throw new Error('data-tier found to already being running within this application, cancelling current execution');
 		else w[s] = true;
-	}
+	})();
 
 	const namespace = this || window,
 		ties = {};
@@ -118,32 +118,29 @@
 		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'toView', {value: options.toView});
 		Reflect.defineProperty(this, 'toData', {value: typeof options.toData === 'function' ? options.toData : defaultToData});
-		if (typeof options.parseParam === 'function') {
-			Reflect.defineProperty(this, 'parseParam', {value: options.parseParam});
-		}
-		if (typeof options.isChangedPathRelevant === 'function') {
-			Reflect.defineProperty(this, 'isChangedPathRelevant', {value: options.isChangedPathRelevant});
-		}
+		Reflect.defineProperty(this, 'changeDOMEventType', {value: typeof options.changeDOMEventType === 'string' ? options.changeDOMEventType : null});
+		Reflect.defineProperty(this, 'parseParam', {value: typeof options.parseParam === 'function' ? options.parseParam : defaultParseParam});
+		Reflect.defineProperty(this, 'isChangedPathRelevant', {value: typeof options.isChangedPathRelevant === 'function' ? options.isChangedPathRelevant : defaultIsChangedPathRelevant});
 	}
 
-	Reflect.defineProperty(DataProcessor.prototype, 'parseParam', {
-		value: (param) => {
-			let tieName = '', dataPath = [];
-			if (param) {
-				dataPath = param.trim().split('.');
-				tieName = dataPath.shift();
-			}
-			return {
-				tieName: tieName,
-				dataPath: dataPath
-			};
+	function defaultParseParam(param) {
+		let tieName = '', dataPath = [];
+		if (param) {
+			dataPath = param.trim().split('.');
+			tieName = dataPath.shift();
 		}
-	});
-	Reflect.defineProperty(DataProcessor.prototype, 'isChangedPathRelevant', {
-		value: (changedPath, viewedPath) => {
-			return viewedPath.startsWith(changedPath);
-		}
-	});
+		return {
+			tieName: tieName,
+			dataPath: dataPath
+		};
+	}
+
+	function defaultIsChangedPathRelevant(changedPath, viewedPath) {
+		return viewedPath.startsWith(changedPath);
+	}
+
+	Reflect.defineProperty(DataProcessor.prototype, 'parseParam', {value: defaultParseParam});
+	Reflect.defineProperty(DataProcessor.prototype, 'isChangedPathRelevant', {value: defaultIsChangedPathRelevant});
 
 	function add(name, configuration) {
 		if (typeof name !== 'string' || !name) {
@@ -214,7 +211,7 @@
 	const namespace = this || window;
 
 	if (!namespace.DataTier) {
-		throw new Error('DataTier framework was not properly initialized');
+		throw new Error('data-tier framework was not properly initialized');
 	}
 
 	const ties = namespace.DataTier.ties,
@@ -224,9 +221,8 @@
 
 	//	TODO: this is similar to setPath in processors-service - unify
 	function getPath(ref, path) {
-		let i;
 		if (!ref) return;
-		for (i = 0; i < path.length; i++) {
+		for (let i = 0; i < path.length; i++) {
 			if (path[i] in ref) ref = ref[path[i]];
 			else return;
 		}
@@ -235,7 +231,7 @@
 
 	function changeListener(event) {
 		processors.getApplicable(event.target).forEach(processor => {
-			if (processor.name === 'tieValue') {
+			if (event.type === processor.changeDOMEventType) {
 				let processorParam = processor.parseParam(event.target.dataset[processor.name]),
 					tie = ties.get(processorParam.tieName);
 				if (!processorParam.dataPath) {
@@ -252,14 +248,12 @@
 		});
 	}
 
-	function addChangeListener(view) {
-		if (view.nodeName === 'INPUT' || view.nodeName === 'SELECT') {
-			view.addEventListener('change', changeListener);
-		}
+	function addChangeListener(view, changeDOMEventType) {
+		view.addEventListener(changeDOMEventType, changeListener);
 	}
 
-	function delChangeListener(v) {
-		v.removeEventListener('change', changeListener);
+	function delChangeListener(view, changeDOMEventType) {
+		view.removeEventListener(changeDOMEventType, changeListener);
 	}
 
 	function add(view) {
@@ -271,46 +265,49 @@
 			});
 			collect(view.contentDocument);
 		} else if (view.dataset) {
-			Object.keys(view.dataset)
-				.filter(key => key.startsWith('tie'))
-				.forEach(key => {
-					let processor = processors.get(key);
-					if (processor) {
-						let processorParam = processor.parseParam(view.dataset[processor.name]),
-							pathString = processorParam.dataPath.join('.'),
-							tieViews,
-							processorRelatedViews,
-							pathViews;
+			let i1;
+			let keys = Object.keys(view.dataset);
+			for (i1 = 0; i1 < keys.length; i1++) {
+				if (!keys[i1].startsWith('tie')) continue;
+				let processor = processors.get(keys[i1]);
+				if (processor) {
+					let processorParam = processor.parseParam(view.dataset[processor.name]),
+						pathString = processorParam.dataPath.join('.'),
+						tieViews,
+						processorRelatedViews,
+						pathViews;
 
-						//	get tie views partition
-						if (!views[processorParam.tieName]) {
-							views[processorParam.tieName] = {};
-						}
-						tieViews = views[processorParam.tieName];
-
-						//	get processor's views partition (in tie)
-						if (!tieViews[processor.name]) {
-							tieViews[processor.name] = {};
-						}
-						processorRelatedViews = tieViews[processor.name];
-
-						//	get path views in this context
-						if (!processorRelatedViews[pathString]) {
-							processorRelatedViews[pathString] = [];
-						}
-						pathViews = processorRelatedViews[pathString];
-
-						if (pathViews.indexOf(view) < 0) {
-							pathViews.push(view);
-							update(view, processor.name);
-							addChangeListener(view);
-						}
-					} else {
-						//	collect potentially future processor's element and put them into some tracking storage
-						if (!nlvs[key]) nlvs[key] = [];
-						nlvs[key].push(view);
+					//	get tie views partition
+					if (!views[processorParam.tieName]) {
+						views[processorParam.tieName] = {};
 					}
-				});
+					tieViews = views[processorParam.tieName];
+
+					//	get processor's views partition (in tie)
+					if (!tieViews[processor.name]) {
+						tieViews[processor.name] = {};
+					}
+					processorRelatedViews = tieViews[processor.name];
+
+					//	get path views in this context
+					if (!processorRelatedViews[pathString]) {
+						processorRelatedViews[pathString] = [];
+					}
+					pathViews = processorRelatedViews[pathString];
+
+					if (pathViews.indexOf(view) < 0) {
+						pathViews.push(view);
+						update(view, processor.name);
+						if (processor.changeDOMEventType) {
+							addChangeListener(view, processor.changeDOMEventType);
+						}
+					}
+				} else {
+					//	collect potentially future processor's element and put them into some tracking storage
+					if (!nlvs[keys[i1]]) nlvs[keys[i1]] = [];
+					nlvs[keys[i1]].push(view);
+				}
+			}
 		}
 	}
 
@@ -350,7 +347,9 @@
 				i = pathViews.indexOf(element);
 				if (i >= 0) {
 					pathViews.splice(i, 1);
-					delChangeListener(element);
+					if (processor.changeDOMEventType) {
+						delChangeListener(element, processor.changeDOMEventType);
+					}
 				}
 			});
 		});
@@ -418,18 +417,22 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			changes.forEach(change => {
-				if (change.type === 'attributes') {
-					let target = change.target, attributeName = change.attributeName;
+			let i1, i2, i3;
+			let node;
+			for (i1 = 0; i1 < changes.length; i1++) {
+				if (changes[i1].type === 'attributes') {
+					let target = changes[i1].target,
+						attributeName = changes[i1].attributeName;
 					if (attributeName.indexOf('data-tie') === 0) {
-						move(target, dataAttrToProp(attributeName), change.oldValue, target.getAttribute(attributeName));
+						move(target, dataAttrToProp(attributeName), changes[i1].oldValue, target.getAttribute(attributeName));
 					} else if (attributeName === 'src' && target.nodeName === 'IFRAME') {
 						discard(target.contentDocument);
 					}
-				} else if (change.type === 'childList') {
+				} else if (changes[i1].type === 'childList') {
 
 					//	process added nodes
-					Array.from(change.addedNodes).forEach(node => {
+					for (i2 = 0; i2 < changes[i1].addedNodes.length; i2++) {
+						node = changes[i1].addedNodes[i2];
 						if (node.nodeName === 'IFRAME') {
 							if (node.contentDocument) {
 								initDocumentObserver(node.contentDocument);
@@ -442,18 +445,19 @@
 						} else {
 							collect(node);
 						}
-					});
+					}
 
 					//	process removed nodes
-					Array.from(change.removedNodes).forEach(node => {
+					for (i3 = 0; i3 < changes[i1].removedNodes; i3++) {
+						node = changes[i1].removedNodes[i3];
 						if (node.nodeName === 'IFRAME') {
 							discard(node.contentDocument);
 						} else {
 							discard(node);
 						}
-					});
+					}
 				}
-			});
+			}
 		}
 
 		let domObserver = new MutationObserver(processDomChanges);
@@ -494,7 +498,8 @@
 			} else {
 				view.value = typeof data !== 'undefined' && data !== null ? data : '';
 			}
-		}
+		},
+		changeDOMEventType: 'change'
 	});
 
 	add('tieText', {
@@ -570,15 +575,8 @@
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		toView: function(tiedValue, template) {
-			let container = template.parentNode, i, nv, ruleData, itemId, d, df, lc;
-
-			function shortenListTo(cnt, aid) {
-				let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + aid + '"]'));
-				while (a.length > cnt) {
-					container.removeChild(a.pop());
-				}
-				return a.length;
-			}
+			let container = template.parentNode, nv, ruleData, itemId, d, df, lc;
+			let i1, i2, i3;
 
 			//	TODO: this check should be moved to earlier phase of processing, this requires enhancement of rule API in general
 			if (template.nodeName !== 'TEMPLATE') {
@@ -587,8 +585,13 @@
 			if (!template.dataset.listSourceAid) {
 				template.dataset.listSourceAid = new Date().getTime();
 			}
-			i = shortenListTo(tiedValue ? tiedValue.length : 0, template.dataset.listSourceAid);
-			if (tiedValue && i < tiedValue.length) {
+
+			//	shorten the DOM list if bigger than the new array
+			let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + template.dataset.listSourceAid + '"]'));
+			while (a.length > tiedValue ? tiedValue.length : 0) container.removeChild(a.pop());
+			i1 = a.length;
+
+			if (tiedValue && i1 < tiedValue.length) {
 				ruleData = template.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 					console.error('invalid parameter for "tieList" rule specified');
@@ -596,19 +599,21 @@
 					itemId = ruleData[2];
 					d = template.ownerDocument;
 					df = d.createDocumentFragment();
+					let views, keys, value;
 
-					for (; i < tiedValue.length; i++) {
+					//	[YG] TODO: cache static data, we are basically working on the same dataset all of the iterations below
+					for (; i1 < tiedValue.length; i1++) {
 						nv = d.importNode(template.content, true);
-						Array.from(nv.querySelectorAll('*'))
-							.forEach(view => {
-								Object.keys(view.dataset)
-									.forEach(key => {
-										let value = view.dataset[key];
-										if (value.startsWith(itemId)) {
-											view.dataset[key] = value.replace(itemId, ruleData[0] + '.' + i);
-										}
-									});
-							});
+						views = Array.from(nv.querySelectorAll('*'));
+						for (i2 = 0; i2 < views.length; i2++) {
+							keys = Object.keys(views[i2].dataset);
+							for (i3 = 0; i3 < keys.length; i3++) {
+								value = views[i2].dataset[keys[i3]];
+								if (value.startsWith(itemId)) {
+									views[i2].dataset[keys[i3]] = value.replace(itemId, ruleData[0] + '.' + i1);
+								}
+							}
+						}
 						df.appendChild(nv);
 						lc = df.lastChild;
 						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
