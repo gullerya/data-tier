@@ -124,7 +124,7 @@
 						i2, tmpMap, tmpMapLength, i3, tmpPair,
 						prefix = ruleData[0] + '.';
 
-					for (; existingListLength++ < desiredListLength;) {
+					for (; existingListLength < desiredListLength; existingListLength++) {
 						nv = d.importNode(template.content, true);
 						views = nv.querySelectorAll('*');
 						if (!viewsLength) viewsLength = views.length;

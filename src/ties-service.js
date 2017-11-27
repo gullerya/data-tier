@@ -46,6 +46,10 @@
 		Object.seal(this);
 	}
 
+	function getTie(name) {
+		return ties[name];
+	}
+
 	function create(name, input, options) {
 		validateTieName(name);
 		if (ties[name]) {
@@ -90,9 +94,7 @@
 	Reflect.defineProperty(namespace.DataTier, 'ties', {
 		value: {
 			get get() {
-				return function(name) {
-					return ties[name]
-				};
+				return getTie;
 			},
 			get create() {
 				return create;

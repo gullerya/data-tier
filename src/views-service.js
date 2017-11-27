@@ -15,7 +15,7 @@
 	//	TODO: this is similar to setPath in processors-service - unify
 	function getPath(ref, path) {
 		if (!ref) return;
-		for (let i = 0; i < path.length; i++) {
+		for (let i = 0, pathLength = path.length; i < pathLength; i++) {
 			if (path[i] in ref) ref = ref[path[i]];
 			else return;
 		}
@@ -23,10 +23,14 @@
 	}
 
 	function changeListener(event) {
-		processors.getApplicable(event.target).forEach(processor => {
+		let target = event.target,
+			relevantProcessors = processors.getApplicable(target),
+			processor, processorParam, tie;
+		for (let i = 0, l = relevantProcessors.length; i < l; i++) {
+			processor = relevantProcessors[i];
 			if (event.type === processor.changeDOMEventType) {
-				let processorParam = processor.parseParam(event.target.dataset[processor.name]),
-					tie = ties.get(processorParam.tieName);
+				processorParam = processor.parseParam(target.dataset[processor.name]);
+				tie = ties.get(processorParam.tieName);
 				if (!processorParam.dataPath) {
 					console.error('path to data not available');
 					return;
@@ -36,9 +40,9 @@
 					return;
 				}
 
-				processor.toData({data: tie.data, path: processorParam.dataPath, view: event.target});
+				processor.toData({data: tie.data, path: processorParam.dataPath, view: target});
 			}
-		});
+		}
 	}
 
 	function addChangeListener(view, changeDOMEventType) {
@@ -58,35 +62,18 @@
 			});
 			collect(view.contentDocument);
 		} else if (view.dataset) {
-			let i1;
-			let keys = Object.keys(view.dataset);
-			for (i1 = 0; i1 < keys.length; i1++) {
-				if (!keys[i1].startsWith('tie')) continue;
-				let processor = processors.get(keys[i1]);
+			let keys = Object.keys(view.dataset), key,
+				processor, processorParam, pathString,
+				tieViews, procViews, pathViews;
+			for (let i = 0, l = keys.length; i < l, key = keys[i]; i++) {
+				if (!key.startsWith('tie')) continue;
+				processor = processors.get(key);
 				if (processor) {
-					let processorParam = processor.parseParam(view.dataset[processor.name]),
-						pathString = processorParam.dataPath.join('.'),
-						tieViews,
-						processorRelatedViews,
-						pathViews;
-
-					//	get tie views partition
-					if (!views[processorParam.tieName]) {
-						views[processorParam.tieName] = {};
-					}
-					tieViews = views[processorParam.tieName];
-
-					//	get processor's views partition (in tie)
-					if (!tieViews[processor.name]) {
-						tieViews[processor.name] = {};
-					}
-					processorRelatedViews = tieViews[processor.name];
-
-					//	get path views in this context
-					if (!processorRelatedViews[pathString]) {
-						processorRelatedViews[pathString] = [];
-					}
-					pathViews = processorRelatedViews[pathString];
+					processorParam = processor.parseParam(view.dataset[processor.name]);
+					pathString = processorParam.dataPath.join('.');
+					tieViews = views[processorParam.tieName] || (views[processorParam.tieName] = {});
+					procViews = tieViews[processor.name] || (tieViews[processor.name] = {});
+					pathViews = procViews[pathString] || (procViews[pathString] = []);
 
 					if (pathViews.indexOf(view) < 0) {
 						pathViews.push(view);
@@ -97,8 +84,8 @@
 					}
 				} else {
 					//	collect potentially future processor's element and put them into some tracking storage
-					if (!nlvs[keys[i1]]) nlvs[keys[i1]] = [];
-					nlvs[keys[i1]].push(view);
+					if (!nlvs[key]) nlvs[key] = [];
+					nlvs[key].push(view);
 				}
 			}
 		}
@@ -117,45 +104,51 @@
 
 	function collect(rootElement) {
 		if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-			let l;
+			let list;
 			if (rootElement.nodeName === 'IFRAME') {
-				l = Array.from(rootElement.contentDocument.getElementsByTagName('*'));
+				list = rootElement.contentDocument.getElementsByTagName('*');
 			} else {
-				l = Array.from(rootElement.getElementsByTagName('*'));
+				list = rootElement.getElementsByTagName('*');
 			}
-			l.push(rootElement);
-			l.forEach(add);
+
+			add(rootElement);
+			for (let i = 0, l = list.length; i < l; i++) add(list[i]);
 		}
 	}
 
 	function discard(rootElement) {
-		let l, param, pathViews, i;
-		if (!rootElement || !rootElement.getElementsByTagName) return;
-		l = Array.from(rootElement.getElementsByTagName('*'));
-		l.push(rootElement);
-		l.forEach(element => {
-			processors.getApplicable(element).forEach(processor => {
-				param = processor.parseParam(element.dataset[processor.name]);
-				pathViews = views[param.tieName][processor.name][param.dataPath.join('.')];
-				i = pathViews.indexOf(element);
-				if (i >= 0) {
-					pathViews.splice(i, 1);
-					if (processor.changeDOMEventType) {
-						delChangeListener(element, processor.changeDOMEventType);
+		if (rootElement && rootElement.getElementsByTagName) {
+			let list = rootElement.getElementsByTagName('*'),
+				element, tmpProcs, processor,
+				param, pathViews, index;
+			for (let i = 0, l = list.length; i <= l; i++) {
+				element = i < l ? list[i] : rootElement;
+				if (!element.dataset || !element.dataset.length) continue;
+				tmpProcs = processors.getApplicable(element);
+				for (let i1 = 0, l1 = tmpProcs.length; i1 < l1; i1++) {
+					processor = tmpProcs[i1];
+					param = processor.parseParam(element.dataset[processor.name]);
+					pathViews = views[param.tieName][processor.name][param.dataPath.join('.')];
+					index = pathViews.indexOf(element);
+					if (index >= 0) {
+						pathViews.splice(index, 1);
+						if (processor.changeDOMEventType) {
+							delChangeListener(element, processor.changeDOMEventType);
+						}
 					}
 				}
-			});
-		});
+			}
+		}
 	}
 
-	function move(view, processsorName, oldParam, newParam) {
+	function move(view, processorName, oldParam, newParam) {
 		let processorParam, pathViews, i = -1;
 
-		processorParam = processors.get(processsorName).parseParam(oldParam);
+		processorParam = processors.get(processorName).parseParam(oldParam);
 
 		//	delete old path
-		if (views[processorParam.tieName] && views[processorParam.tieName][processsorName]) {
-			pathViews = views[processorParam.tieName][processsorName][processorParam.dataPath];
+		if (views[processorParam.tieName] && views[processorParam.tieName][processorName]) {
+			pathViews = views[processorParam.tieName][processorName][processorParam.dataPath];
 			if (pathViews) i = pathViews.indexOf(view);
 			if (i >= 0) {
 				pathViews.splice(i, 1);
@@ -163,33 +156,41 @@
 		}
 
 		//	add new path
-		processorParam = processors.get(processsorName).parseParam(newParam);
+		processorParam = processors.get(processorName).parseParam(newParam);
 		if (!views[processorParam.tieName]) views[processorParam.tieName] = {};
-		if (!views[processorParam.tieName][processsorName]) views[processorParam.tieName][processsorName] = {};
-		if (!views[processorParam.tieName][processsorName][processorParam.dataPath]) views[processorParam.tieName][processsorName][processorParam.dataPath] = [];
-		views[processorParam.tieName][processsorName][processorParam.dataPath].push(view);
-		update(view, processsorName);
+		if (!views[processorParam.tieName][processorName]) views[processorParam.tieName][processorName] = {};
+		if (!views[processorParam.tieName][processorName][processorParam.dataPath]) views[processorParam.tieName][processorName][processorParam.dataPath] = [];
+		views[processorParam.tieName][processorName][processorParam.dataPath].push(view);
+		update(view, processorName);
 	}
 
 	function processChanges(tieName, changes) {
-		let tieViews = views[tieName], processor, processorRelatedViews, changedPath;
+		let tieViews = views[tieName], change, changedPath,
+			procNames, procName, processor, viewedPaths, viewedPath, procViews, pathViews,
+			i, l, i1, l1, i2, l2, i3, l3;
 		if (tieViews) {
-			changes.forEach(change => {
+			for (i = 0, l = changes.length; i < l; i++) {
+				change = changes[i];
 				changedPath = change.path.join('.');
-				Object.keys(tieViews).forEach(processorName => {
-					processorRelatedViews = tieViews[processorName];
-					if (processorRelatedViews) {
-						processor = processors.get(processorName);
-						Object.keys(processorRelatedViews).forEach(viewedPath => {
+				procNames = Object.keys(tieViews);
+				for (i1 = 0, l1 = procNames.length; i1 < l1; i1++) {
+					procName = procNames[i1];
+					procViews = tieViews[procName];
+					if (procViews) {
+						processor = processors.get(procName);
+						viewedPaths = Object.keys(procViews);
+						for (i2 = 0, l2 = viewedPaths.length; i2 < l2; i2++) {
+							viewedPath = viewedPaths[i2];
 							if (processor.isChangedPathRelevant(changedPath, viewedPath)) {
-								processorRelatedViews[viewedPath].forEach(view => {
-									update(view, processorName);
-								});
+								pathViews = procViews[viewedPath];
+								for (i3 = 0, l3 = pathViews.length; i3 < l3; i3++) {
+									update(pathViews[i3], procName);
+								}
 							}
-						});
+						}
 					}
-				});
-			});
+				}
+			}
 		}
 	}
 
