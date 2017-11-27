@@ -417,22 +417,26 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			let i1, i2, i3;
-			let node;
+			let i1, i2, i3, l2, l3,
+				change, changeType,
+				added, removed, node;
 			for (i1 = 0; i1 < changes.length; i1++) {
-				if (changes[i1].type === 'attributes') {
-					let target = changes[i1].target,
-						attributeName = changes[i1].attributeName;
+				change = changes[i1];
+				changeType = change.type;
+				if (changeType === 'attributes') {
+					let target = change.target,
+						attributeName = change.attributeName;
 					if (attributeName.indexOf('data-tie') === 0) {
-						move(target, dataAttrToProp(attributeName), changes[i1].oldValue, target.getAttribute(attributeName));
+						move(target, dataAttrToProp(attributeName), change.oldValue, target.getAttribute(attributeName));
 					} else if (attributeName === 'src' && target.nodeName === 'IFRAME') {
 						discard(target.contentDocument);
 					}
-				} else if (changes[i1].type === 'childList') {
+				} else if (changeType === 'childList') {
 
 					//	process added nodes
-					for (i2 = 0; i2 < changes[i1].addedNodes.length; i2++) {
-						node = changes[i1].addedNodes[i2];
+					added = change.addedNodes;
+					for (i2 = 0, l2 = added.length; i2 < l2; i2++) {
+						node = added[i2];
 						if (node.nodeName === 'IFRAME') {
 							if (node.contentDocument) {
 								initDocumentObserver(node.contentDocument);
@@ -448,8 +452,9 @@
 					}
 
 					//	process removed nodes
-					for (i3 = 0; i3 < changes[i1].removedNodes; i3++) {
-						node = changes[i1].removedNodes[i3];
+					removed = change.removedNodes;
+					for (i3 = 0, l3 = removed.length; i3 < l3; i3++) {
+						node = removed[i3];
 						if (node.nodeName === 'IFRAME') {
 							discard(node.contentDocument);
 						} else {
@@ -604,10 +609,10 @@
 					df = d.createDocumentFragment();
 					let views, viewsLength, metaMap = [],
 						c, keys, tmpPairs, i,
-						i2, tmpMap, i3, tmpPair,
+						i2, tmpMap, tmpMapLength, i3, tmpPair,
 						prefix = ruleData[0] + '.';
 
-					for (; existingListLength < desiredListLength; existingListLength++) {
+					for (; existingListLength++ < desiredListLength;) {
 						nv = d.importNode(template.content, true);
 						views = nv.querySelectorAll('*');
 						if (!viewsLength) viewsLength = views.length;
@@ -620,7 +625,8 @@
 							}
 						}
 						for (i2 = 0; i2 < viewsLength, tmpMap = metaMap[i2]; i2++) {
-							for (i3 = 0; i3 < tmpMap.length, tmpPair = tmpMap[i3]; i3++) {
+							for (i3 = 0, tmpMapLength = tmpMap.length; i3 < tmpMapLength; i3++) {
+								tmpPair = tmpMap[i3];
 								if (tmpPair[1].startsWith(itemId)) {
 									views[i2].dataset[tmpPair[0]] = tmpPair[1].replace(itemId, prefix + existingListLength);
 								}
