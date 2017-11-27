@@ -92,8 +92,11 @@
 				(subPath.length === 2 && subPath[0] === '');
 		},
 		toView: function(tiedValue, template) {
+			if (!Array.isArray(tiedValue) || !template) return;
+
 			let container = template.parentNode, nv, ruleData, itemId, d, df, lc;
-			let i1, i2, i3;
+			let desiredListLength = tiedValue.length,
+				existingListLength;
 
 			//	TODO: this check should be moved to earlier phase of processing, this requires enhancement of rule API in general
 			if (template.nodeName !== 'TEMPLATE') {
@@ -103,12 +106,12 @@
 				template.dataset.listSourceAid = new Date().getTime();
 			}
 
-			//	shorten the DOM list if bigger than the new array
-			let a = Array.from(container.querySelectorAll('[data-list-item-aid="' + template.dataset.listSourceAid + '"]'));
-			while (a.length > tiedValue ? tiedValue.length : 0) container.removeChild(a.pop());
-			i1 = a.length;
+			//	shorten the DOM list if bigger than the new array (from the end, so that array will still map to it relevantly)
+			let existingList = container.querySelectorAll('[data-list-item-aid="' + template.dataset.listSourceAid + '"]');
+			existingListLength = existingList.length;
+			while (existingListLength > desiredListLength) container.removeChild(existingList[--existingListLength]);
 
-			if (tiedValue && i1 < tiedValue.length) {
+			if (existingListLength < desiredListLength) {
 				ruleData = template.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
 					console.error('invalid parameter for "tieList" rule specified');
@@ -116,18 +119,27 @@
 					itemId = ruleData[2];
 					d = template.ownerDocument;
 					df = d.createDocumentFragment();
-					let views, keys, value;
+					let views, viewsLength, metaMap = [],
+						c, keys, tmpPairs, i,
+						i2, tmpMap, i3, tmpPair,
+						prefix = ruleData[0] + '.';
 
-					//	[YG] TODO: cache static data, we are basically working on the same dataset all of the iterations below
-					for (; i1 < tiedValue.length; i1++) {
+					for (; existingListLength < desiredListLength; existingListLength++) {
 						nv = d.importNode(template.content, true);
-						views = Array.from(nv.querySelectorAll('*'));
-						for (i2 = 0; i2 < views.length; i2++) {
-							keys = Object.keys(views[i2].dataset);
-							for (i3 = 0; i3 < keys.length; i3++) {
-								value = views[i2].dataset[keys[i3]];
-								if (value.startsWith(itemId)) {
-									views[i2].dataset[keys[i3]] = value.replace(itemId, ruleData[0] + '.' + i1);
+						views = nv.querySelectorAll('*');
+						if (!viewsLength) viewsLength = views.length;
+						if (!metaMap.length) {
+							for (c = 0; c < viewsLength; c++) {
+								keys = Object.keys(views[c].dataset);
+								tmpPairs = [];
+								for (i = 0; i < keys.length; i++) tmpPairs.push([keys[i], views[c].dataset[keys[i]]]);
+								metaMap.push(tmpPairs);
+							}
+						}
+						for (i2 = 0; i2 < viewsLength, tmpMap = metaMap[i2]; i2++) {
+							for (i3 = 0; i3 < tmpMap.length, tmpPair = tmpMap[i3]; i3++) {
+								if (tmpPair[1].startsWith(itemId)) {
+									views[i2].dataset[tmpPair[0]] = tmpPair[1].replace(itemId, prefix + existingListLength);
 								}
 							}
 						}
