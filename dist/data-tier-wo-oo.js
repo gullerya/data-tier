@@ -418,6 +418,8 @@
 		return r;
 	}
 
+	let viewsToSkip = new Map();
+
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
 			let i1, i2, i3, l2, l3,
@@ -427,12 +429,13 @@
 				change = changes[i1];
 				changeType = change.type;
 				if (changeType === 'attributes') {
-					let target = change.target,
+					let node = change.target,
 						attributeName = change.attributeName;
+					if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
 					if (attributeName.indexOf('data-tie') === 0) {
-						move(target, dataAttrToProp(attributeName), change.oldValue, target.getAttribute(attributeName));
-					} else if (attributeName === 'src' && target.nodeName === 'IFRAME') {
-						discard(target.contentDocument);
+						move(node, dataAttrToProp(attributeName), change.oldValue, node.getAttribute(attributeName));
+					} else if (attributeName === 'src' && node.nodeName === 'IFRAME') {
+						discard(node.contentDocument);
 					}
 				} else if (changeType === 'childList') {
 
@@ -440,6 +443,11 @@
 					added = change.addedNodes;
 					for (i2 = 0, l2 = added.length; i2 < l2; i2++) {
 						node = added[i2];
+						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
+						if (viewsToSkip.has(node)) {
+							viewsToSkip.delete(node);
+							continue;
+						}
 						if (node.nodeName === 'IFRAME') {
 							if (node.contentDocument) {
 								initDocumentObserver(node.contentDocument);
@@ -458,6 +466,11 @@
 					removed = change.removedNodes;
 					for (i3 = 0, l3 = removed.length; i3 < l3; i3++) {
 						node = removed[i3];
+						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
+						if (viewsToSkip.has(node)) {
+							viewsToSkip.delete(node);
+							continue;
+						}
 						if (node.nodeName === 'IFRAME') {
 							discard(node.contentDocument);
 						} else {
@@ -483,7 +496,8 @@
 		value: {
 			get processChanges() { return processChanges; },
 			get applyProcessor() { return applyProcessor; },
-			get updateView() { return update;}
+			get updateView() { return update;},
+			get viewsToSkip() {return viewsToSkip;}
 		}
 	});
 
@@ -573,6 +587,19 @@
 		}
 	});
 
+})();
+﻿(() => {
+	'use strict';
+
+	const namespace = this || window,
+		add = namespace.DataTier.processors.add;
+
+	if (!namespace.DataTier) {
+		throw new Error('data-tier framework was not properly initialized');
+	}
+
+
+
 	add('tieList', {
 		parseParam: function(ruleValue) {
 			return this.constructor.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
@@ -594,12 +621,12 @@
 			if (template.nodeName !== 'TEMPLATE') {
 				throw new Error('tieList may be defined on template elements only');
 			}
-			if (!template.dataset.listSourceAid) {
-				template.dataset.listSourceAid = new Date().getTime();
+			if (!template.dataset.tieListSourceAid) {
+				template.dataset.tieListSourceAid = new Date().getTime();
 			}
 
 			//	shorten the DOM list if bigger than the new array
-			let existingList = container.querySelectorAll('[data-list-item-aid="' + template.dataset.listSourceAid + '"]');
+			let existingList = container.querySelectorAll('[data-tie-list-item-aid="' + template.dataset.tieListSourceAid + '"]');
 			existingListLength = existingList.length;
 			while (existingListLength > desiredListLength) container.removeChild(existingList[--existingListLength]);
 
@@ -626,7 +653,7 @@
 								keys = Object.keys(views[c].dataset);
 								tmpPairs = [];
 								for (i = 0; i < keys.length; i++) tmpPairs.push([keys[i], views[c].dataset[keys[i]]]);
-								metaMap.push(tmpPairs);
+								metaMap[c] = tmpPairs;
 							}
 						}
 						for (i2 = 0; i2 < viewsLength, tmpMap = metaMap[i2]; i2++) {
@@ -642,22 +669,34 @@
 						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
 							lc = lc.previousSibling;
 						}
-						lc.dataset.listItemAid = template.dataset.listSourceAid;
+						lc.dataset.tieListItemAid = template.dataset.tieListSourceAid;
 					}
 					container.appendChild(df);
 				}
 			}
 
-			//	run update on elements (POC - very non-performant)
-			let allElements = container.querySelectorAll('*'), keys, i1, l1, key;
-			for (let i = 0, l = allElements.length, element; i < l; i++) {
-				element = allElements[i];
-				if (element === template || element.parentNode === template) continue;
-				keys = Object.keys(element.dataset);
-				for (i1 = 0, l1 = keys.length; i1 < l1; i1++) {
-					key = keys[i1];
-					if (key.indexOf('tie') !== 0) continue;
-					namespace.DataTier.views.updateView(element, key);
+			//	run update on elements
+			let allBluePrintElements = template.content.querySelectorAll('*');
+			let tieProcsMap = [], keys;
+			for (let i = 0, l = allBluePrintElements.length; i < l; i++) {
+				tieProcsMap[i] = Object.keys(allBluePrintElements[i].dataset);
+			}
+
+			let i1, l1, i2, l2, descendants;
+			for (let i = 0, l = container.childNodes.length, child; i < l; i++) {
+				child = container.childNodes[i];
+				if (child !== template && (child.nodeType === Node.DOCUMENT_NODE || child.nodeType === Node.ELEMENT_NODE) && child.dataset.tieListItemAid) {
+					descendants = Array.from(child.querySelectorAll('*'));
+					descendants.unshift(child);
+					for (i1 = 0, l1 = tieProcsMap.length; i1 < l1; i1++) {
+						keys = tieProcsMap[i1];
+						if (keys.length) {
+							namespace.DataTier.views.viewsToSkip.set(descendants[i1], null);
+							for (i2 = 0, l2 = keys.length; i2 < l2; i2++) {
+								namespace.DataTier.views.updateView(descendants[i1], keys[i2]);
+							}
+						}
+					}
 				}
 			}
 		}

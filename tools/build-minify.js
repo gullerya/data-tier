@@ -2,8 +2,7 @@
 
 const os = require('os'),
 	fs = require('fs'),
-	uglifyES = require('uglify-es'),
-	utils = require('./utils.js');
+	uglifyES = require('uglify-es');
 
 module.exports.execute = function() {
 	process.stdout.write('starting minification...' + os.EOL);

@@ -5,26 +5,20 @@ const os = require('os'),
 	path = require('path'),
 	utils = require('./utils.js');
 
-let sourcesWithOO,
-	sourcesWithoutOO,
+let sources,
+	objectObserver,
 	destinationWithOO,
 	destinationWithoutOO;
 
-sourcesWithOO = [
-	path.join('node_modules', 'object-observer', 'dist', 'object-observer.js'),
+sources = [
 	path.join('src', 'ties-service.js'),
 	path.join('src', 'processors-service.js'),
-	path.join('src', 'views-service.js'),
-	path.join('src', 'processors-vanilla.js')
+	path.join('src', 'views-service.js')
 ];
-destinationWithOO = path.join('dist', 'data-tier.js');
+fs.readdirSync(path.join('src', 'processors')).forEach(file => sources.push(path.join('src', 'processors', file)));
+objectObserver = path.join('node_modules', 'object-observer', 'dist', 'object-observer.js');
 
-sourcesWithoutOO = [
-	path.join('src', 'ties-service.js'),
-	path.join('src', 'processors-service.js'),
-	path.join('src', 'views-service.js'),
-	path.join('src', 'processors-vanilla.js')
-];
+destinationWithOO = path.join('dist', 'data-tier.js');
 destinationWithoutOO = path.join('dist', 'data-tier-wo-oo.js');
 
 module.exports.execute = function concatSources() {
@@ -50,7 +44,8 @@ module.exports.execute = function concatSources() {
 
 	//  concat & copy
 	process.stdout.write('concatenation (with embedded "object-observer"):' + os.EOL);
-	sourcesWithOO.forEach(source => {
+	sources.unshift(objectObserver);
+	sources.forEach(source => {
 		let error = null;
 		process.stdout.write('\t' + source);
 		try {
@@ -59,11 +54,12 @@ module.exports.execute = function concatSources() {
 		} catch (e) {
 			error = e;
 		}
-		process.stdout.write('\t' + (error === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + error + ')') + os.EOL);
+		process.stdout.write('\t\t\t' + (error === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + error + ')') + os.EOL);
 	});
 
 	process.stdout.write('concatenation (without embedded "object-observer"):' + os.EOL);
-	sourcesWithoutOO.forEach(source => {
+	sources.shift();
+	sources.forEach(source => {
 		let error = null;
 		process.stdout.write('\t' + source);
 		try {
@@ -72,7 +68,7 @@ module.exports.execute = function concatSources() {
 		} catch (e) {
 			error = e;
 		}
-		process.stdout.write('\t' + (error === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + error + ')') + os.EOL);
+		process.stdout.write('\t\t\t' + (error === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + error + ')') + os.EOL);
 	});
 
 	process.stdout.write('concatenation completed' + os.EOL + os.EOL);

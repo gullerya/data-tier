@@ -209,6 +209,8 @@
 		return r;
 	}
 
+	let viewsToSkip = new Map();
+
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
 			let i1, i2, i3, l2, l3,
@@ -218,12 +220,13 @@
 				change = changes[i1];
 				changeType = change.type;
 				if (changeType === 'attributes') {
-					let target = change.target,
+					let node = change.target,
 						attributeName = change.attributeName;
+					if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
 					if (attributeName.indexOf('data-tie') === 0) {
-						move(target, dataAttrToProp(attributeName), change.oldValue, target.getAttribute(attributeName));
-					} else if (attributeName === 'src' && target.nodeName === 'IFRAME') {
-						discard(target.contentDocument);
+						move(node, dataAttrToProp(attributeName), change.oldValue, node.getAttribute(attributeName));
+					} else if (attributeName === 'src' && node.nodeName === 'IFRAME') {
+						discard(node.contentDocument);
 					}
 				} else if (changeType === 'childList') {
 
@@ -231,6 +234,11 @@
 					added = change.addedNodes;
 					for (i2 = 0, l2 = added.length; i2 < l2; i2++) {
 						node = added[i2];
+						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
+						if (viewsToSkip.has(node)) {
+							viewsToSkip.delete(node);
+							continue;
+						}
 						if (node.nodeName === 'IFRAME') {
 							if (node.contentDocument) {
 								initDocumentObserver(node.contentDocument);
@@ -249,6 +257,11 @@
 					removed = change.removedNodes;
 					for (i3 = 0, l3 = removed.length; i3 < l3; i3++) {
 						node = removed[i3];
+						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
+						if (viewsToSkip.has(node)) {
+							viewsToSkip.delete(node);
+							continue;
+						}
 						if (node.nodeName === 'IFRAME') {
 							discard(node.contentDocument);
 						} else {
@@ -274,7 +287,8 @@
 		value: {
 			get processChanges() { return processChanges; },
 			get applyProcessor() { return applyProcessor; },
-			get updateView() { return update;}
+			get updateView() { return update;},
+			get viewsToSkip() {return viewsToSkip;}
 		}
 	});
 

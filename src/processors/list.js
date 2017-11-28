@@ -8,78 +8,7 @@
 		throw new Error('data-tier framework was not properly initialized');
 	}
 
-	add('tieValue', {
-		toView: function(data, view) {
-			if (view.type === 'checkbox') {
-				view.checked = data;
-			} else {
-				view.value = typeof data !== 'undefined' && data !== null ? data : '';
-			}
-		},
-		changeDOMEventType: 'change'
-	});
 
-	add('tieText', {
-		toView: function(data, view) {
-			view.textContent = typeof data !== 'undefined' && data !== null ? data : '';
-		}
-	});
-
-	add('tiePlaceholder', {
-		toView: function(data, view) {
-			view.placeholder = typeof data !== 'undefined' && data !== null ? data : '';
-		}
-	});
-
-	add('tieTooltip', {
-		toView: function(data, view) {
-			view.title = typeof data !== 'undefined' && data !== null ? data : '';
-		}
-	});
-
-	add('tieSrc', {
-		toView: function(data, view) {
-			view.src = typeof data !== 'undefined' && data !== null ? data : '';
-		}
-	});
-
-	add('tieHRef', {
-		toView: function(data, view) {
-			view.href = typeof data !== 'undefined' && data !== null ? data : '';
-		}
-	});
-
-	add('tieDateValue', {
-		toView: function(data, view) {
-			view.value = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
-		}
-	});
-
-	add('tieDateText', {
-		toView: function(data, view) {
-			view.textContent = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
-		}
-	});
-
-	add('tieClasses', {
-		isChangedPathRelevant: function(changedPath, viewedPath) {
-			let subPath = changedPath.replace(viewedPath, '').split('.');
-			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
-				subPath.length === 1 ||
-				(subPath.length === 2 && subPath[0] === '');
-		},
-		toView: function(data, view) {
-			if (data && typeof data === 'object') {
-				Object.keys(data).forEach(function(key) {
-					if (data[key]) {
-						view.classList.add(key);
-					} else {
-						view.classList.remove(key);
-					}
-				});
-			}
-		}
-	});
 
 	add('tieList', {
 		parseParam: function(ruleValue) {
@@ -102,12 +31,12 @@
 			if (template.nodeName !== 'TEMPLATE') {
 				throw new Error('tieList may be defined on template elements only');
 			}
-			if (!template.dataset.listSourceAid) {
-				template.dataset.listSourceAid = new Date().getTime();
+			if (!template.dataset.tieListSourceAid) {
+				template.dataset.tieListSourceAid = new Date().getTime();
 			}
 
 			//	shorten the DOM list if bigger than the new array
-			let existingList = container.querySelectorAll('[data-list-item-aid="' + template.dataset.listSourceAid + '"]');
+			let existingList = container.querySelectorAll('[data-tie-list-item-aid="' + template.dataset.tieListSourceAid + '"]');
 			existingListLength = existingList.length;
 			while (existingListLength > desiredListLength) container.removeChild(existingList[--existingListLength]);
 
@@ -134,7 +63,7 @@
 								keys = Object.keys(views[c].dataset);
 								tmpPairs = [];
 								for (i = 0; i < keys.length; i++) tmpPairs.push([keys[i], views[c].dataset[keys[i]]]);
-								metaMap.push(tmpPairs);
+								metaMap[c] = tmpPairs;
 							}
 						}
 						for (i2 = 0; i2 < viewsLength, tmpMap = metaMap[i2]; i2++) {
@@ -150,22 +79,34 @@
 						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
 							lc = lc.previousSibling;
 						}
-						lc.dataset.listItemAid = template.dataset.listSourceAid;
+						lc.dataset.tieListItemAid = template.dataset.tieListSourceAid;
 					}
 					container.appendChild(df);
 				}
 			}
 
-			//	run update on elements (POC - very non-performant)
-			let allElements = container.querySelectorAll('*'), keys, i1, l1, key;
-			for (let i = 0, l = allElements.length, element; i < l; i++) {
-				element = allElements[i];
-				if (element === template || element.parentNode === template) continue;
-				keys = Object.keys(element.dataset);
-				for (i1 = 0, l1 = keys.length; i1 < l1; i1++) {
-					key = keys[i1];
-					if (key.indexOf('tie') !== 0) continue;
-					namespace.DataTier.views.updateView(element, key);
+			//	run update on elements
+			let allBluePrintElements = template.content.querySelectorAll('*');
+			let tieProcsMap = [], keys;
+			for (let i = 0, l = allBluePrintElements.length; i < l; i++) {
+				tieProcsMap[i] = Object.keys(allBluePrintElements[i].dataset);
+			}
+
+			let i1, l1, i2, l2, descendants;
+			for (let i = 0, l = container.childNodes.length, child; i < l; i++) {
+				child = container.childNodes[i];
+				if (child !== template && (child.nodeType === Node.DOCUMENT_NODE || child.nodeType === Node.ELEMENT_NODE) && child.dataset.tieListItemAid) {
+					descendants = Array.from(child.querySelectorAll('*'));
+					descendants.unshift(child);
+					for (i1 = 0, l1 = tieProcsMap.length; i1 < l1; i1++) {
+						keys = tieProcsMap[i1];
+						if (keys.length) {
+							namespace.DataTier.views.viewsToSkip.set(descendants[i1], null);
+							for (i2 = 0, l2 = keys.length; i2 < l2; i2++) {
+								namespace.DataTier.views.updateView(descendants[i1], keys[i2]);
+							}
+						}
+					}
 				}
 			}
 		}

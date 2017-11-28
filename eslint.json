@@ -12,6 +12,8 @@
     "no-console": "off"
   },
   "globals": {
+    "Map": true,
+    "WeakMap": true,
     "Symbol": true,
     "Reflect": true
   }

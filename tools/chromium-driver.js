@@ -2,10 +2,7 @@
 
 const os = require('os'),
 	fs = require('fs'),
-	path = require('path'),
-	http = require('http'),
 	https = require('https'),
-	readline = require('readline'),
 
 	admZip = require('adm-zip'),
 	utils = require('./utils.js'),
