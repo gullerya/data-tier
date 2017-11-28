@@ -273,7 +273,8 @@
 	Reflect.defineProperty(namespace.DataTier, 'views', {
 		value: {
 			get processChanges() { return processChanges; },
-			get applyProcessor() { return applyProcessor; }
+			get applyProcessor() { return applyProcessor; },
+			get updateView() { return update;}
 		}
 	});
 

@@ -106,11 +106,12 @@
 				template.dataset.listSourceAid = new Date().getTime();
 			}
 
-			//	shorten the DOM list if bigger than the new array (from the end, so that array will still map to it relevantly)
+			//	shorten the DOM list if bigger than the new array
 			let existingList = container.querySelectorAll('[data-list-item-aid="' + template.dataset.listSourceAid + '"]');
 			existingListLength = existingList.length;
 			while (existingListLength > desiredListLength) container.removeChild(existingList[--existingListLength]);
 
+			//	supplement the DOM list if lesser than the new array
 			if (existingListLength < desiredListLength) {
 				ruleData = template.dataset.tieList.trim().split(/\s+/);
 				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
@@ -152,6 +153,19 @@
 						lc.dataset.listItemAid = template.dataset.listSourceAid;
 					}
 					container.appendChild(df);
+				}
+			}
+
+			//	run update on elements (POC - very non-performant)
+			let allElements = container.querySelectorAll('*'), keys, i1, l1, key;
+			for (let i = 0, l = allElements.length, element; i < l; i++) {
+				element = allElements[i];
+				if (element === template || element.parentNode === template) continue;
+				keys = Object.keys(element.dataset);
+				for (i1 = 0, l1 = keys.length; i1 < l1; i1++) {
+					key = keys[i1];
+					if (key.indexOf('tie') !== 0) continue;
+					namespace.DataTier.views.updateView(element, key);
 				}
 			}
 		}
