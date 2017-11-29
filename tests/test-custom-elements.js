@@ -13,7 +13,9 @@
 	class CustomElement extends HTMLElement {
 		constructor() {
 			super();
-			this.__value = '';
+			this.__value = this.value || '';
+			this.textContent = this.__value;
+			delete this['value'];
 		}
 
 		connectedCallback() {

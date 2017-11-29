@@ -25,8 +25,9 @@
 	function changeListener(event) {
 		let target = event.target,
 			relevantProcessors = processors.getApplicable(target),
-			processor, processorParam, tie;
-		for (let i = 0, l = relevantProcessors.length; i < l; i++) {
+			processor, processorParam, tie, i;
+		i = relevantProcessors.length;
+		while (i--) {
 			processor = relevantProcessors[i];
 			if (event.type === processor.changeDOMEventType) {
 				processorParam = processor.parseParam(target.dataset[processor.name]);
@@ -64,8 +65,10 @@
 		} else if (view.dataset) {
 			let keys = Object.keys(view.dataset), key,
 				processor, processorParam, pathString,
-				tieViews, procViews, pathViews;
-			for (let i = 0, l = keys.length; i < l, key = keys[i]; i++) {
+				tieViews, procViews, pathViews, i;
+			i = keys.length;
+			while (i--) {
+				key = keys[i];
 				if (!key.startsWith('tie')) continue;
 				processor = processors.get(key);
 				if (processor) {
@@ -104,7 +107,7 @@
 
 	function collect(rootElement) {
 		if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-			let list;
+			let list, i;
 			if (rootElement.nodeName === 'IFRAME') {
 				list = rootElement.contentDocument.getElementsByTagName('*');
 			} else {
@@ -112,20 +115,22 @@
 			}
 
 			add(rootElement);
-			for (let i = 0, l = list.length; i < l; i++) add(list[i]);
+			i = list.length;
+			while (i--) add(list[i]);
 		}
 	}
 
 	function discard(rootElement) {
 		if (rootElement && rootElement.getElementsByTagName) {
 			let list = rootElement.getElementsByTagName('*'),
-				element, tmpProcs, processor,
+				element, tmpProcs, processor, i, l, i1,
 				param, pathViews, index;
-			for (let i = 0, l = list.length; i <= l; i++) {
+			for (i = 0, l = list.length; i <= l; i++) {
 				element = i < l ? list[i] : rootElement;
 				if (!element.dataset || !element.dataset.length) continue;
 				tmpProcs = processors.getApplicable(element);
-				for (let i1 = 0, l1 = tmpProcs.length; i1 < l1; i1++) {
+				i1 = tmpProcs.length;
+				while (i1--) {
 					processor = tmpProcs[i1];
 					param = processor.parseParam(element.dataset[processor.name]);
 					pathViews = views[param.tieName][processor.name][param.dataPath.join('.')];
@@ -142,8 +147,10 @@
 	}
 
 	function move(view, processorName, oldParam, newParam) {
-		let processorParam, pathViews, i = -1;
+		let processor, processorParam, pathViews, i = -1;
 
+		processor = processors.get(processorName);
+		if (!processor) return;
 		processorParam = processors.get(processorName).parseParam(oldParam);
 
 		//	delete old path
@@ -167,23 +174,27 @@
 	function processChanges(tieName, changes) {
 		let tieViews = views[tieName], change, changedPath,
 			procNames, procName, processor, viewedPaths, viewedPath, procViews, pathViews,
-			i, l, i1, l1, i2, l2, i3, l3;
+			i, i1, i2, i3;
 		if (tieViews) {
-			for (i = 0, l = changes.length; i < l; i++) {
+			i = changes.length;
+			while (i--) {
 				change = changes[i];
 				changedPath = change.path.join('.');
 				procNames = Object.keys(tieViews);
-				for (i1 = 0, l1 = procNames.length; i1 < l1; i1++) {
+				i1 = procNames.length;
+				while (i1--) {
 					procName = procNames[i1];
 					procViews = tieViews[procName];
 					if (procViews) {
 						processor = processors.get(procName);
 						viewedPaths = Object.keys(procViews);
-						for (i2 = 0, l2 = viewedPaths.length; i2 < l2; i2++) {
+						i2 = viewedPaths.length;
+						while (i2--) {
 							viewedPath = viewedPaths[i2];
 							if (processor.isChangedPathRelevant(changedPath, viewedPath)) {
 								pathViews = procViews[viewedPath];
-								for (i3 = 0, l3 = pathViews.length; i3 < l3; i3++) {
+								i3 = pathViews.length;
+								while (i3--) {
 									update(pathViews[i3], procName);
 								}
 							}
@@ -213,10 +224,11 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			let i1, i2, i3, l2, l3,
+			let i1, i2, i3,
 				change, changeType,
 				added, removed, node;
-			for (i1 = 0; i1 < changes.length; i1++) {
+			i1 = changes.length;
+			while (i1--) {
 				change = changes[i1];
 				changeType = change.type;
 				if (changeType === 'attributes') {
@@ -232,7 +244,8 @@
 
 					//	process added nodes
 					added = change.addedNodes;
-					for (i2 = 0, l2 = added.length; i2 < l2; i2++) {
+					i2 = added.length;
+					while (i2--) {
 						node = added[i2];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
 						if (viewsToSkip.has(node)) {
@@ -255,7 +268,8 @@
 
 					//	process removed nodes
 					removed = change.removedNodes;
-					for (i3 = 0, l3 = removed.length; i3 < l3; i3++) {
+					i3 = removed.length;
+					while (i3--) {
 						node = removed[i3];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
 						if (viewsToSkip.has(node)) {

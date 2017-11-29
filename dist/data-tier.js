@@ -731,8 +731,9 @@
 	function changeListener(event) {
 		let target = event.target,
 			relevantProcessors = processors.getApplicable(target),
-			processor, processorParam, tie;
-		for (let i = 0, l = relevantProcessors.length; i < l; i++) {
+			processor, processorParam, tie, i;
+		i = relevantProcessors.length;
+		while (i--) {
 			processor = relevantProcessors[i];
 			if (event.type === processor.changeDOMEventType) {
 				processorParam = processor.parseParam(target.dataset[processor.name]);
@@ -770,8 +771,10 @@
 		} else if (view.dataset) {
 			let keys = Object.keys(view.dataset), key,
 				processor, processorParam, pathString,
-				tieViews, procViews, pathViews;
-			for (let i = 0, l = keys.length; i < l, key = keys[i]; i++) {
+				tieViews, procViews, pathViews, i;
+			i = keys.length;
+			while (i--) {
+				key = keys[i];
 				if (!key.startsWith('tie')) continue;
 				processor = processors.get(key);
 				if (processor) {
@@ -810,7 +813,7 @@
 
 	function collect(rootElement) {
 		if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-			let list;
+			let list, i;
 			if (rootElement.nodeName === 'IFRAME') {
 				list = rootElement.contentDocument.getElementsByTagName('*');
 			} else {
@@ -818,20 +821,22 @@
 			}
 
 			add(rootElement);
-			for (let i = 0, l = list.length; i < l; i++) add(list[i]);
+			i = list.length;
+			while (i--) add(list[i]);
 		}
 	}
 
 	function discard(rootElement) {
 		if (rootElement && rootElement.getElementsByTagName) {
 			let list = rootElement.getElementsByTagName('*'),
-				element, tmpProcs, processor,
+				element, tmpProcs, processor, i, l, i1,
 				param, pathViews, index;
-			for (let i = 0, l = list.length; i <= l; i++) {
+			for (i = 0, l = list.length; i <= l; i++) {
 				element = i < l ? list[i] : rootElement;
 				if (!element.dataset || !element.dataset.length) continue;
 				tmpProcs = processors.getApplicable(element);
-				for (let i1 = 0, l1 = tmpProcs.length; i1 < l1; i1++) {
+				i1 = tmpProcs.length;
+				while (i1--) {
 					processor = tmpProcs[i1];
 					param = processor.parseParam(element.dataset[processor.name]);
 					pathViews = views[param.tieName][processor.name][param.dataPath.join('.')];
@@ -848,8 +853,10 @@
 	}
 
 	function move(view, processorName, oldParam, newParam) {
-		let processorParam, pathViews, i = -1;
+		let processor, processorParam, pathViews, i = -1;
 
+		processor = processors.get(processorName);
+		if (!processor) return;
 		processorParam = processors.get(processorName).parseParam(oldParam);
 
 		//	delete old path
@@ -873,23 +880,27 @@
 	function processChanges(tieName, changes) {
 		let tieViews = views[tieName], change, changedPath,
 			procNames, procName, processor, viewedPaths, viewedPath, procViews, pathViews,
-			i, l, i1, l1, i2, l2, i3, l3;
+			i, i1, i2, i3;
 		if (tieViews) {
-			for (i = 0, l = changes.length; i < l; i++) {
+			i = changes.length;
+			while (i--) {
 				change = changes[i];
 				changedPath = change.path.join('.');
 				procNames = Object.keys(tieViews);
-				for (i1 = 0, l1 = procNames.length; i1 < l1; i1++) {
+				i1 = procNames.length;
+				while (i1--) {
 					procName = procNames[i1];
 					procViews = tieViews[procName];
 					if (procViews) {
 						processor = processors.get(procName);
 						viewedPaths = Object.keys(procViews);
-						for (i2 = 0, l2 = viewedPaths.length; i2 < l2; i2++) {
+						i2 = viewedPaths.length;
+						while (i2--) {
 							viewedPath = viewedPaths[i2];
 							if (processor.isChangedPathRelevant(changedPath, viewedPath)) {
 								pathViews = procViews[viewedPath];
-								for (i3 = 0, l3 = pathViews.length; i3 < l3; i3++) {
+								i3 = pathViews.length;
+								while (i3--) {
 									update(pathViews[i3], procName);
 								}
 							}
@@ -919,10 +930,11 @@
 
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
-			let i1, i2, i3, l2, l3,
+			let i1, i2, i3,
 				change, changeType,
 				added, removed, node;
-			for (i1 = 0; i1 < changes.length; i1++) {
+			i1 = changes.length;
+			while (i1--) {
 				change = changes[i1];
 				changeType = change.type;
 				if (changeType === 'attributes') {
@@ -938,7 +950,8 @@
 
 					//	process added nodes
 					added = change.addedNodes;
-					for (i2 = 0, l2 = added.length; i2 < l2; i2++) {
+					i2 = added.length;
+					while (i2--) {
 						node = added[i2];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
 						if (viewsToSkip.has(node)) {
@@ -961,7 +974,8 @@
 
 					//	process removed nodes
 					removed = change.removedNodes;
-					for (i3 = 0, l3 = removed.length; i3 < l3; i3++) {
+					i3 = removed.length;
+					while (i3--) {
 						node = removed[i3];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
 						if (viewsToSkip.has(node)) {
@@ -1089,13 +1103,110 @@
 	'use strict';
 
 	const namespace = this || window,
-		add = namespace.DataTier.processors.add;
+		add = namespace.DataTier.processors.add,
+		viewsService = namespace.DataTier.views;
 
 	if (!namespace.DataTier) {
 		throw new Error('data-tier framework was not properly initialized');
 	}
 
+	function signTemplate(template, sign) {
+		let children = template.content.childNodes;
+		for (let i = 0, l = children.length; i < l; i++) {
+			children[i].dataset.dtListItemAid = sign;
+		}
+	}
 
+	function extractProcessorParameters(paramValue) {
+		let procParam;
+		if (paramValue) {
+			procParam = paramValue.trim().split(/\s+/);
+			if (!procParam || procParam.length !== 3 || procParam[1] !== '=>') {
+				throw new Error('invalid parameter for "tieList" rule specified');
+			}
+		}
+		return procParam;
+	}
+
+	function prepareOptimizationMap(template, itemId) {
+		let result = {index: []},
+			views = template.content.querySelectorAll('*'),
+			i = views.length, view, keys, i1, key, value, relevantKeys;
+		while (i--) {
+			view = views[i];
+			if (view.nodeType !== Node.DOCUMENT_NODE && view.nodeType !== Node.ELEMENT_NODE) continue;
+			keys = Object.keys(view.dataset);
+			i1 = keys.length;
+			relevantKeys = [];
+			while (i1--) {
+				key = keys[i1];
+				value = view.dataset[key];
+				if (key.startsWith('tie') && value.startsWith(itemId))
+					relevantKeys.push([key, value.replace(itemId, '')]);
+			}
+			if (relevantKeys.length) {
+				result[i] = relevantKeys;
+				result.index.push(i);
+			}
+		}
+		return result;
+	}
+
+	function prepareNewItems(template, itemId, prefix, from, to) {
+		let result, optimizationMap, tmpTemplate, index = from, i, i1, tmp,
+			views, view,
+			pairs, key;
+		optimizationMap = prepareOptimizationMap(template, itemId);
+
+		for (; index < to; index++) {
+			tmpTemplate = template.content.cloneNode(true);
+			views = tmpTemplate.querySelectorAll('*');
+			i = optimizationMap.index.length;
+			while (i--) {
+				tmp = optimizationMap.index[i];
+				view = views[tmp];
+				pairs = optimizationMap[tmp];
+				i1 = pairs.length;
+				while (i1--) {
+					key = pairs[i1][0];
+					view.dataset[key] = prefix + index + pairs[i1][1];
+					viewsService.updateView(view, key);
+				}
+			}
+			index === from ? result = tmpTemplate : result.appendChild(tmpTemplate);
+		}
+		return result;
+	}
+
+	function updateListContent(template, container, required) {
+		let allBluePrintElements = template.content.querySelectorAll('*'),
+			tieProcsMap = [], keys, i;
+		i = allBluePrintElements.length;
+		while (i--) {
+			tieProcsMap[i] = Object.keys(allBluePrintElements[i].dataset);
+		}
+
+		let done = 0, i1, i2, child, descendants;
+		i = 0;
+		while (done < required) {
+			child = container.childNodes[i++];
+			if (child !== template && (child.nodeType === Node.DOCUMENT_NODE || child.nodeType === Node.ELEMENT_NODE) && child.dataset.dtListItemAid) {
+				descendants = Array.prototype.concat([child], Array.from(child.querySelectorAll('*')));
+				i1 = tieProcsMap.length;
+				while (i1--) {
+					viewsService.viewsToSkip.set(descendants[i1], null);
+					keys = tieProcsMap[i1];
+					i2 = keys.length;
+					while (i2--) {
+						if (keys[i2].startsWith('tie')) {
+							viewsService.updateView(descendants[i1], keys[i2]);
+						}
+					}
+				}
+				done++;
+			}
+		}
+	}
 
 	add('tieList', {
 		parseParam: function(ruleValue) {
@@ -1110,92 +1221,36 @@
 		toView: function(tiedValue, template) {
 			if (!Array.isArray(tiedValue) || !template) return;
 
-			let container = template.parentNode, nv, ruleData, itemId, d, df, lc;
-			let desiredListLength = tiedValue.length,
-				existingListLength;
+			let container = template.parentNode, ruleData,
+				templateItemAid,
+				desiredListLength = tiedValue.length;
 
-			//	TODO: this check should be moved to earlier phase of processing, this requires enhancement of rule API in general
 			if (template.nodeName !== 'TEMPLATE') {
 				throw new Error('tieList may be defined on template elements only');
 			}
-			if (!template.dataset.tieListSourceAid) {
-				template.dataset.tieListSourceAid = new Date().getTime();
+			if (!template.content.childElementCount) {
+				throw new Error('tieList\'s TEMPLATE MUST HAVE at least one child element');
 			}
 
-			//	shorten the DOM list if bigger than the new array
-			let existingList = container.querySelectorAll('[data-tie-list-item-aid="' + template.dataset.tieListSourceAid + '"]');
-			existingListLength = existingList.length;
-			while (existingListLength > desiredListLength) container.removeChild(existingList[--existingListLength]);
-
-			//	supplement the DOM list if lesser than the new array
-			if (existingListLength < desiredListLength) {
-				ruleData = template.dataset.tieList.trim().split(/\s+/);
-				if (!ruleData || ruleData.length !== 3 || ruleData[1] !== '=>') {
-					console.error('invalid parameter for "tieList" rule specified');
-				} else {
-					itemId = ruleData[2];
-					d = template.ownerDocument;
-					df = d.createDocumentFragment();
-					let views, viewsLength, metaMap = [],
-						c, keys, tmpPairs, i,
-						i2, tmpMap, tmpMapLength, i3, tmpPair,
-						prefix = ruleData[0] + '.';
-
-					for (; existingListLength < desiredListLength; existingListLength++) {
-						nv = d.importNode(template.content, true);
-						views = nv.querySelectorAll('*');
-						if (!viewsLength) viewsLength = views.length;
-						if (!metaMap.length) {
-							for (c = 0; c < viewsLength; c++) {
-								keys = Object.keys(views[c].dataset);
-								tmpPairs = [];
-								for (i = 0; i < keys.length; i++) tmpPairs.push([keys[i], views[c].dataset[keys[i]]]);
-								metaMap[c] = tmpPairs;
-							}
-						}
-						for (i2 = 0; i2 < viewsLength, tmpMap = metaMap[i2]; i2++) {
-							for (i3 = 0, tmpMapLength = tmpMap.length; i3 < tmpMapLength; i3++) {
-								tmpPair = tmpMap[i3];
-								if (tmpPair[1].startsWith(itemId)) {
-									views[i2].dataset[tmpPair[0]] = tmpPair[1].replace(itemId, prefix + existingListLength);
-								}
-							}
-						}
-						df.appendChild(nv);
-						lc = df.lastChild;
-						while (lc.nodeType !== Node.ELEMENT_NODE && lc.previousSibling !== null) {
-							lc = lc.previousSibling;
-						}
-						lc.dataset.tieListItemAid = template.dataset.tieListSourceAid;
-					}
-					container.appendChild(df);
-				}
+			templateItemAid = template.content.firstChild.dataset.dtListItemAid;
+			if (!templateItemAid) {
+				templateItemAid = new Date().getTime();
+				signTemplate(template, templateItemAid);
 			}
 
-			//	run update on elements
-			let allBluePrintElements = template.content.querySelectorAll('*');
-			let tieProcsMap = [], keys;
-			for (let i = 0, l = allBluePrintElements.length; i < l; i++) {
-				tieProcsMap[i] = Object.keys(allBluePrintElements[i].dataset);
+			//	adjust list elements size to the data length
+			let existingList = container.querySelectorAll('[data-dt-list-item-aid="' + templateItemAid + '"]'),
+				existingListLength = existingList.length;
+			if (existingListLength > desiredListLength) {
+				while (existingListLength > desiredListLength) container.removeChild(existingList[--existingListLength]);
+			} else if (existingListLength < desiredListLength) {
+				ruleData = extractProcessorParameters(template.dataset.tieList);
+				let newItemsDOM = prepareNewItems(template, ruleData[2], ruleData[0] + '.', existingListLength, desiredListLength);
+				container.appendChild(newItemsDOM);
 			}
 
-			let i1, l1, i2, l2, descendants;
-			for (let i = 0, l = container.childNodes.length, child; i < l; i++) {
-				child = container.childNodes[i];
-				if (child !== template && (child.nodeType === Node.DOCUMENT_NODE || child.nodeType === Node.ELEMENT_NODE) && child.dataset.tieListItemAid) {
-					descendants = Array.from(child.querySelectorAll('*'));
-					descendants.unshift(child);
-					for (i1 = 0, l1 = tieProcsMap.length; i1 < l1; i1++) {
-						keys = tieProcsMap[i1];
-						if (keys.length) {
-							namespace.DataTier.views.viewsToSkip.set(descendants[i1], null);
-							for (i2 = 0, l2 = keys.length; i2 < l2; i2++) {
-								namespace.DataTier.views.updateView(descendants[i1], keys[i2]);
-							}
-						}
-					}
-				}
-			}
+			//	run update on the whole list (in future attempt to get the
+			updateListContent(template, container, existingListLength);
 		}
 	});
 
