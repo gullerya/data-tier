@@ -388,7 +388,7 @@
 			i = changes.length;
 			while (i--) {
 				change = changes[i];
-				changedPath = change.path.join('.');
+				changedPath = change.path ? change.path.join('.') : null;
 				procNames = Object.keys(tieViews);
 				i1 = procNames.length;
 				while (i1--) {
@@ -429,8 +429,6 @@
 		return r;
 	}
 
-	let viewsToSkip = new Map();
-
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
 			let i1, i2, i3,
@@ -457,10 +455,6 @@
 					while (i2--) {
 						node = added[i2];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
-						if (viewsToSkip.has(node)) {
-							viewsToSkip.delete(node);
-							continue;
-						}
 						if (node.nodeName === 'IFRAME') {
 							if (node.contentDocument) {
 								initDocumentObserver(node.contentDocument);
@@ -481,10 +475,6 @@
 					while (i3--) {
 						node = removed[i3];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
-						if (viewsToSkip.has(node)) {
-							viewsToSkip.delete(node);
-							continue;
-						}
 						if (node.nodeName === 'IFRAME') {
 							discard(node.contentDocument);
 						} else {
@@ -510,8 +500,7 @@
 		value: {
 			get processChanges() { return processChanges; },
 			get applyProcessor() { return applyProcessor; },
-			get updateView() { return update;},
-			get viewsToSkip() {return viewsToSkip;}
+			get updateView() { return update; }
 		}
 	});
 
@@ -655,55 +644,59 @@
 		return result;
 	}
 
-	function prepareNewItems(template, itemId, prefix, from, to) {
-		let result, optimizationMap, tmpTemplate, index = from, i, i1, tmp,
+	function insertNewContent(container, template, processorParameters, from, to) {
+		let result, optimizationMap, tmpContent, tmpTemplate, index = from, i, i1, tmp,
+			prefix = processorParameters[0] + '.', optTmpIdx,
 			views, view,
 			pairs, key;
-		optimizationMap = prepareOptimizationMap(template, itemId);
+		tmpContent = template.content;
+		optimizationMap = prepareOptimizationMap(template, processorParameters[2]);
+		optTmpIdx = optimizationMap.index;
 
 		for (; index < to; index++) {
-			tmpTemplate = template.content.cloneNode(true);
+			tmpTemplate = tmpContent.cloneNode(true);
 			views = tmpTemplate.querySelectorAll('*');
-			i = optimizationMap.index.length;
+			i = optTmpIdx.length;
 			while (i--) {
-				tmp = optimizationMap.index[i];
+				tmp = optTmpIdx[i];
 				view = views[tmp];
 				pairs = optimizationMap[tmp];
 				i1 = pairs.length;
 				while (i1--) {
 					key = pairs[i1][0];
 					view.dataset[key] = prefix + index + pairs[i1][1];
-					viewsService.updateView(view, key);
+					//viewsService.updateView(view, key);
 				}
 			}
 			index === from ? result = tmpTemplate : result.appendChild(tmpTemplate);
 		}
-		return result;
+
+		container.appendChild(result);
 	}
 
-	function updateListContent(template, container, required) {
+	function updateExistingContent(template, container, required) {
 		let allBluePrintElements = template.content.querySelectorAll('*'),
-			tieProcsMap = [], keys, i;
+			tieProcsMap = [], i;
 		i = allBluePrintElements.length;
 		while (i--) {
-			tieProcsMap[i] = Object.keys(allBluePrintElements[i].dataset);
+			tieProcsMap[i] = Object.keys(allBluePrintElements[i].dataset).filter(key => key.startsWith('tie'));
 		}
 
-		let done = 0, i1, i2, child, descendants;
+		let done = 0, i1, i2, child,
+			descendants, descendant,
+			keys;
 		i = 0;
 		while (done < required) {
 			child = container.childNodes[i++];
 			if (child !== template && (child.nodeType === Node.DOCUMENT_NODE || child.nodeType === Node.ELEMENT_NODE) && child.dataset.dtListItemAid) {
-				descendants = Array.prototype.concat([child], Array.from(child.querySelectorAll('*')));
+				descendants = child.querySelectorAll('*');
 				i1 = tieProcsMap.length;
 				while (i1--) {
-					viewsService.viewsToSkip.set(descendants[i1], null);
+					descendant = i1 ? descendants[i1 - 1] : child;
 					keys = tieProcsMap[i1];
 					i2 = keys.length;
 					while (i2--) {
-						if (keys[i2].startsWith('tie')) {
-							viewsService.updateView(descendants[i1], keys[i2]);
-						}
+						viewsService.updateView(descendant, keys[i2]);
 					}
 				}
 				done++;
@@ -716,6 +709,8 @@
 			return this.constructor.prototype.parseParam(ruleValue.split(/\s*=>\s*/)[0]);
 		},
 		isChangedPathRelevant: function(changedPath, viewedPath) {
+			if (!changedPath) return true;
+
 			let subPath = changedPath.replace(viewedPath, '').split('.');
 			return this.constructor.prototype.isChangedPathRelevant(changedPath, viewedPath) ||
 				subPath.length === 1 ||
@@ -744,16 +739,18 @@
 			//	adjust list elements size to the data length
 			let existingList = container.querySelectorAll('[data-dt-list-item-aid="' + templateItemAid + '"]'),
 				existingListLength = existingList.length;
+
 			if (existingListLength > desiredListLength) {
 				while (existingListLength > desiredListLength) container.removeChild(existingList[--existingListLength]);
-			} else if (existingListLength < desiredListLength) {
-				ruleData = extractProcessorParameters(template.dataset.tieList);
-				let newItemsDOM = prepareNewItems(template, ruleData[2], ruleData[0] + '.', existingListLength, desiredListLength);
-				container.appendChild(newItemsDOM);
 			}
 
-			//	run update on the whole list (in future attempt to get the
-			updateListContent(template, container, existingListLength);
+			//	run update on the whole list (in future attempt to get the change's content and optimize this one)
+			updateExistingContent(template, container, existingListLength);
+
+			if (existingListLength < desiredListLength) {
+				ruleData = extractProcessorParameters(template.dataset.tieList);
+				insertNewContent(container, template, ruleData, existingListLength, desiredListLength);
+			}
 		}
 	});
 

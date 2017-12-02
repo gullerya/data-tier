@@ -6,22 +6,25 @@
 
 	DataTier.ties.create('usersA', oUsers);
 
-	let c = document.createElement('div'), t, c1, e1, e2, e3, e4;
+	let c = document.createElement('div'), t, c1, e1, e2, e3, e4, e5;
 	t = document.createElement('template');
 	c1 = document.createElement('div');
 	e1 = document.createElement('span');
 	e2 = document.createElement('span');
 	e3 = document.createElement('span');
 	e4 = document.createElement('span');
+	e5 = document.createElement('span');
 	t.dataset.tieList = 'usersA => user';
 	e1.dataset.tieText = 'user.name';
 	e2.dataset.tieText = 'user.age';
 	e3.dataset.tieText = 'user.address.street';
 	e4.textContent = 'Some plain text to test with';
+	e5.dataset.tieText = 'user.index';
 	c1.appendChild(e1);
 	c1.appendChild(e2);
 	c1.appendChild(e3);
 	c1.appendChild(e4);
+	c1.appendChild(e5);
 	t.content.appendChild(c1);
 	c.appendChild(t);
 	c.style.cssText = 'position:relative;height:200px;overflow:auto';
@@ -196,24 +199,78 @@
 		}, 0);
 	});
 
-	suite.addTest({name: 'array binding - huge bulk update (20000 rows)'}, (pass, fail) => {
+	suite.addTest({name: 'array binding - huge bulk update (20000 rows, mostly new)'}, (pass, fail) => {
 		//	timeout need since the initial setup includes injection of the html about and it's pre-processing, which is made in async way
 		setTimeout(() => {
-			let a = [], i,
-				rowsNumber = 20000;
+			let a = [], i, rowsNumber = 20000;
 
+			//	basic content inflation
 			for (i = 0; i < rowsNumber; i++) {
 				a.push({
+					index: i,
 					name: 'A',
 					age: 6,
 					address: {street: 'some street 1'}
 				});
 			}
-			DataTier.ties.get('usersA').data = Observable.from(a);
+			DataTier.ties.get('usersA').data = a;
 
-			if (c.childElementCount !== rowsNumber + 1) fail('expected child elements of repeater to be ' + (rowsNumber + 1) + ', found: ' + c.childElementCount);
-			//	TODO: ensure the content of the repeated child is as expected
-			pass();
+			//	verifying inflation
+			setTimeout(() => {
+				if (c.childElementCount !== DataTier.ties.get('usersA').data.length + 1)
+					fail('expected child elements of repeater to be ' + (DataTier.ties.get('usersA').data.length + 1) + ', found: ' + c.childElementCount);
+				for (i = 0; i < DataTier.ties.get('usersA').data.length; i++) {
+					if (c.childNodes[i + 1].childNodes[4].textContent !== DataTier.ties.get('usersA').data[i].index.toString())
+						fail('expected text value ' + DataTier.ties.get('usersA').data[i].index + ', found: ' + c.childNodes[i + 1].childNodes[4].textContent);
+				}
+
+				//	mutating arbitrary element
+				DataTier.ties.get('usersA').data[121].address.street = 'something new';
+
+				//	verifying that the tying kept correct
+				setTimeout(() => {
+					if (c.childNodes[122].childNodes[2].textContent !== 'something new')
+						fail('expected randomly mutated text to be "something new", found: ' + c.childNodes[122].childNodes[2].textContent);
+
+					pass();
+				}, 0);
+			}, 0);
+		}, 0);
+	});
+
+	suite.addTest({
+		name: 'array binding - huge bulk update (20000 rows, updating due to unshift)'
+	}, (pass, fail) => {
+		//	timeout need since the initial setup includes injection of the html about and it's pre-processing, which is made in async way
+		setTimeout(() => {
+
+			//	massive change of the existing content
+			DataTier.ties.get('usersA').data.sort((i1, i2) => {
+				if (i1.index > i2.index) return -1;
+				else return 1;
+			});
+
+			setTimeout(() => {
+				//	verifying the massive update
+				if (c.childElementCount !== DataTier.ties.get('usersA').data.length + 1)
+					fail('expected child elements of repeater to be ' + (DataTier.ties.get('usersA').data.length + 1) + ', found: ' + c.childElementCount);
+				for (let i = 0; i < DataTier.ties.get('usersA').data.length; i++) {
+					if (c.childNodes[i + 1].childNodes[4].textContent !== DataTier.ties.get('usersA').data[i].index.toString())
+						fail('expected text value ' + DataTier.ties.get('usersA').data[i].index + ', found: ' + c.childNodes[i + 1].childNodes[4].textContent);
+				}
+
+				//	mutating arbitrary element
+				DataTier.ties.get('usersA').data[121].address.street = 'something new';
+
+				//	verifying that the tying kept correct
+				setTimeout(() => {
+					if (c.childNodes[122].childNodes[2].textContent !== 'something new')
+						fail('expected randomly mutated text to be "something new", found: ' + c.childNodes[122].childNodes[2].textContent);
+
+					pass();
+				}, 0);
+			});
+
 		}, 0);
 	});
 

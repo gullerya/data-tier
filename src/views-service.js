@@ -179,7 +179,7 @@
 			i = changes.length;
 			while (i--) {
 				change = changes[i];
-				changedPath = change.path.join('.');
+				changedPath = change.path ? change.path.join('.') : null;
 				procNames = Object.keys(tieViews);
 				i1 = procNames.length;
 				while (i1--) {
@@ -220,8 +220,6 @@
 		return r;
 	}
 
-	let viewsToSkip = new Map();
-
 	function initDocumentObserver(document) {
 		function processDomChanges(changes) {
 			let i1, i2, i3,
@@ -248,10 +246,6 @@
 					while (i2--) {
 						node = added[i2];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
-						if (viewsToSkip.has(node)) {
-							viewsToSkip.delete(node);
-							continue;
-						}
 						if (node.nodeName === 'IFRAME') {
 							if (node.contentDocument) {
 								initDocumentObserver(node.contentDocument);
@@ -272,10 +266,6 @@
 					while (i3--) {
 						node = removed[i3];
 						if (node.nodeType !== Node.DOCUMENT_NODE && node.nodeType !== Node.ELEMENT_NODE) continue;
-						if (viewsToSkip.has(node)) {
-							viewsToSkip.delete(node);
-							continue;
-						}
 						if (node.nodeName === 'IFRAME') {
 							discard(node.contentDocument);
 						} else {
@@ -301,8 +291,7 @@
 		value: {
 			get processChanges() { return processChanges; },
 			get applyProcessor() { return applyProcessor; },
-			get updateView() { return update;},
-			get viewsToSkip() {return viewsToSkip;}
+			get updateView() { return update; }
 		}
 	});
 
