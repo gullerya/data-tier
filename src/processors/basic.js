@@ -19,6 +19,13 @@
 		changeDOMEventType: 'change'
 	});
 
+	add('tieInput', {
+		toView: function(data, view) {
+			view.value = typeof data !== 'undefined' && data !== null ? data : '';
+		},
+		changeDOMEventType: 'input'
+	});
+
 	add('tieText', {
 		toView: function(data, view) {
 			view.textContent = typeof data !== 'undefined' && data !== null ? data : '';

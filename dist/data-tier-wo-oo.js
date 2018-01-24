@@ -528,6 +528,13 @@
 		changeDOMEventType: 'change'
 	});
 
+	add('tieInput', {
+		toView: function(data, view) {
+			view.value = typeof data !== 'undefined' && data !== null ? data : '';
+		},
+		changeDOMEventType: 'input'
+	});
+
 	add('tieText', {
 		toView: function(data, view) {
 			view.textContent = typeof data !== 'undefined' && data !== null ? data : '';
@@ -665,7 +672,6 @@
 				while (i1--) {
 					key = pairs[i1][0];
 					view.dataset[key] = prefix + index + pairs[i1][1];
-					//viewsService.updateView(view, key);
 				}
 			}
 			index === from ? result = tmpTemplate : result.appendChild(tmpTemplate);
