@@ -10,7 +10,7 @@
 	}
 
 	function signTemplate(template, sign) {
-		let children = template.content.childNodes;
+		let children = template.content.children;
 		for (let i = 0, l = children.length; i < l; i++) {
 			children[i].dataset.dtListItemAid = sign;
 		}
@@ -136,7 +136,7 @@
 				throw new Error('tieList\'s TEMPLATE MUST HAVE at least one child element');
 			}
 
-			templateItemAid = template.content.firstChild.dataset.dtListItemAid;
+			templateItemAid = template.content.firstElementChild.dataset.dtListItemAid;
 			if (!templateItemAid) {
 				templateItemAid = new Date().getTime();
 				signTemplate(template, templateItemAid);
