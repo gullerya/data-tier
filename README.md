@@ -15,7 +15,7 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 #### Versions
 
 __0.6.13__
-  - Added `tie-input` OTB processor in other to track an immediate changes in input elements supporting `input` event (types: `text`, `password` of `input` element, `textarea` element).
+  - Added `tie-input` OTB controller in other to track an immediate changes in input elements supporting `input` event (types: `text`, `password` of `input` element, `textarea` element).
 
 __0.6.12__
   - Fixed [issue no. 10](https://github.com/gullerya/data-tier/issues/10)

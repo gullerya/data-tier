@@ -110,13 +110,13 @@
 	'use strict';
 
 	const namespace = this || window,
-		processors = {};
+		controllers = {};
 
 	if (!namespace.DataTier) {
 		throw new Error('data-tier framework was not properly initialized');
 	}
 
-	function DataProcessor(name, options) {
+	function Controller(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'toView', {value: options.toView});
 		Reflect.defineProperty(this, 'toData', {value: typeof options.toData === 'function' ? options.toData : defaultToData});
@@ -141,15 +141,15 @@
 		return viewedPath.startsWith(changedPath);
 	}
 
-	Reflect.defineProperty(DataProcessor.prototype, 'parseParam', {value: defaultParseParam});
-	Reflect.defineProperty(DataProcessor.prototype, 'isChangedPathRelevant', {value: defaultIsChangedPathRelevant});
+	Reflect.defineProperty(Controller.prototype, 'parseParam', {value: defaultParseParam});
+	Reflect.defineProperty(Controller.prototype, 'isChangedPathRelevant', {value: defaultIsChangedPathRelevant});
 
 	function add(name, configuration) {
 		if (typeof name !== 'string' || !name) {
 			throw new Error('name MUST be a non-empty string');
 		}
-		if (processors[name]) {
-			throw new Error('data processor "' + name + '" already exists; you may want to reconfigure the existing one');
+		if (controllers[name]) {
+			throw new Error('data controller "' + name + '" already exists; you may want to reconfigure the existing one');
 		}
 		if (typeof configuration !== 'object' || !configuration) {
 			throw new Error('configuration MUST be a non-null object');
@@ -158,12 +158,12 @@
 			throw new Error('configuration MUST have a "toView" function defined');
 		}
 
-		processors[name] = new DataProcessor(name, configuration);
-		namespace.DataTier.views.applyProcessor(processors[name]);
+		controllers[name] = new Controller(name, configuration);
+		namespace.DataTier.views.applyController(controllers[name]);
 	}
 
 	function get(name) {
-		return processors[name];
+		return controllers[name];
 	}
 
 	function remove(name) {
@@ -171,16 +171,16 @@
 			throw new Error('controller name MUST be a non-empty string');
 		}
 
-		return delete processors[name];
+		return delete controllers[name];
 	}
 
 	function getApplicable(element) {
 		let result = [];
 		if (element && element.dataset) {
 			Object.keys(element.dataset)
-				.filter(key => key in processors)
-				.map(key => processors[key])
-				.forEach(processor => result.push(processor));
+				.filter(key => key in controllers)
+				.map(key => controllers[key])
+				.forEach(controller => result.push(controller));
 		}
 		return result;
 	}
@@ -198,7 +198,7 @@
 		ref[path[i]] = value;
 	}
 
-	Reflect.defineProperty(namespace.DataTier, 'processors', {
+	Reflect.defineProperty(namespace.DataTier, 'controllers', {
 		value: {
 			get get() { return get; },
 			get add() { return add; },
@@ -217,11 +217,11 @@
 	}
 
 	const ties = namespace.DataTier.ties,
-		processors = namespace.DataTier.processors,
+		controllers = namespace.DataTier.controllers,
 		views = {},
 		nlvs = {};
 
-	//	TODO: this is similar to setPath in processors-service - unify
+	//	TODO: this is similar to setPath in controllers-service - unify
 	function getPath(ref, path) {
 		if (!ref) return;
 		for (let i = 0, pathLength = path.length; i < pathLength; i++) {
@@ -233,24 +233,24 @@
 
 	function changeListener(event) {
 		let target = event.target,
-			relevantProcessors = processors.getApplicable(target),
-			processor, processorParam, tie, i;
-		i = relevantProcessors.length;
+			relevantControllers = controllers.getApplicable(target),
+			controller, controllerParam, tie, i;
+		i = relevantControllers.length;
 		while (i--) {
-			processor = relevantProcessors[i];
-			if (event.type === processor.changeDOMEventType) {
-				processorParam = processor.parseParam(target.dataset[processor.name]);
-				tie = ties.get(processorParam.tieName);
-				if (!processorParam.dataPath) {
+			controller = relevantControllers[i];
+			if (event.type === controller.changeDOMEventType) {
+				controllerParam = controller.parseParam(target.dataset[controller.name]);
+				tie = ties.get(controllerParam.tieName);
+				if (!controllerParam.dataPath) {
 					console.error('path to data not available');
 					return;
 				}
 				if (!tie) {
-					console.error('tie "' + processorParam.tieName + '" not found');
+					console.error('tie "' + controllerParam.tieName + '" not found');
 					return;
 				}
 
-				processor.toData({data: tie.data, path: processorParam.dataPath, view: target});
+				controller.toData({data: tie.data, path: controllerParam.dataPath, view: target});
 			}
 		}
 	}
@@ -273,29 +273,29 @@
 			collect(view.contentDocument);
 		} else if (view.dataset) {
 			let keys = Object.keys(view.dataset), key,
-				processor, processorParam, pathString,
+				controller, controllerParam, pathString,
 				tieViews, procViews, pathViews, i;
 			i = keys.length;
 			while (i--) {
 				key = keys[i];
 				if (!key.startsWith('tie')) continue;
-				processor = processors.get(key);
-				if (processor) {
-					processorParam = processor.parseParam(view.dataset[processor.name]);
-					pathString = processorParam.dataPath.join('.');
-					tieViews = views[processorParam.tieName] || (views[processorParam.tieName] = {});
-					procViews = tieViews[processor.name] || (tieViews[processor.name] = {});
+				controller = controllers.get(key);
+				if (controller) {
+					controllerParam = controller.parseParam(view.dataset[controller.name]);
+					pathString = controllerParam.dataPath.join('.');
+					tieViews = views[controllerParam.tieName] || (views[controllerParam.tieName] = {});
+					procViews = tieViews[controller.name] || (tieViews[controller.name] = {});
 					pathViews = procViews[pathString] || (procViews[pathString] = []);
 
 					if (pathViews.indexOf(view) < 0) {
 						pathViews.push(view);
-						update(view, processor.name);
-						if (processor.changeDOMEventType) {
-							addChangeListener(view, processor.changeDOMEventType);
+						update(view, controller.name);
+						if (controller.changeDOMEventType) {
+							addChangeListener(view, controller.changeDOMEventType);
 						}
 					}
 				} else {
-					//	collect potentially future processor's element and put them into some tracking storage
+					//	collect potentially future controller's element and put them into some tracking storage
 					if (!nlvs[key]) nlvs[key] = [];
 					nlvs[key].push(view);
 				}
@@ -303,10 +303,10 @@
 		}
 	}
 
-	function update(view, processorName) {
+	function update(view, controllerName) {
 		let r, p, t, data;
-		r = processors.get(processorName);
-		p = r.parseParam(view.dataset[processorName]);
+		r = controllers.get(controllerName);
+		p = r.parseParam(view.dataset[controllerName]);
 		t = ties.get(p.tieName);
 		if (t) {
 			data = getPath(t.data, p.dataPath);
@@ -332,22 +332,22 @@
 	function discard(rootElement) {
 		if (rootElement && rootElement.getElementsByTagName) {
 			let list = rootElement.getElementsByTagName('*'),
-				element, tmpProcs, processor, i, l, i1,
+				element, tmpCtrls, controller, i, l, i1,
 				param, pathViews, index;
 			for (i = 0, l = list.length; i <= l; i++) {
 				element = i < l ? list[i] : rootElement;
 				if (!element.dataset || !element.dataset.length) continue;
-				tmpProcs = processors.getApplicable(element);
-				i1 = tmpProcs.length;
+				tmpCtrls = controllers.getApplicable(element);
+				i1 = tmpCtrls.length;
 				while (i1--) {
-					processor = tmpProcs[i1];
-					param = processor.parseParam(element.dataset[processor.name]);
-					pathViews = views[param.tieName][processor.name][param.dataPath.join('.')];
+					controller = tmpCtrls[i1];
+					param = controller.parseParam(element.dataset[controller.name]);
+					pathViews = views[param.tieName][controller.name][param.dataPath.join('.')];
 					index = pathViews.indexOf(element);
 					if (index >= 0) {
 						pathViews.splice(index, 1);
-						if (processor.changeDOMEventType) {
-							delChangeListener(element, processor.changeDOMEventType);
+						if (controller.changeDOMEventType) {
+							delChangeListener(element, controller.changeDOMEventType);
 						}
 					}
 				}
@@ -355,16 +355,16 @@
 		}
 	}
 
-	function move(view, processorName, oldParam, newParam) {
-		let processor, processorParam, pathViews, i = -1;
+	function move(view, controllerName, oldParam, newParam) {
+		let controller, controllerParam, pathViews, i = -1;
 
-		processor = processors.get(processorName);
-		if (!processor) return;
-		processorParam = processors.get(processorName).parseParam(oldParam);
+		controller = controllers.get(controllerName);
+		if (!controller) return;
+		controllerParam = controllers.get(controllerName).parseParam(oldParam);
 
 		//	delete old path
-		if (views[processorParam.tieName] && views[processorParam.tieName][processorName]) {
-			pathViews = views[processorParam.tieName][processorName][processorParam.dataPath];
+		if (views[controllerParam.tieName] && views[controllerParam.tieName][controllerName]) {
+			pathViews = views[controllerParam.tieName][controllerName][controllerParam.dataPath];
 			if (pathViews) i = pathViews.indexOf(view);
 			if (i >= 0) {
 				pathViews.splice(i, 1);
@@ -372,39 +372,39 @@
 		}
 
 		//	add new path
-		processorParam = processors.get(processorName).parseParam(newParam);
-		if (!views[processorParam.tieName]) views[processorParam.tieName] = {};
-		if (!views[processorParam.tieName][processorName]) views[processorParam.tieName][processorName] = {};
-		if (!views[processorParam.tieName][processorName][processorParam.dataPath]) views[processorParam.tieName][processorName][processorParam.dataPath] = [];
-		views[processorParam.tieName][processorName][processorParam.dataPath].push(view);
-		update(view, processorName);
+		controllerParam = controllers.get(controllerName).parseParam(newParam);
+		if (!views[controllerParam.tieName]) views[controllerParam.tieName] = {};
+		if (!views[controllerParam.tieName][controllerName]) views[controllerParam.tieName][controllerName] = {};
+		if (!views[controllerParam.tieName][controllerName][controllerParam.dataPath]) views[controllerParam.tieName][controllerName][controllerParam.dataPath] = [];
+		views[controllerParam.tieName][controllerName][controllerParam.dataPath].push(view);
+		update(view, controllerName);
 	}
 
 	function processChanges(tieName, changes) {
 		let tieViews = views[tieName], change, changedPath,
-			procNames, procName, processor, viewedPaths, viewedPath, procViews, pathViews,
+			ctrlNames, ctrlName, controller, viewedPaths, viewedPath, ctrlViews, pathViews,
 			i, i1, i2, i3;
 		if (tieViews) {
 			i = changes.length;
 			while (i--) {
 				change = changes[i];
 				changedPath = change.path ? change.path.join('.') : null;
-				procNames = Object.keys(tieViews);
-				i1 = procNames.length;
+				ctrlNames = Object.keys(tieViews);
+				i1 = ctrlNames.length;
 				while (i1--) {
-					procName = procNames[i1];
-					procViews = tieViews[procName];
-					if (procViews) {
-						processor = processors.get(procName);
-						viewedPaths = Object.keys(procViews);
+					ctrlName = ctrlNames[i1];
+					ctrlViews = tieViews[ctrlName];
+					if (ctrlViews) {
+						controller = controllers.get(ctrlName);
+						viewedPaths = Object.keys(ctrlViews);
 						i2 = viewedPaths.length;
 						while (i2--) {
 							viewedPath = viewedPaths[i2];
-							if (processor.isChangedPathRelevant(changedPath, viewedPath)) {
-								pathViews = procViews[viewedPath];
+							if (controller.isChangedPathRelevant(changedPath, viewedPath)) {
+								pathViews = ctrlViews[viewedPath];
 								i3 = pathViews.length;
 								while (i3--) {
-									update(pathViews[i3], procName);
+									update(pathViews[i3], ctrlName);
 								}
 							}
 						}
@@ -414,11 +414,11 @@
 		}
 	}
 
-	function applyProcessor(processor) {
+	function applyController(controller) {
 		//	apply on a pending views
-		if (nlvs[processor.name]) {
-			nlvs[processor.name].forEach(add);
-			delete nlvs[processor.name];
+		if (nlvs[controller.name]) {
+			nlvs[controller.name].forEach(add);
+			delete nlvs[controller.name];
 		}
 	}
 
@@ -499,7 +499,7 @@
 	Reflect.defineProperty(namespace.DataTier, 'views', {
 		value: {
 			get processChanges() { return processChanges; },
-			get applyProcessor() { return applyProcessor; },
+			get applyController() { return applyController; },
 			get updateView() { return update; }
 		}
 	});
@@ -511,7 +511,7 @@
 	'use strict';
 
 	const namespace = this || window,
-		add = namespace.DataTier.processors.add;
+		add = namespace.DataTier.controllers.add;
 
 	if (!namespace.DataTier) {
 		throw new Error('data-tier framework was not properly initialized');
@@ -602,7 +602,7 @@
 	'use strict';
 
 	const namespace = this || window,
-		add = namespace.DataTier.processors.add,
+		add = namespace.DataTier.controllers.add,
 		viewsService = namespace.DataTier.views;
 
 	if (!namespace.DataTier) {
@@ -616,7 +616,7 @@
 		}
 	}
 
-	function extractProcessorParameters(paramValue) {
+	function extractControllerParameters(paramValue) {
 		let procParam;
 		if (paramValue) {
 			procParam = paramValue.trim().split(/\s+/);
@@ -651,13 +651,13 @@
 		return result;
 	}
 
-	function insertNewContent(container, template, processorParameters, from, to) {
+	function insertNewContent(container, template, controllerParameters, from, to) {
 		let result, optimizationMap, tmpContent, tmpTemplate, index = from, i, i1, tmp,
-			prefix = processorParameters[0] + '.', optTmpIdx,
+			prefix = controllerParameters[0] + '.', optTmpIdx,
 			views, view,
 			pairs, key;
 		tmpContent = template.content;
-		optimizationMap = prepareOptimizationMap(template, processorParameters[2]);
+		optimizationMap = prepareOptimizationMap(template, controllerParameters[2]);
 		optTmpIdx = optimizationMap.index;
 
 		for (; index < to; index++) {
@@ -754,7 +754,7 @@
 			updateExistingContent(template, container, existingListLength);
 
 			if (existingListLength < desiredListLength) {
-				ruleData = extractProcessorParameters(template.dataset.tieList);
+				ruleData = extractControllerParameters(template.dataset.tieList);
 				insertNewContent(container, template, ruleData, existingListLength, desiredListLength);
 			}
 		}

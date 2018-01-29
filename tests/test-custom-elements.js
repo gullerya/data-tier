@@ -42,7 +42,7 @@
 
 	customElements.define('custom-input', CustomInput, {extends: 'input'});
 
-	suite.addTest({name: 'testing basic processors: binding value of custom element'}, (pass, fail) => {
+	suite.addTest({name: 'testing basic controllers: binding value of custom element'}, (pass, fail) => {
 		let e = document.createElement('custom-element');
 		e.dataset.tieValue = 'testCustomsA.text';
 		if (e.value !== '') fail('precondition of the test failed');
@@ -53,7 +53,7 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic processors: custom element within a repeater'}, (pass, fail) => {
+	suite.addTest({name: 'testing basic controllers: custom element within a repeater'}, (pass, fail) => {
 		let c = document.createElement('div'),
 			t = document.createElement('template'),
 			e = document.createElement('custom-element'),
@@ -74,7 +74,7 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic processors: custom input'}, (pass, fail) => {
+	suite.addTest({name: 'testing basic controllers: custom input'}, (pass, fail) => {
 		let e = document.createElement('input', {is: 'custom-input'}),
 			tie = DataTier.ties.create('customInsTie', [
 				{text: 'some'},
@@ -83,7 +83,7 @@
 		e.dataset.tieMyValue = 'customInsTie.1.text';
 		document.body.appendChild(e);
 
-		DataTier.processors.add('tieMyValue', {
+		DataTier.controllers.add('tieMyValue', {
 			toView: (data, view) => {
 				view.value = ('' + data).toLowerCase();
 			},

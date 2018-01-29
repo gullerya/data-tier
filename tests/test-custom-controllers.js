@@ -1,17 +1,17 @@
 ﻿(() => {
 	'use strict';
 
-	let suite = Utils.JustTest.createSuite({name: 'Testing Custom View to Data Processor'}),
+	let suite = Utils.JustTest.createSuite({name: 'Testing Custom View to Data Controller'}),
 		data = Observable.from({
 			text: 'some text',
 			date: new Date()
 		});
 
-	suite.addTest({name: 'testing setup of the processor from create'}, (pass, fail) => {
+	suite.addTest({name: 'testing setup of the controller from create'}, (pass, fail) => {
 		let ie = document.createElement('input'), e;
 
 		DataTier.ties.create('testCustomVTDA', data);
-		DataTier.processors.add('tieMyValue1', {
+		DataTier.controllers.add('tieMyValue1', {
 			toView: (data, view) => {
 				view.value = data;
 			},

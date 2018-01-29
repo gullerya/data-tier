@@ -1,16 +1,16 @@
 ﻿(function() {
 	'use strict';
 
-	let suite = Utils.JustTest.createSuite({name: 'Testing processors appliance'}),
+	let suite = Utils.JustTest.createSuite({name: 'Testing controllers appliance'}),
 		data = {
 			text: 'some text',
 			date: new Date()
 		},
-		testProcessorsTieA = DataTier.ties.create('testProcessorsA', data);
+		testControllersTieA = DataTier.ties.create('testControllersA', data);
 
-	suite.addTest({name: 'testing basic processors: text content'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: text content'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieText = 'testProcessorsA.text';
+		e.dataset.tieText = 'testControllersA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.textContent !== data.text) fail('textContent of the element expected to be ' + data.text + ', found: ' + e.textContent);
@@ -18,7 +18,7 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic processors: value'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: value'}, function(pass, fail) {
 		let e = document.createElement('input'),
 			o = {inner: {more: {text: 'test value'}}};
 		DataTier.ties.create('inputTestTie', o);
@@ -36,9 +36,9 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic processors: date text content'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: date text content'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieDateText = 'testProcessorsA.date';
+		e.dataset.tieDateText = 'testControllersA.date';
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.textContent !== data.date.toLocaleString()) fail('textContent of the element expected to be ' + (data.date.toLocaleString()) + ', found: ' + e.textContent);
@@ -46,9 +46,9 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic processors: date value'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: date value'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieDateValue = 'testProcessorsA.date';
+		e.dataset.tieDateValue = 'testControllersA.date';
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.value !== data.date.toLocaleString()) fail('textContent of the element expected to be ' + (data.date.toLocaleString()) + ', found: ' + e.value);
@@ -56,7 +56,7 @@
 		}, 0)
 	});
 
-	suite.addTest({name: 'testing basic processors: classes'}, function(pass, fail) {
+	suite.addTest({name: 'testing basic controllers: classes'}, function(pass, fail) {
 		let e = document.createElement('div'),
 			cl = Observable.from({});
 		DataTier.ties.create('classesList', cl);
@@ -94,20 +94,20 @@
 		}, 0);
 	});
 
-	suite.addTest({name: 'testing adding processor AFTER the elements were added'}, function(pass, fail) {
+	suite.addTest({name: 'testing adding controller AFTER the elements were added'}, function(pass, fail) {
 		let e = document.createElement('div');
-		e.dataset.tieUCText = 'testProcessorsA.text';
+		e.dataset.tieUCText = 'testControllersA.text';
 		document.body.appendChild(e);
 		setTimeout(function() {
-			if (e.textContent !== '') fail('textContent of not yet defined processor expected to be empty');
+			if (e.textContent !== '') fail('textContent of not yet defined controller expected to be empty');
 
-			window.DataTier.processors.add('tieUCText', {
+			window.DataTier.controllers.add('tieUCText', {
 				toView: function(data, view) {
 					view.textContent = data ? data.toUpperCase() : '';
 				}
 			});
 
-			if (e.textContent !== testProcessorsTieA.data.text.toUpperCase()) fail('textContent expected to be ' + testProcessorsTieA.data.text.toUpperCase());
+			if (e.textContent !== testControllersTieA.data.text.toUpperCase()) fail('textContent expected to be ' + testControllersTieA.data.text.toUpperCase());
 
 			pass();
 		}, 0);

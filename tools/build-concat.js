@@ -12,10 +12,10 @@ let sources,
 
 sources = [
 	path.join('src', 'ties-service.js'),
-	path.join('src', 'processors-service.js'),
+	path.join('src', 'controllers-service.js'),
 	path.join('src', 'views-service.js')
 ];
-fs.readdirSync(path.join('src', 'processors')).forEach(file => sources.push(path.join('src', 'processors', file)));
+fs.readdirSync(path.join('src', 'controllers')).forEach(file => sources.push(path.join('src', 'controllers', file)));
 objectObserver = path.join('node_modules', 'object-observer', 'dist', 'object-observer.js');
 
 destinationWithOO = path.join('dist', 'data-tier.js');

@@ -2,7 +2,7 @@
 	'use strict';
 
 	const namespace = this || window,
-		add = namespace.DataTier.processors.add,
+		add = namespace.DataTier.controllers.add,
 		viewsService = namespace.DataTier.views;
 
 	if (!namespace.DataTier) {
@@ -16,7 +16,7 @@
 		}
 	}
 
-	function extractProcessorParameters(paramValue) {
+	function extractControllerParameters(paramValue) {
 		let procParam;
 		if (paramValue) {
 			procParam = paramValue.trim().split(/\s+/);
@@ -51,13 +51,13 @@
 		return result;
 	}
 
-	function insertNewContent(container, template, processorParameters, from, to) {
+	function insertNewContent(container, template, controllerParameters, from, to) {
 		let result, optimizationMap, tmpContent, tmpTemplate, index = from, i, i1, tmp,
-			prefix = processorParameters[0] + '.', optTmpIdx,
+			prefix = controllerParameters[0] + '.', optTmpIdx,
 			views, view,
 			pairs, key;
 		tmpContent = template.content;
-		optimizationMap = prepareOptimizationMap(template, processorParameters[2]);
+		optimizationMap = prepareOptimizationMap(template, controllerParameters[2]);
 		optTmpIdx = optimizationMap.index;
 
 		for (; index < to; index++) {
@@ -154,7 +154,7 @@
 			updateExistingContent(template, container, existingListLength);
 
 			if (existingListLength < desiredListLength) {
-				ruleData = extractProcessorParameters(template.dataset.tieList);
+				ruleData = extractControllerParameters(template.dataset.tieList);
 				insertNewContent(container, template, ruleData, existingListLength, desiredListLength);
 			}
 		}

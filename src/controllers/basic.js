@@ -2,7 +2,7 @@
 	'use strict';
 
 	const namespace = this || window,
-		add = namespace.DataTier.processors.add;
+		add = namespace.DataTier.controllers.add;
 
 	if (!namespace.DataTier) {
 		throw new Error('data-tier framework was not properly initialized');
