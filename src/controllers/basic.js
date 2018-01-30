@@ -4,10 +4,6 @@
 	const namespace = this || window,
 		add = namespace.DataTier.controllers.add;
 
-	if (!namespace.DataTier) {
-		throw new Error('data-tier framework was not properly initialized');
-	}
-
 	add('tieValue', {
 		toView: function(data, view) {
 			if (view.type === 'checkbox') {
@@ -50,21 +46,9 @@
 		}
 	});
 
-	add('tieHRef', {
+	add('tieHref', {
 		toView: function(data, view) {
 			view.href = typeof data !== 'undefined' && data !== null ? data : '';
-		}
-	});
-
-	add('tieDateValue', {
-		toView: function(data, view) {
-			view.value = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
-		}
-	});
-
-	add('tieDateText', {
-		toView: function(data, view) {
-			view.textContent = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
 

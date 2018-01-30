@@ -5,17 +5,6 @@
 		add = namespace.DataTier.controllers.add,
 		viewsService = namespace.DataTier.views;
 
-	if (!namespace.DataTier) {
-		throw new Error('data-tier framework was not properly initialized');
-	}
-
-	function signTemplate(template, sign) {
-		let children = template.content.children;
-		for (let i = 0, l = children.length; i < l; i++) {
-			children[i].dataset.dtListItemAid = sign;
-		}
-	}
-
 	function extractControllerParameters(paramValue) {
 		let procParam;
 		if (paramValue) {
@@ -52,7 +41,7 @@
 	}
 
 	function insertNewContent(container, template, controllerParameters, from, to) {
-		let result, optimizationMap, tmpContent, tmpTemplate, index = from, i, i1, tmp,
+		let result = null, optimizationMap, tmpContent, tmpTemplate, index = from, i, i1, tmp,
 			prefix = controllerParameters[0] + '.', optTmpIdx,
 			views, view,
 			pairs, key;
@@ -126,20 +115,22 @@
 			if (!Array.isArray(tiedValue) || !template) return;
 
 			let container = template.parentNode, ruleData,
+				fceDataSet,
 				templateItemAid,
 				desiredListLength = tiedValue.length;
 
 			if (template.nodeName !== 'TEMPLATE') {
 				throw new Error('tieList may be defined on template elements only');
 			}
-			if (!template.content.childElementCount) {
-				throw new Error('tieList\'s TEMPLATE MUST HAVE at least one child element');
+			if (template.content.childElementCount !== 1) {
+				throw new Error('tieList\'s TEMPLATE element MUST HAVE exactly one direct child element');
 			}
 
-			templateItemAid = template.content.firstElementChild.dataset.dtListItemAid;
+			fceDataSet = template.content.firstElementChild.dataset;
+			templateItemAid = fceDataSet.dtListItemAid;
 			if (!templateItemAid) {
 				templateItemAid = new Date().getTime();
-				signTemplate(template, templateItemAid);
+				fceDataSet.dtListItemAid = templateItemAid;
 			}
 
 			//	adjust list elements size to the data length
@@ -159,5 +150,4 @@
 			}
 		}
 	});
-
 })();

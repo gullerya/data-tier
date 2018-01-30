@@ -609,10 +609,6 @@
 	const namespace = this || window,
 		controllers = {};
 
-	if (!namespace.DataTier) {
-		throw new Error('data-tier framework was not properly initialized');
-	}
-
 	function Controller(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'toView', {value: options.toView});
@@ -1010,10 +1006,6 @@
 	const namespace = this || window,
 		add = namespace.DataTier.controllers.add;
 
-	if (!namespace.DataTier) {
-		throw new Error('data-tier framework was not properly initialized');
-	}
-
 	add('tieValue', {
 		toView: function(data, view) {
 			if (view.type === 'checkbox') {
@@ -1056,21 +1048,9 @@
 		}
 	});
 
-	add('tieHRef', {
+	add('tieHref', {
 		toView: function(data, view) {
 			view.href = typeof data !== 'undefined' && data !== null ? data : '';
-		}
-	});
-
-	add('tieDateValue', {
-		toView: function(data, view) {
-			view.value = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
-		}
-	});
-
-	add('tieDateText', {
-		toView: function(data, view) {
-			view.textContent = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
 		}
 	});
 
@@ -1095,23 +1075,100 @@
 	});
 
 })();
+(() => {
+	'use strict';
+
+	const namespace = this || window,
+		add = namespace.DataTier.controllers.add;
+
+	//	deprecated
+	add('tieDateValue', {
+		toView: function(data, view) {
+			view.value = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
+		}
+	});
+
+	//	deprecated
+	add('tieDateText', {
+		toView: function(data, view) {
+			view.textContent = typeof data !== 'undefined' && data !== null ? data.toLocaleString() : '';
+		}
+	});
+
+	add('tieDatetimeText', new DateTimeTextController());
+
+	add('tieDatetimeValue', new DateTimeValueController());
+
+	function DateTimeTextController(visualizationProperty) {
+		let visProp = visualizationProperty || 'textContent';
+
+		this.format = 'dd/MM/yyyy hh/mm/sss';
+
+		this.toView = function(data, view) {
+			let formattedDate = data;
+			if (!data) {
+				formattedDate = '';
+			} else if (data instanceof Date) {
+				formattedDate = formatDate(data, this.format);
+			} else {
+				try {
+					let tmpDate = new Date(data);
+					if (tmpDate instanceof Date) {
+						formattedDate = formatDate(tmpDate, this.format);
+					}
+				} catch (e) {
+					console.error('failed to parse "' + data + '" as date', e);
+				}
+			}
+			view[visProp] = formattedDate;
+		};
+	}
+
+	function DateTimeValueController() {
+		DateTimeTextController.apply(this, 'value');
+
+		this.toData = function(changeEvent) {
+			console.warn('yet to be implemented, react on ' + changeEvent);
+		};
+	}
+
+	let supportedTokens = {
+		d: function(date, len) { return date.getDate().toString().padStart(len, '0'); },
+		M: function(date, len) { return (date.getMonth() + 1).toString().padStart(len, '0'); },
+		y: function(date, len) { return date.getFullYear().toString().padStart(len, '0'); },
+		h: function(date, len) { return date.getHours().toString().padStart(len, '0'); },
+		m: function(date, len) { return date.getMinutes().toString().padStart(len, '0'); },
+		s: function(date, len) { return date.getSeconds().toString().padStart(len, '0'); },
+		f: function(date, len) { return date.getMilliseconds().toString().padStart(len, '0'); }
+	};
+
+	function formatDate(date, format) {
+		let result = '';
+		if (!format) {
+			result = date.toLocaleString();
+		} else {
+			let char, cnt;
+			for (let i = 0, l = format.length; i < l; i++) {
+				char = format.charAt(i);
+				if (supportedTokens[char]) {
+					cnt = 1;
+					while (i < l - 1 && format.charAt[i + 1] === char) cnt++;
+					result += supportedTokens[char](date, cnt);
+				} else {
+					result += char;
+				}
+			}
+		}
+		return result;
+	}
+
+})();
 ﻿(() => {
 	'use strict';
 
 	const namespace = this || window,
 		add = namespace.DataTier.controllers.add,
 		viewsService = namespace.DataTier.views;
-
-	if (!namespace.DataTier) {
-		throw new Error('data-tier framework was not properly initialized');
-	}
-
-	function signTemplate(template, sign) {
-		let children = template.content.children;
-		for (let i = 0, l = children.length; i < l; i++) {
-			children[i].dataset.dtListItemAid = sign;
-		}
-	}
 
 	function extractControllerParameters(paramValue) {
 		let procParam;
@@ -1149,7 +1206,7 @@
 	}
 
 	function insertNewContent(container, template, controllerParameters, from, to) {
-		let result, optimizationMap, tmpContent, tmpTemplate, index = from, i, i1, tmp,
+		let result = null, optimizationMap, tmpContent, tmpTemplate, index = from, i, i1, tmp,
 			prefix = controllerParameters[0] + '.', optTmpIdx,
 			views, view,
 			pairs, key;
@@ -1223,20 +1280,22 @@
 			if (!Array.isArray(tiedValue) || !template) return;
 
 			let container = template.parentNode, ruleData,
+				fceDataSet,
 				templateItemAid,
 				desiredListLength = tiedValue.length;
 
 			if (template.nodeName !== 'TEMPLATE') {
 				throw new Error('tieList may be defined on template elements only');
 			}
-			if (!template.content.childElementCount) {
-				throw new Error('tieList\'s TEMPLATE MUST HAVE at least one child element');
+			if (template.content.childElementCount !== 1) {
+				throw new Error('tieList\'s TEMPLATE element MUST HAVE exactly one direct child element');
 			}
 
-			templateItemAid = template.content.firstElementChild.dataset.dtListItemAid;
+			fceDataSet = template.content.firstElementChild.dataset;
+			templateItemAid = fceDataSet.dtListItemAid;
 			if (!templateItemAid) {
 				templateItemAid = new Date().getTime();
-				signTemplate(template, templateItemAid);
+				fceDataSet.dtListItemAid = templateItemAid;
 			}
 
 			//	adjust list elements size to the data length
@@ -1256,5 +1315,4 @@
 			}
 		}
 	});
-
 })();

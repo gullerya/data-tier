@@ -4,10 +4,6 @@
 	const namespace = this || window,
 		controllers = {};
 
-	if (!namespace.DataTier) {
-		throw new Error('data-tier framework was not properly initialized');
-	}
-
 	function Controller(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
 		Reflect.defineProperty(this, 'toView', {value: options.toView});
