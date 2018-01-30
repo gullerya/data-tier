@@ -6,28 +6,12 @@
 
 	function Controller(name, options) {
 		Reflect.defineProperty(this, 'name', {value: name});
-		Reflect.defineProperty(this, 'toView', {value: options.toView});
-		Reflect.defineProperty(this, 'toData', {value: typeof options.toData === 'function' ? options.toData : defaultToData});
-		Reflect.defineProperty(this, 'changeDOMEventType', {value: typeof options.changeDOMEventType === 'string' ? options.changeDOMEventType : null});
-		Reflect.defineProperty(this, 'parseParam', {value: typeof options.parseParam === 'function' ? options.parseParam : defaultParseParam});
-		Reflect.defineProperty(this, 'isChangedPathRelevant', {value: typeof options.isChangedPathRelevant === 'function' ? options.isChangedPathRelevant : defaultIsChangedPathRelevant});
+		Object.assign(this, options);
 	}
 
-	function defaultParseParam(param) {
-		let tieName = '', dataPath = [];
-		if (param) {
-			dataPath = param.trim().split('.');
-			tieName = dataPath.shift();
-		}
-		return {
-			tieName: tieName,
-			dataPath: dataPath
-		};
-	}
-
-	function defaultIsChangedPathRelevant(changedPath, viewedPath) {
-		return viewedPath.startsWith(changedPath);
-	}
+	Controller.prototype.toData = defaultToData;
+	Controller.prototype.parseParam = defaultParseParam;
+	Controller.prototype.isChangedPathRelevant = defaultIsChangedPathRelevant;
 
 	Reflect.defineProperty(Controller.prototype, 'parseParam', {value: defaultParseParam});
 	Reflect.defineProperty(Controller.prototype, 'isChangedPathRelevant', {value: defaultIsChangedPathRelevant});
@@ -75,6 +59,22 @@
 
 	function defaultToData(event) {
 		setPath(event.data, event.path, event.view.value);
+	}
+
+	function defaultParseParam(param) {
+		let tieName = '', dataPath = [];
+		if (param) {
+			dataPath = param.trim().split('.');
+			tieName = dataPath.shift();
+		}
+		return {
+			tieName: tieName,
+			dataPath: dataPath
+		};
+	}
+
+	function defaultIsChangedPathRelevant(changedPath, viewedPath) {
+		return viewedPath.startsWith(changedPath);
 	}
 
 	function setPath(ref, path, value) {

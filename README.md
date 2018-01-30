@@ -8,14 +8,18 @@
 
 It is possible to provide custom `Observable` implementation. In this case you may want to use lighter `data-tier-wo-oo.js` where `object-observer.js` opted out.
 
-#### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](tools/browser_icons/firefox.png) <sub>44+</sub>, ![EDGE](tools/browser_icons/explorer.png) <sub>13+</sub>
+#### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub>, ![FIREFOX](tools/browser_icons/firefox.png) <sub>44+</sub>, ![EDGE](tools/browser_icons/edge.png) <sub>13+</sub>
 Support matrix is currently as wide as that of [`object-observer`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object observer, but will use an embedded one.
 `data-tier` supports custom elements as well, obviously this functionality is available only on supporting environments.
 
 #### Versions
 
+__0.6.14__
+  - Fixed defect in `tie-list` controller when text nodes present in the `template` element
+  - Added `tie-datetime-text` OOTB controller
+
 __0.6.13__
-  - Added `tie-input` OTB controller in other to track an immediate changes in input elements supporting `input` event (types: `text`, `password` of `input` element, `textarea` element).
+  - Added `tie-input` OOTB controller in other to track an immediate changes in input elements supporting `input` event (types: `text`, `password` of `input` element, `textarea` element).
 
 __0.6.12__
   - Fixed [issue no. 10](https://github.com/gullerya/data-tier/issues/10)

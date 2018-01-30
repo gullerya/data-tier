@@ -25,7 +25,7 @@
 	function DateTimeTextController(visualizationProperty) {
 		let visProp = visualizationProperty || 'textContent';
 
-		this.format = 'dd/MM/yyyy hh/mm/sss';
+		this.format = 'dd/MM/yyyy hh:mm:ss';
 
 		this.toView = function(data, view) {
 			let formattedDate = data;
@@ -48,17 +48,24 @@
 	}
 
 	function DateTimeValueController() {
-		DateTimeTextController.apply(this, 'value');
+		DateTimeTextController.call(this, 'value');
 
 		this.toData = function(changeEvent) {
 			console.warn('yet to be implemented, react on ' + changeEvent);
 		};
 	}
 
+	DateTimeValueController.prototype = Object.create(DateTimeTextController.prototype);
+	DateTimeValueController.prototype.constructor = DateTimeValueController;
+
 	let supportedTokens = {
 		d: function(date, len) { return date.getDate().toString().padStart(len, '0'); },
 		M: function(date, len) { return (date.getMonth() + 1).toString().padStart(len, '0'); },
-		y: function(date, len) { return date.getFullYear().toString().padStart(len, '0'); },
+		y: function(date, len) {
+			let tmpY = date.getFullYear().toString();
+			if (tmpY.length > len) return tmpY.substr(tmpY.length - len);
+			else return tmpY.padStart(len, '0');
+		},
 		h: function(date, len) { return date.getHours().toString().padStart(len, '0'); },
 		m: function(date, len) { return date.getMinutes().toString().padStart(len, '0'); },
 		s: function(date, len) { return date.getSeconds().toString().padStart(len, '0'); },
@@ -75,7 +82,10 @@
 				char = format.charAt(i);
 				if (supportedTokens[char]) {
 					cnt = 1;
-					while (i < l - 1 && format.charAt[i + 1] === char) cnt++;
+					while (i < l - 1 && format.charAt(i + 1) === char) {
+						cnt++;
+						i++;
+					}
 					result += supportedTokens[char](date, cnt);
 				} else {
 					result += char;
