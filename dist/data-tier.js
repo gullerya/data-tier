@@ -829,7 +829,7 @@
 				param, pathViews, index;
 			for (i = 0, l = list.length; i <= l; i++) {
 				element = i < l ? list[i] : rootElement;
-				if (!element.dataset || !element.dataset.length) continue;
+				if (!element.dataset || !Object.keys(element.dataset).length) continue;
 				tmpCtrls = controllers.getApplicable(element);
 				i1 = tmpCtrls.length;
 				while (i1--) {
