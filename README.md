@@ -43,18 +43,20 @@ There are 2 ways to load the library: into a `window` global scope, or a custom 
 ```html
 <script src="data-tier.min.js"></script>
 <script>
-	let person = { name: 'Uriya', age: 8 },
-	    observablePerson = Observable.from(person);
-	DataTier.ties.create('person', observablePerson);
-	DataTier.ties.create('settings', {});
+	let person = { name: 'Uriya', age: 8 };
+	DataTier.ties.create('person', person);
+	DataTier.ties.create('settings');
 </script>
 ```
+<sup><sub>
+* __tie__ `person` has its `data` property set to `Observable.from(person)`, original `person` object remains untouched and its own changes __aren't__ being watched
+* __tie__ `settings` has its `data` as `null`, it may be set to any object later on
+</sub></sup>
 
 * The snippet below exemplifies how to load the library into a __custom scope__ (add error handling as appropriate):
 ```javascript
 let customNamespace = {},
-    person = { name: 'Nava', age: 6 },
-    observablePerson;
+    person = { name: 'Nava', age: 6 };
 
 fetch('data-tier.min.js').then(function (response) {
 	if (response.status === 200) {
@@ -62,13 +64,11 @@ fetch('data-tier.min.js').then(function (response) {
 			Function(code).call(customNamespace);
 			
 			//	the below code is an example of consumption, locate it in your app lifecycle/flow as appropriate
-			observablePerson = customNamespace.Observable.from(person);
-			customNamespace.DataTier.ties.create('person', observablePerson);
+			customNamespace.DataTier.ties.create('person', person);
 		});
 	}
 });
 ```
-- Note the usage of an embedded `Observable` along the way. As it has been mentioned before, you may provide your own `Observable` implementation and in this case more lightweight `data-tier-wo-oo.js`/`data-tier-wo-oo.min.js` may suite you more
 - If an embedded `object-observer` employed, it is even more preferable to create the `Tie` from a plain JS object 
 - Minified version is also available for both distributions, with and without `object-observer.js`
 
@@ -82,7 +82,7 @@ The library utilizes 2 main concepts: __`Tie`__ and __`Controller`__.
 __`Tie`__ holds an observable data structure associated with tie's name, it's about __what__ to tie.
 Thus, ties serve most and foremost data segregation and management purposes.
 
-Thus, having the following data structure:
+Having the following data structure:
 ```javascript
 let bands = [
 	{
@@ -97,11 +97,9 @@ let bands = [
 ];
 bands.totalTooltip = generateTooltipText();
 ```
-one can create a tie named, say, 'bandsTie', setting its data to be (an observable clone of) the bands array:
+one can create a tie named, say, 'bandsTie', having its data set to the bands array:
 ```javascript
 let bandsDataStore = DataTier.ties.create('bandsTie', bands);
-
-//  or ...DataTier.ties.create('bandsTie', Observable.from(bands));
 ```
 
 and then tie any UI element to it via the tie name and the path:
