@@ -718,7 +718,7 @@
 	function getPath(ref, path) {
 		if (!ref) return;
 		for (let i = 0, pathLength = path.length; i < pathLength; i++) {
-			if (path[i] in ref) ref = ref[path[i]];
+			if (ref && path[i] in ref) ref = ref[path[i]];
 			else return;
 		}
 		return ref;

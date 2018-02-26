@@ -14,6 +14,9 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 
 #### Versions
 
+__0.6.16__
+  - Fixed potential issue with empty (`null`) object traversal in deep tying
+
 __0.6.15__
   - Fixed [issue no. 11](https://github.com/gullerya/data-tier/issues/11)
   - Moved most of the changes [here](changelog.md), while here will be shown only a most recent versions
