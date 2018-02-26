@@ -2,6 +2,9 @@
 
 Here will be kept the detailed full log from the moment I've started to track it, while in the [README](README.md) file will be shown only a recent changes.
 
+__0.6.16__
+  - Fixed potential issue with empty (`null`) object traversal in deep tying
+
 __0.6.15__
   - Fixed [issue no. 11](https://github.com/gullerya/data-tier/issues/11)
 

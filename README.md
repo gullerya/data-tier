@@ -32,11 +32,6 @@ __0.6.12__
   - Fixed [issue no. 10](https://github.com/gullerya/data-tier/issues/10)
   - Further performance improvements
 
-__0.6.11__
-  - Fixed [issue no. 8](https://github.com/gullerya/data-tier/issues/8)
-  - Fixed [issue no. 9](https://github.com/gullerya/data-tier/issues/9)
-  - Minor performance improvements
-
 
 ## Loading the Library
 
