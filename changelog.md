@@ -2,6 +2,9 @@
 
 Here will be kept the detailed full log from the moment I've started to track it, while in the [README](README.md) file will be shown only a recent changes.
 
+__0.6.17__
+  - Added `tie-property` OOTB controller - having parameter syntax `path.to.data => propName` it is made possible to tie to arbitrary element property (yes, this is having `CustomElements` in mind)
+
 __0.6.16__
   - Fixed potential issue with empty (`null`) object traversal in deep tying
 

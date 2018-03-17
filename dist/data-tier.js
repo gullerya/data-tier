@@ -1006,6 +1006,16 @@
 	const namespace = this || window,
 		add = namespace.DataTier.controllers.add;
 
+	add('tieProperty', {
+		parseParam: function(param) {
+			return this.constructor.prototype.parseParam(param.split('=>').shift().trim());
+		},
+		toView: (data, view) => {
+			let propertyName = view.dataset.tieProperty.split('=>').pop().trim();
+			view[propertyName] = data;
+		}
+	});
+
 	add('tieValue', {
 		toView: function(data, view) {
 			if (view.type === 'checkbox') {

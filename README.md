@@ -14,6 +14,9 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 
 #### Versions
 
+__0.6.17__
+  - Added `tie-property` OOTB controller - having parameter syntax `path.to.data => propName` it is made possible to tie to arbitrary element property (yes, this is having `CustomElements` in mind)
+
 __0.6.16__
   - Fixed potential issue with empty (`null`) object traversal in deep tying
 
@@ -27,10 +30,6 @@ __0.6.14__
 
 __0.6.13__
   - Added `tie-input` OOTB controller in other to track an immediate changes in input elements supporting `input` event (types: `text`, `password` of `input` element, `textarea` element).
-
-__0.6.12__
-  - Fixed [issue no. 10](https://github.com/gullerya/data-tier/issues/10)
-  - Further performance improvements
 
 
 ## Loading the Library
