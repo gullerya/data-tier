@@ -36,6 +36,7 @@
   },
   "homepage": "https://github.com/gullerya/data-tier/README.md",
   "dependencies": {
+    "npm": "^5.8.0",
     "object-observer": "^0.2.6"
   },
   "devDependencies": {
