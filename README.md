@@ -14,6 +14,9 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 
 #### Versions
 
+- __0.6.18__
+  - Fixed [issue no. 12](https://github.com/gullerya/data-tier/issues/12)
+
 - __0.6.17__
   - Added `tie-property` OOTB controller - having parameter syntax `path.to.data => propName` it is made possible to tie to arbitrary element property (yes, this is having `CustomElements` in mind)
 
@@ -27,9 +30,6 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 - __0.6.14__
   - Fixed defect in `tie-list` controller when text nodes present in the `template` element
   - Added `tie-datetime-text` OOTB controller
-
-- __0.6.13__
-  - Added `tie-input` OOTB controller in other to track an immediate changes in input elements supporting `input` event (types: `text`, `password` of `input` element, `textarea` element).
 
 
 ## Loading the Library
@@ -72,7 +72,9 @@ fetch('data-tier.min.js').then(function (response) {
 
 ## Basic concepts
 
-The library utilizes 2 main concepts: __`Tie`__ and __`Controller`__.
+My, definitely opinionated, insights of how client application should look like ni general and how `data-tier` library comes into the picture can be found [__here__](docs/client-app-architecture.md). That would probably be the most completed overview of the library's overall usage.
+
+Here I'll just outline the very essentials, namely 2 main concepts: __`Tie`__ and __`Controller`__.
 
 
 #### Tie
