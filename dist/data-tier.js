@@ -777,6 +777,7 @@
 	}
 
 	function add(view) {
+		let localCustomElementName;
 		if (view.nodeName === 'IFRAME') {
 			initDocumentObserver(view.contentDocument);
 			view.addEventListener('load', function() {
@@ -784,34 +785,50 @@
 				collect(this.contentDocument);
 			});
 			collect(view.contentDocument);
+		} else if (Node.ELEMENT_NODE === view.nodeType && (localCustomElementName = getLocalNameIfCustomElement(view))) {
+			customElements.whenDefined(localCustomElementName).then(() => processAddedView(view));
 		} else if (view.dataset) {
-			let keys = Object.keys(view.dataset), key,
-				controller, controllerParam, pathString,
-				tieViews, procViews, pathViews, i;
-			i = keys.length;
-			while (i--) {
-				key = keys[i];
-				if (!key.startsWith('tie')) continue;
-				controller = controllers.get(key);
-				if (controller) {
-					controllerParam = controller.parseParam(view.dataset[controller.name]);
-					pathString = controllerParam.dataPath.join('.');
-					tieViews = views[controllerParam.tieName] || (views[controllerParam.tieName] = {});
-					procViews = tieViews[controller.name] || (tieViews[controller.name] = {});
-					pathViews = procViews[pathString] || (procViews[pathString] = []);
+			processAddedView(view);
+		}
+	}
 
-					if (pathViews.indexOf(view) < 0) {
-						pathViews.push(view);
-						update(view, controller.name);
-						if (controller.changeDOMEventType) {
-							addChangeListener(view, controller.changeDOMEventType);
-						}
+	function getLocalNameIfCustomElement(view) {
+		let result;
+		if (view.localName.includes('-')) {
+			result = view.localName;
+		} else if (!(result = view.getAttribute('is')) || !result.includes('-')) {
+			result = null;
+		}
+		return result;
+	}
+
+	function processAddedView(view) {
+		let keys = Object.keys(view.dataset), key,
+			controller, controllerParam, pathString,
+			tieViews, procViews, pathViews, i;
+		i = keys.length;
+		while (i--) {
+			key = keys[i];
+			if (!key.startsWith('tie')) continue;
+			controller = controllers.get(key);
+			if (controller) {
+				controllerParam = controller.parseParam(view.dataset[controller.name]);
+				pathString = controllerParam.dataPath.join('.');
+				tieViews = views[controllerParam.tieName] || (views[controllerParam.tieName] = {});
+				procViews = tieViews[controller.name] || (tieViews[controller.name] = {});
+				pathViews = procViews[pathString] || (procViews[pathString] = []);
+
+				if (pathViews.indexOf(view) < 0) {
+					pathViews.push(view);
+					update(view, controller.name);
+					if (controller.changeDOMEventType) {
+						addChangeListener(view, controller.changeDOMEventType);
 					}
-				} else {
-					//	collect potentially future controller's element and put them into some tracking storage
-					if (!nlvs[key]) nlvs[key] = [];
-					nlvs[key].push(view);
 				}
+			} else {
+				//	collect potentially future controller's element and put them into some tracking storage
+				if (!nlvs[key]) nlvs[key] = [];
+				nlvs[key].push(view);
 			}
 		}
 	}

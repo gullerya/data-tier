@@ -13,13 +13,6 @@
 	class CustomElement extends HTMLElement {
 		constructor() {
 			super();
-			this.__value = this.value || '';
-			this.textContent = this.__value;
-			delete this['value'];
-		}
-
-		connectedCallback() {
-			this.style.cssText = 'display:block;width:200px;height:22px;border:1px solid #aaa;';
 		}
 
 		get value() {
@@ -45,7 +38,7 @@
 	suite.addTest({name: 'testing basic controllers: binding value of custom element'}, (pass, fail) => {
 		let e = document.createElement('custom-element');
 		e.dataset.tieValue = 'testCustomsA.text';
-		if (e.value !== '') fail('precondition of the test failed');
+		if (e.value) fail('precondition of the test failed');
 		document.body.appendChild(e);
 		setTimeout(function() {
 			if (e.value !== data.text.toUpperCase()) fail('textContent of the element expected to be ' + data.text.toUpperCase() + ', found: ' + e.value);
