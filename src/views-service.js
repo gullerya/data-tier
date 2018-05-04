@@ -164,28 +164,30 @@
 	}
 
 	function move(view, controllerName, oldParam, newParam) {
-		let controller, controllerParam, pathViews, i = -1;
+		let controller;
 
 		controller = controllers.get(controllerName);
 		if (!controller) return;
-		controllerParam = controllers.get(controllerName).parseParam(oldParam);
 
-		//	delete old path
-		if (views[controllerParam.tieName] && views[controllerParam.tieName][controllerName]) {
-			pathViews = views[controllerParam.tieName][controllerName][controllerParam.dataPath];
-			if (pathViews) i = pathViews.indexOf(view);
-			if (i >= 0) {
-				pathViews.splice(i, 1);
+		if (oldParam) {
+			let controllerParam = controllers.get(controllerName).parseParam(oldParam);
+			if (views[controllerParam.tieName] && views[controllerParam.tieName][controllerName]) {
+				let pathViews = views[controllerParam.tieName][controllerName][controllerParam.dataPath], i = -1;
+				if (pathViews) i = pathViews.indexOf(view);
+				if (i >= 0) {
+					pathViews.splice(i, 1);
+				}
 			}
 		}
 
-		//	add new path
-		controllerParam = controllers.get(controllerName).parseParam(newParam);
-		if (!views[controllerParam.tieName]) views[controllerParam.tieName] = {};
-		if (!views[controllerParam.tieName][controllerName]) views[controllerParam.tieName][controllerName] = {};
-		if (!views[controllerParam.tieName][controllerName][controllerParam.dataPath]) views[controllerParam.tieName][controllerName][controllerParam.dataPath] = [];
-		views[controllerParam.tieName][controllerName][controllerParam.dataPath].push(view);
-		update(view, controllerName);
+		if (newParam) {
+			let controllerParam = controllers.get(controllerName).parseParam(newParam);
+			if (!views[controllerParam.tieName]) views[controllerParam.tieName] = {};
+			if (!views[controllerParam.tieName][controllerName]) views[controllerParam.tieName][controllerName] = {};
+			if (!views[controllerParam.tieName][controllerName][controllerParam.dataPath]) views[controllerParam.tieName][controllerName][controllerParam.dataPath] = [];
+			views[controllerParam.tieName][controllerName][controllerParam.dataPath].push(view);
+			update(view, controllerName);
+		}
 	}
 
 	function processChanges(tieName, changes) {

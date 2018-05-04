@@ -6,7 +6,9 @@
 
 	add('tieProperty', {
 		parseParam: function(param) {
-			return this.constructor.prototype.parseParam(param.split('=>').shift().trim());
+			return this.constructor.prototype.parseParam(
+				param ? param.split('=>').shift().trim() : null
+			);
 		},
 		toView: (data, view) => {
 			let propertyName = view.dataset.tieProperty.split('=>').pop().trim();

@@ -2,6 +2,9 @@
 
 Here will be kept the detailed full log from the moment I've started to track it, while in the [README](README.md) file will be shown only a recent changes.
 
+- __0.6.19__
+  - Fixed incorrect behavior when `tie-property` configured on the element **after** it was added to the DOM
+
 - __0.6.18__
   - Fixed [issue no. 12](https://github.com/gullerya/data-tier/issues/12)
 

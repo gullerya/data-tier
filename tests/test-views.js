@@ -88,5 +88,16 @@
 		}, 0);
 	});
 
+	suite.addTest({name: 'adding tie property after the element was added to the DOM'}, (pass, fail) => {
+		let newEl = document.createElement('div');
+		DataTier.ties.create('postAdd', {test: 'text'});
+		document.body.appendChild(newEl);
+		newEl.dataset.tieProperty = 'postAdd.test => textContent';
+		setTimeout(() => {
+			if (newEl.textContent !== 'text') fail(new Error('expected the value to be "text", but found ' + newEl.textContent));
+			pass();
+		}, 0);
+	});
+
 	suite.run();
 })();

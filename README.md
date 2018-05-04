@@ -14,6 +14,9 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 
 #### Versions
 
+- __0.6.19__
+  - Fixed incorrect behavior when `tie-property` configured on the element **after** it was added to the DOM
+
 - __0.6.18__
   - Fixed [issue no. 12](https://github.com/gullerya/data-tier/issues/12)
 
@@ -26,10 +29,6 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 - __0.6.15__
   - Fixed [issue no. 11](https://github.com/gullerya/data-tier/issues/11)
   - Moved most of the changes [here](changelog.md), while here will be shown only a most recent versions
-
-- __0.6.14__
-  - Fixed defect in `tie-list` controller when text nodes present in the `template` element
-  - Added `tie-datetime-text` OOTB controller
 
 
 ## Loading the Library
