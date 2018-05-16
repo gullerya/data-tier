@@ -27,17 +27,15 @@
 				return data;
 			},
 			set: function(input) {
-				let oldData = data,
-					newData = ensureObservable(input);
-				if (data) data.revoke();
-				data = newData;
-				if (data) data.observe(observer);
-				namespace.DataTier.views.processChanges(name, [{
-					type: 'update',
-					value: data,
-					oldValue: oldData,
-					path: []
-				}]);
+				if (input !== data) {
+					let oldData = data;
+					data = ensureObservable(input);
+					if (data) data.observe(observer);
+					namespace.DataTier.views.processChanges(name, [{
+						path: []
+					}]);
+					if (oldData) oldData.revoke();
+				}
 			}
 		});
 
