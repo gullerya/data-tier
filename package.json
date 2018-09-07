@@ -39,7 +39,7 @@
     "object-observer": "^0.2.6"
   },
   "devDependencies": {
-    "adm-zip": "^0.4.7",
+    "adm-zip": "^0.4.11",
     "grunt": "^1.0.2",
     "grunt-cli": "^1.2.0",
     "uglify-es": "^3.3.9",
