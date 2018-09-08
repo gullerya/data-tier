@@ -94,5 +94,4 @@
 		}
 		return result;
 	}
-
 })();

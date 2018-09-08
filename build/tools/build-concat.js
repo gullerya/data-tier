@@ -1,9 +1,9 @@
 ﻿'use strict';
 
-const os = require('os'),
+const
+	os = require('os'),
 	fs = require('fs'),
-	path = require('path'),
-	utils = require('./utils.js');
+	path = require('path');
 
 let sources,
 	objectObserver,
@@ -23,24 +23,6 @@ destinationWithoutOO = path.join('dist', 'data-tier-wo-oo.js');
 
 module.exports.execute = function concatSources() {
 	let cleanError = null;
-
-	//  clean up
-	process.stdout.write('cleaning destination folder...');
-	try {
-		utils.removeFolderSync('dist');
-	} catch (e) {
-		cleanError = e;
-	}
-	process.stdout.write('\t' + (cleanError === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + cleanError + ')') + os.EOL);
-
-	//  create folder
-	process.stdout.write('creating destination folder...');
-	try {
-		fs.mkdirSync('dist');
-	} catch (e) {
-		cleanError = e;
-	}
-	process.stdout.write('\t' + (cleanError === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + cleanError + ')') + os.EOL);
 
 	//  concat & copy
 	process.stdout.write('concatenation (with embedded "object-observer"):' + os.EOL);

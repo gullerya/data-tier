@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
 	'use strict';
 
 	const namespace = this || window,
@@ -29,8 +29,9 @@
 			while (i1--) {
 				key = keys[i1];
 				value = view.dataset[key];
-				if (key.startsWith('tie') && value.startsWith(itemId))
+				if (key.startsWith('tie') && value.startsWith(itemId)) {
 					relevantKeys.push([key, value.replace(itemId, '')]);
+				}
 			}
 			if (relevantKeys.length) {
 				result[i] = relevantKeys;

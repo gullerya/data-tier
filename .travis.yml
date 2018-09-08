@@ -1,4 +1,13 @@
 language: node_js
 node_js:
-  - "4"
-script: grunt full-ci
+- "8"
+
+install:
+- npm install
+
+script:
+- npm run eslint
+
+cache:
+  directories:
+  - "node_modules"

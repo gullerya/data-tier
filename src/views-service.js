@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
 	'use strict';
 
 	const namespace = this || window;
@@ -258,7 +258,6 @@
 						discard(node.contentDocument);
 					}
 				} else if (changeType === 'childList') {
-
 					//	process added nodes
 					added = change.addedNodes;
 					i2 = added.length;

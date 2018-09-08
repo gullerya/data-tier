@@ -515,7 +515,7 @@
 
 	Object.defineProperty(scope, 'Observable', {value: Observable});
 })();
-﻿(() => {
+(() => {
 	'use strict';
 
 	(() => {
@@ -619,9 +619,8 @@
 			}
 		}
 	});
-
 })();
-﻿(() => {
+(() => {
 	'use strict';
 
 	const namespace = this || window,
@@ -718,7 +717,7 @@
 		}
 	});
 })();
-﻿(() => {
+(() => {
 	'use strict';
 
 	const namespace = this || window;
@@ -978,7 +977,6 @@
 						discard(node.contentDocument);
 					}
 				} else if (changeType === 'childList') {
-
 					//	process added nodes
 					added = change.addedNodes;
 					i2 = added.length;
@@ -1037,7 +1035,7 @@
 	initDocumentObserver(document);
 	collect(document);
 })();
-﻿(() => {
+(() => {
 	'use strict';
 
 	const namespace = this || window,
@@ -1122,7 +1120,6 @@
 			}
 		}
 	});
-
 })();
 (() => {
 	'use strict';
@@ -1220,9 +1217,8 @@
 		}
 		return result;
 	}
-
 })();
-﻿(() => {
+(() => {
 	'use strict';
 
 	const namespace = this || window,
@@ -1253,8 +1249,9 @@
 			while (i1--) {
 				key = keys[i1];
 				value = view.dataset[key];
-				if (key.startsWith('tie') && value.startsWith(itemId))
+				if (key.startsWith('tie') && value.startsWith(itemId)) {
 					relevantKeys.push([key, value.replace(itemId, '')]);
+				}
 			}
 			if (relevantKeys.length) {
 				result[i] = relevantKeys;

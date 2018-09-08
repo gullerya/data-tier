@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
 	'use strict';
 
 	const namespace = this || window,
@@ -83,5 +83,4 @@
 			}
 		}
 	});
-
 })();

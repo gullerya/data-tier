@@ -1,3 +1,4 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/data-tier.svg)](https://badge.fury.io/js/data-tier)
 [![Build Status](https://travis-ci.org/gullerya/data-tier.svg?branch=master)](https://travis-ci.org/gullerya/data-tier)
 
@@ -8,7 +9,7 @@
 
 It is possible to provide custom `Observable` implementation. In this case you may want to use lighter `data-tier-wo-oo.js` where `object-observer.js` opted out.
 
-#### Support matrix: ![CHROME](tools/browser_icons/chrome.png) <sub>49+</sub> | ![FIREFOX](tools/browser_icons/firefox.png) <sub>44+</sub> | ![EDGE](tools/browser_icons/edge.png) <sub>13+</sub>
+#### Support matrix: ![CHROME](./docs/icons/chrome.png) <sub>49+</sub> | ![FIREFOX](./docs/icons/firefox.png) <sub>44+</sub> | ![EDGE](./docs/icons/edge.png) <sub>13+</sub>
 Support matrix is currently as wide as that of [`object-observer`](https://github.com/gullerya/object-observer-js), assuming that in most of the cases consumers will not provide their own object observer, but will use an embedded one.
 `data-tier` supports custom elements as well, obviously this functionality is available only on supporting environments.
 
