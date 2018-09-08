@@ -3,7 +3,8 @@
 const
 	os = require('os'),
 	fs = require('fs'),
-	path = require('path');
+	path = require('path'),
+	readline = require('readline');
 
 let sources,
 	objectObserver,
@@ -36,6 +37,7 @@ module.exports.execute = function concatSources() {
 		} catch (e) {
 			error = e;
 		}
+		readline.cursorTo(process.stdout, 40);
 		process.stdout.write('\t\t\t' + (error === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + error + ')') + os.EOL);
 	});
 
@@ -50,6 +52,7 @@ module.exports.execute = function concatSources() {
 		} catch (e) {
 			error = e;
 		}
+		readline.cursorTo(process.stdout, 40);
 		process.stdout.write('\t\t\t' + (error === null ? '\x1B[32mOK\x1B[0m' : '\x1B[31mFAIL\x1B[0m (' + error + ')') + os.EOL);
 	});
 

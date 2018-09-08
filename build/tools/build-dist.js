@@ -6,10 +6,13 @@ const
 	concater = require('./build-concat.js'),
 	minifier = require('./build-minify.js');
 
-process.stdout.write('cleaning "dist"...');
+process.stdout.write('*** CLEANUP ***' + os.EOL + os.EOL);
 fsExtra.emptyDirSync('./dist');
-process.stdout.write('\t\t\t\x1B[32mOK\x1B[0m' + os.EOL);
 
+process.stdout.write('*** CONCATENATION ***' + os.EOL + os.EOL);
 concater.execute();
 
+process.stdout.write('*** MINIFICATION ***' + os.EOL + os.EOL);
 minifier.execute();
+
+process.stdout.write('*** DONE ***' + os.EOL + os.EOL);
