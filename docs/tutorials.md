@@ -1,4 +1,4 @@
-﻿# 1. Basic example
+# 1. Basic example
 
 In essence, the purpose of the `data-tier` service is to tie model and view and sync between them automatically once changes detected in either one or another.
 

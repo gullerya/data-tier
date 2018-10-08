@@ -7,15 +7,11 @@
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) service targeting client (browser) HTML/Javascript applications.
 `data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [`object-observer`](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
-It is possible to provide custom `Observable` implementation. In this case you may want to use lighter `data-tier-wo-oo.js` where `object-observer.js` opted out.
+> In future I may consider allowing provision of custom `Observable` implementation if there will be any interest in it.
 
-#### Support matrix: ![CHROME](https://github.com/gullerya/data-tier/blob/master/docs/icons/chrome.png) <sub>49+</sub> | ![FIREFOX](https://github.com/gullerya/data-tier/blob/master/docs/icons/firefox.png) <sub>44+</sub> | ![EDGE](https://github.com/gullerya/data-tier/blob/master/docs/icons/edge.png) <sub>13+</sub>
-Support matrix is currently as wide as that of [`object-observer`](https://github.com/gullerya/object-observer), assuming that in most of the cases consumers will not provide their own object observer, but will use an embedded one.
+#### Support matrix: ![CHROME](https://github.com/gullerya/data-tier/blob/master/docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](https://github.com/gullerya/data-tier/blob/master/docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](https://github.com/gullerya/data-tier/blob/master/docs/icons/edge.png)<sub>16+</sub>
+Support matrix is currently as wide as that of [`object-observer`](https://github.com/gullerya/object-observer)'s module, assuming that in most of the cases consumers will not provide their own object observer, but will use an embedded one.
 `data-tier` supports custom elements as well, obviously this functionality is available only on supporting environments.
-
-> IMPORTANT! Starting with 0.6.20 version `data-tier` as ES6 module becomes available.
-Yet, this one comes with API breaking changes as it is reflecting somewhat different approach to the architecture or data binding in web applications.
-Read more on [this new API page](https://github.com/gullerya/data-tier/blob/master/new-readme.md).
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
@@ -31,51 +27,10 @@ Read more on [this new API page](https://github.com/gullerya/data-tier/blob/mast
 
 ## Loading the Library
 
-You have few ways to load the library: as an __ES6 module__ (pay attention to the __`module`__ in the path) or as a __regular script__ (into a 'window' global scope, or a custom scope provided by you). See examples below.
-
-> Attention: in some (observable :-)) future non-module syntax flavor will be frozen in a stable state and only defect fixes will be done there.
-Active development will focus on the ES6 module code base, which is effectively raising the support matrix of Chrome to 61, FireFox to 60 and Edge to 16.
-Also pay attention, that ES6 module styled library bear also significant API changes, see remark above in this page and elsewhere.
-
-* ES6 module (__preferred__):
 ```javascript
 //  browser
 import * as DataTier from 'dist/module/data-tier.min.js';
 ```
-
-* Simple reference (script tag) to the `data-tier.js`/`data-tier.min.js` in your HTML will load it into the __global scope__:
-```html
-<script src="data-tier.min.js"></script>
-<script>
-    let person = { name: 'Uriya', age: 8 },
-        tiedPerson = DataTier.ties.create('person', person),
-        tiedSettings = DataTier.ties.create('settings');
-</script>
-```
-> __tie__ `person` has its `data` property set to `Observable.from(person)`, original `person` object remains untouched and its own changes __aren't__ being watched.
-In order to make a changes on a tied object and see an immediate reflection in the UI use `tiedPerson.data` object.
-
-> __tie__ `settings` has its `data` as `null`, it may be set to any object later on in this way: `tiedSettings.data = {}` (or any other arbitrary data structure).
-
-* The snippet below exemplifies how to load the library into a __custom scope__ (add error handling as appropriate):
-```javascript
-let customNamespace = {},
-    person = { name: 'Nava', age: 6 };
-
-fetch('data-tier.min.js').then(function (response) {
-    if (response.status === 200) {
-        response.text().then(function (code) {
-            Function(code).call(customNamespace);
-
-            //  the below code is an example of consumption, locate it in your app lifecycle/flow as appropriate
-            customNamespace.DataTier.ties.create('person', person);
-        });
-    }
-});
-```
-- If an embedded `object-observer` employed, it is even more preferable to create the `Tie` from a plain JS object 
-- Minified version is also available for both distributions, with and without `object-observer.js`
-
 
 ## Basic concepts
 
@@ -83,10 +38,7 @@ My, definitely opinionated, insights of how client application should look like 
 
 Here I'll just outline the very essentials, namely 2 main concepts: __`Tie`__ and __`Controller`__.
 
-
 #### Tie
-> This part of the API will undergo slight change (mostly in the syntax of HTML part declaration) in the ES6 module approach.
-See [new api](https://github.com/gullerya/data-tier/blob/master/new-readme.md) for more info.
 
 __`Tie`__ holds an observable data structure associated with tie's name, it's about __what__ to tie.
 Thus, ties serve most and foremost data segregation and management purposes.
@@ -113,13 +65,11 @@ let bandsDataStore = DataTier.ties.create('bandsTie', bands);
 
 and then tie any UI element to it via the tie name and the path:
 ```html
-<span data-tie-text="bandsTie.length"
-      data-tie-tooltip="bandsTie.totalTooltip">
-</span>
+<span data-tie="bandsTie:length > textContent, bandsTie:totalTooltip > tooltip"></span>
 
 <div>
-    <template data-tie-list="bandsTie.0.albums => album">
-        <span data-tie-text="album.name"></span>
+    <template data-tie="bandsTie:0.albums > data">
+        <span data-tie="bandsTie:0.albums.1.name > textContent"></span>
     </template>
 </div>
 ```
@@ -130,7 +80,7 @@ where:
 * `bandsTie.0.name` - path can get deeper...
 * `bandsTie.0.albums.1.since` - ...actually, it can get to any level of deepness
 
-Basically, it is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating everything from there, but it should be considered as a bad practice.
+Basically, it is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating everything from there, but IMHO it would be a bad practice.
 Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.
 
 `Tie` object not only meant to hold the link between the data and its namespace, but also tie's specific configurations/customizations and data management APIs.

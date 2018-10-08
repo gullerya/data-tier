@@ -1,518 +1,607 @@
-﻿(() => {
+(() => {
 	'use strict';
 
-	const scope = this || window,
-		proxiesToTargetsMap = new Map(),
-		targetsToObserved = new Map(),
-		observedToObservable = new Map(),
-		nonObservables = ['Date', 'Blob', 'Number', 'String', 'Boolean', 'Error', 'SyntaxError', 'TypeError', 'URIError', 'Function', 'Promise', 'RegExp'];
+	const
+		scope = this || window,
+		INSERT = 'insert',
+		UPDATE = 'update',
+		DELETE = 'delete',
+		REVERSE = 'reverse',
+		SHUFFLE = 'shuffle',
+		sysObsKey = Symbol('system-observer-key'),
+		nonObservables = {
+			Date: true,
+			Blob: true,
+			Number: true,
+			String: true,
+			Boolean: true,
+			Error: true,
+			SyntaxError: true,
+			TypeError: true,
+			URIError: true,
+			Function: true,
+			Promise: true,
+			RegExp: true
+		},
+		observableDefinition = {
+			revoke: {
+				value: function() {
+					this[sysObsKey].revoke();
+				}
+			},
+			observe: {
+				value: function(observer) {
+					let systemObserver = this[sysObsKey],
+						observers = systemObserver.observers;
+					if (systemObserver.isRevoked) { throw new TypeError('revoked Observable MAY NOT be observed anymore'); }
+					if (typeof observer !== 'function') { throw new Error('observer parameter MUST be a function'); }
 
-	function copyShallow(target) {
-		return Array.isArray(target) ?
-			target.slice() :
-			Object.assign({}, target);
-	}
-
-	function isNonObservable(target) {
-		return nonObservables.indexOf(target.constructor.name) >= 0;
-	}
-
-	function proxiedArrayGet(target, key) {
-		let result,
-			observed = targetsToObserved.get(target),
-			observable = observedToObservable.get(observed.root);
-		if (key === 'pop') {
-			result = function proxiedPop() {
-				let poppedIndex, popResult, tmpTarget, changes;
-				poppedIndex = target.length - 1;
-				popResult = Reflect.apply(target[key], target, arguments);
-				tmpTarget = proxiesToTargetsMap.get(popResult);
-				if (tmpTarget) {
-					targetsToObserved.get(tmpTarget).revoke();
-				}
-				changes = [new DeleteChange(observed.path.concat(poppedIndex), tmpTarget || popResult)];
-				observable.notify(changes);
-				return tmpTarget || popResult;
-			};
-		} else if (key === 'push') {
-			result = function proxiedPush() {
-				let pushContent, pushResult, changes = [], startingLength;
-				pushContent = Array.from(arguments);
-				startingLength = target.length;
-				for (let i = 0, l = pushContent.length, item; i < l; i++) {
-					item = pushContent[i];
-					if (item && typeof item === 'object') {
-						pushContent[i] = new Observed(item, startingLength + i, observed).proxy;
-					}
-					changes.push(new InsertChange(observed.path.concat(startingLength + i), item));
-				}
-				pushResult = Reflect.apply(target[key], target, pushContent);
-				observable.notify(changes);
-				return pushResult;
-			};
-		} else if (key === 'shift') {
-			result = function proxiedShift() {
-				let shiftResult, changes, tmpTarget;
-				shiftResult = Reflect.apply(target[key], target, arguments);
-				tmpTarget = proxiesToTargetsMap.get(shiftResult);
-				if (tmpTarget) {
-					targetsToObserved.get(tmpTarget).revoke();
-				}
-
-				//	update indices of the remaining items
-				for (let i = 0, l = target.length, item, tmpObserved; i < l; i++) {
-					item = target[i];
-					if (item && typeof item === 'object') {
-						tmpObserved = targetsToObserved.get(proxiesToTargetsMap.get(item));
-						if (tmpObserved) {
-							tmpObserved.ownKey = i;
-						} else {
-							console.error('unexpectedly failed to resolve proxy -> target -> observed');
-						}
-					}
-				}
-				changes = [new DeleteChange(observed.path.concat(0), tmpTarget || shiftResult)];
-				observable.notify(changes);
-				return tmpTarget || shiftResult;
-			};
-		} else if (key === 'unshift') {
-			result = function proxiedUnshift() {
-				let unshiftContent, unshiftResult, changes = [], tmpObserved;
-				unshiftContent = Array.from(arguments);
-				unshiftContent.forEach(function(item, index) {
-					if (item && typeof item === 'object') {
-						unshiftContent[index] = new Observed(item, index, observed).proxy;
-					}
-				});
-				unshiftResult = Reflect.apply(target[key], target, unshiftContent);
-				for (let i = 0, l = target.length, item; i < l; i++) {
-					item = target[i];
-					if (item && typeof item === 'object') {
-						tmpObserved = targetsToObserved.get(proxiesToTargetsMap.get(item));
-						if (tmpObserved) {
-							tmpObserved.ownKey = i;
-						} else {
-							console.error('failed to resolve proxy -> target -> observed');
-						}
-					}
-				}
-				for (let i = 0, l = unshiftContent.length; i < l; i++) {
-					changes.push(new InsertChange(observed.path.concat(i), target[i]));
-				}
-				observable.notify(changes);
-				return unshiftResult;
-			};
-		} else if (key === 'reverse') {
-			result = function proxiedReverse() {
-				let changes, tmpObserved;
-				Reflect.apply(target[key], target, arguments);
-				for (let i = 0, l = target.length, item; i < l; i++) {
-					item = target[i];
-					if (item && typeof item === 'object') {
-						tmpObserved = targetsToObserved.get(proxiesToTargetsMap.get(item));
-						if (tmpObserved) {
-							tmpObserved.ownKey = i;
-						} else {
-							console.error('failed to resolve proxy -> target -> observed');
-						}
-					}
-				}
-				changes = [new ReverseChange()];
-				observable.notify(changes);
-				return this;
-			};
-		} else if (key === 'sort') {
-			result = function proxiedSort() {
-				let changes, tmpObserved;
-				Reflect.apply(target[key], target, arguments);
-				for (let i = 0, l = target.length, item; i < l; i++) {
-					item = target[i];
-					if (item && typeof item === 'object') {
-						tmpObserved = targetsToObserved.get(proxiesToTargetsMap.get(item));
-						if (tmpObserved) {
-							tmpObserved.ownKey = i;
-						} else {
-							console.error('failed to resolve proxy -> target -> observed');
-						}
-					}
-				}
-				changes = [new ShuffleChange()];
-				observable.notify(changes);
-				return this;
-			};
-		} else if (key === 'fill') {
-			result = function proxiedFill() {
-				let start, end, changes = [], prev, argLen = arguments.length, tarLen = target.length;
-				start = argLen < 2 ? 0 : (arguments[1] < 0 ? tarLen + arguments[1] : arguments[1]);
-				end = argLen < 3 ? tarLen : (arguments[2] < 0 ? tarLen + arguments[2] : arguments[2]);
-				prev = target.slice();
-				Reflect.apply(target[key], target, arguments);
-				for (let i = start, item, tmpTarget; i < end; i++) {
-					item = target[i];
-					if (item && typeof item === 'object') {
-						target[i] = new Observed(item, i, observed).proxy;
-					}
-					if (prev.hasOwnProperty(i)) {
-						tmpTarget = proxiesToTargetsMap.get(prev[i]);
-						if (tmpTarget) {
-							targetsToObserved.get(tmpTarget).revoke();
-						}
-
-						changes.push(new UpdateChange(observed.path.concat(i), target[i], tmpTarget || prev[i]));
+					if (observers.indexOf(observer) < 0) {
+						observers.push(observer);
 					} else {
-						changes.push(new InsertChange(observed.path.concat(i), target[i]));
+						console.info('observer may be bound to an observable only once');
 					}
 				}
-				observable.notify(changes);
-				return this;
-			};
-		} else if (key === 'splice') {
-			result = function proxiedSplice() {
-				let spliceContent, spliceResult, changes = [], tmpObserved,
-					startIndex, removed, inserted, splLen, tarLen = target.length;
-
-				spliceContent = Array.from(arguments);
-				splLen = spliceContent.length;
-
-				//	observify the newcomers
-				for (let i = 0, item; i < splLen; i++) {
-					item = spliceContent[i];
-					if (i > 1 && item && typeof item === 'object') {
-						spliceContent[i] = new Observed(item, i, observed).proxy;
+			},
+			unobserve: {
+				value: function() {
+					let systemObserver = this[sysObsKey],
+						observers = systemObserver.observers,
+						l, idx;
+					if (systemObserver.isRevoked) { throw new TypeError('revoked Observable MAY NOT be unobserved anymore'); }
+					l = arguments.length;
+					if (l) {
+						while (l--) {
+							idx = observers.indexOf(arguments[l]);
+							if (idx >= 0) observers.splice(idx, 1);
+						}
+					} else {
+						observers.splice(0);
 					}
 				}
+			}
+		},
+		prepareArray = function(origin, destination, observer) {
+			let l = origin.length, item;
+			destination[sysObsKey] = observer;
+			while (l--) {
+				item = origin[l];
+				if (item && typeof item === 'object' && !nonObservables.hasOwnProperty(item.constructor.name)) {
+					destination[l] = Array.isArray(item)
+						? new ArrayObserver({target: item, ownKey: l, parent: observer}).proxy
+						: new ObjectObserver({target: item, ownKey: l, parent: observer}).proxy;
+				} else {
+					destination[l] = item;
+				}
+			}
+		},
+		prepareObject = function(origin, destination, observer) {
+			let keys = Object.keys(origin), l = keys.length, key, item;
+			destination[sysObsKey] = observer;
+			while (l--) {
+				key = keys[l];
+				item = origin[key];
+				if (item && typeof item === 'object' && !nonObservables.hasOwnProperty(item.constructor.name)) {
+					destination[key] = Array.isArray(item)
+						? new ArrayObserver({target: item, ownKey: key, parent: observer}).proxy
+						: new ObjectObserver({target: item, ownKey: key, parent: observer}).proxy;
+				} else {
+					destination[key] = item;
+				}
+			}
+		},
+		callObservers = function(observers, changes) {
+			let l = observers.length;
+			while (l--) {
+				try {
+					observers[l](changes);
+				} catch (e) {
+					console.error('failed to deliver changes to listener' + observers[l], e);
+				}
+			}
+		},
+		getAncestorInfo = function(self) {
+			let tmp = [], result, l1 = 0, l2 = 0;
+			while (self.parent) {
+				tmp[l1++] = self.ownKey;
+				self = self.parent;
+			}
+			result = new Array(l1);
+			while (l1--) result[l2++] = tmp[l1];
+			return {observers: self.observers, path: result};
+		};
 
-				//	calculate pointers
-				startIndex = splLen === 0 ? 0 : (spliceContent[0] < 0 ? tarLen + spliceContent[0] : spliceContent[0]);
-				removed = splLen < 2 ? tarLen - startIndex : spliceContent[1];
-				inserted = Math.max(splLen - 2, 0);
-				spliceResult = Reflect.apply(target[key], target, spliceContent);
+	class ArrayObserver {
+		constructor(properties) {
+			let origin = properties.target, clone = new Array(origin.length);
+			if (properties.parent === null) {
+				this.isRevoked = false;
+				this.observers = [];
+				Object.defineProperties(clone, observableDefinition);
+			} else {
+				this.parent = properties.parent;
+				this.ownKey = properties.ownKey;
+			}
+			prepareArray(origin, clone, this);
+			this.revokable = Proxy.revocable(clone, this);
+			this.proxy = this.revokable.proxy;
+			this.target = clone;
+		}
 
-				//	reindex the paths
-				for (let i = 0, item; i < tarLen; i++) {
-					item = target[i];
-					if (item && typeof item === 'object') {
-						tmpObserved = targetsToObserved.get(proxiesToTargetsMap.get(item));
+		//	returns an unobserved graph (effectively this is an opposite of an ArrayObserver constructor logic)
+		revoke() {
+			//	revoke native proxy
+			this.revokable.revoke();
+
+			//	roll back observed array to an unobserved one
+			let target = this.target, l = target.length, item;
+			while (l--) {
+				item = target[l];
+				if (item && typeof item === 'object') {
+					let tmpObserved = item[sysObsKey];
+					if (tmpObserved) {
+						target[l] = tmpObserved.revoke();
+					}
+				}
+			}
+			return target;
+		}
+
+		get(target, key) {
+			const proxiedArrayMethods = {
+				pop: function proxiedPop(target, observed) {
+					let poppedIndex, popResult;
+					poppedIndex = target.length - 1;
+					popResult = target.pop();
+					if (popResult && typeof popResult === 'object') {
+						let tmpObserved = popResult[sysObsKey];
 						if (tmpObserved) {
-							tmpObserved.ownKey = i;
-						} else {
-							console.error('failed to resolve proxy -> target -> observed');
+							popResult = tmpObserved.revoke();
 						}
 					}
-				}
 
-				//	revoke removed Observed
-				for (let i = 0, l = spliceResult.length, item, tmpTarget; i < l; i++) {
-					item = spliceResult[i];
-					tmpTarget = proxiesToTargetsMap.get(item);
-					if (tmpTarget) {
-						targetsToObserved.get(tmpTarget).revoke();
-						spliceResult[i] = tmpTarget;
+					//	publish changes
+					let ad = getAncestorInfo(observed);
+					if (ad.observers.length) {
+						ad.path.push(poppedIndex);
+						callObservers(ad.observers, [{type: DELETE, path: ad.path, oldValue: popResult}]);
+					}
+					return popResult;
+				},
+				push: function proxiedPush(target, observed) {
+					let i, l = arguments.length - 2, item, pushContent = new Array(l), pushResult, changes,
+						initialLength, ad = getAncestorInfo(observed);
+					initialLength = target.length;
+
+					for (i = 0; i < l; i++) {
+						item = arguments[i + 2];
+						if (item && typeof item === 'object' && !nonObservables.hasOwnProperty(item.constructor.name)) {
+							item = Array.isArray(item)
+								? new ArrayObserver({target: item, ownKey: initialLength + i, parent: observed}).proxy
+								: new ObjectObserver({target: item, ownKey: initialLength + i, parent: observed}).proxy;
+						}
+						pushContent[i] = item;
+					}
+					pushResult = Reflect.apply(target.push, target, pushContent);
+
+					//	publish changes
+					if (ad.observers.length) {
+						changes = [];
+						for (i = initialLength, l = target.length; i < l; i++) {
+							let path = ad.path.slice(0);
+							path.push(i);
+							changes[i - initialLength] = {type: INSERT, path: path, value: target[i]};
+						}
+						callObservers(ad.observers, changes);
+					}
+					return pushResult;
+				},
+				shift: function proxiedShift(target, observed) {
+					let shiftResult, i, l, item, ad, changes;
+
+					shiftResult = target.shift();
+					if (shiftResult && typeof shiftResult === 'object') {
+						let tmpObserved = shiftResult[sysObsKey];
+						if (tmpObserved) {
+							shiftResult = tmpObserved.revoke();
+						}
+					}
+
+					//	update indices of the remaining items
+					for (i = 0, l = target.length; i < l; i++) {
+						item = target[i];
+						if (item && typeof item === 'object') {
+							let tmpObserved = item[sysObsKey];
+							if (tmpObserved) {
+								tmpObserved.ownKey = i;
+							}
+						}
+					}
+
+					//	publish changes
+					ad = getAncestorInfo(observed);
+					if (ad.observers.length) {
+						ad.path.push(0);
+						changes = [{type: DELETE, path: ad.path, oldValue: shiftResult}];
+						callObservers(ad.observers, changes);
+					}
+					return shiftResult;
+				},
+				unshift: function proxiedUnshift(target, observed) {
+					let unshiftContent, unshiftResult, ad, changes;
+					unshiftContent = Array.from(arguments);
+					unshiftContent.splice(0, 2);
+					unshiftContent.forEach((item, index) => {
+						if (item && typeof item === 'object' && !nonObservables.hasOwnProperty(item.constructor.name)) {
+							unshiftContent[index] = Array.isArray(item)
+								? new ArrayObserver({target: item, ownKey: index, parent: observed}).proxy
+								: new ObjectObserver({target: item, ownKey: index, parent: observed}).proxy;
+						}
+					});
+					unshiftResult = Reflect.apply(target.unshift, target, unshiftContent);
+					for (let i = 0, l = target.length, item; i < l; i++) {
+						item = target[i];
+						if (item && typeof item === 'object') {
+							let tmpObserved = item[sysObsKey];
+							if (tmpObserved) {
+								tmpObserved.ownKey = i;
+							}
+						}
+					}
+
+					//	publish changes
+					ad = getAncestorInfo(observed);
+					if (ad.observers.length) {
+						let l = unshiftContent.length, path;
+						changes = new Array(l);
+						for (let i = 0; i < l; i++) {
+							path = ad.path.slice(0);
+							path.push(i);
+							changes[i] = {type: INSERT, path: path, value: target[i]};
+						}
+						callObservers(ad.observers, changes);
+					}
+					return unshiftResult;
+				},
+				reverse: function proxiedReverse(target, observed) {
+					let i, l, item, ad, changes;
+					target.reverse();
+					for (i = 0, l = target.length; i < l; i++) {
+						item = target[i];
+						if (item && typeof item === 'object') {
+							let tmpObserved = item[sysObsKey];
+							if (tmpObserved) {
+								tmpObserved.ownKey = i;
+							}
+						}
+					}
+
+					//	publish changes
+					ad = getAncestorInfo(observed);
+					if (ad.observers.length) {
+						changes = [{type: REVERSE, path: ad.path}];
+						callObservers(ad.observers, changes);
+					}
+					return observed.proxy;
+				},
+				sort: function proxiedSort(target, observed, comparator) {
+					let i, l, item, ad, changes;
+					target.sort(comparator);
+					for (i = 0, l = target.length; i < l; i++) {
+						item = target[i];
+						if (item && typeof item === 'object') {
+							let tmpObserved = item[sysObsKey];
+							if (tmpObserved) {
+								tmpObserved.ownKey = i;
+							}
+						}
+					}
+
+					//	publish changes
+					ad = getAncestorInfo(observed);
+					if (ad.observers.length) {
+						changes = [{type: SHUFFLE, path: ad.path}];
+						callObservers(ad.observers, changes);
+					}
+					return observed.proxy;
+				},
+				fill: function proxiedFill(target, observed) {
+					let ad = getAncestorInfo(observed), normArgs, argLen,
+						start, end, changes = [], prev, tarLen = target.length, path;
+					normArgs = Array.from(arguments);
+					normArgs.splice(0, 2);
+					argLen = normArgs.length;
+					start = argLen < 2 ? 0 : (normArgs[1] < 0 ? tarLen + normArgs[1] : normArgs[1]);
+					end = argLen < 3 ? tarLen : (normArgs[2] < 0 ? tarLen + normArgs[2] : normArgs[2]);
+					prev = target.slice(0);
+					Reflect.apply(target.fill, target, normArgs);
+
+					for (let i = start, item, tmpTarget; i < end; i++) {
+						item = target[i];
+						if (item && typeof item === 'object' && !nonObservables.hasOwnProperty(item.constructor.name)) {
+							target[i] = Array.isArray(item)
+								? new ArrayObserver({target: item, ownKey: i, parent: observed}).proxy
+								: new ObjectObserver({target: item, ownKey: i, parent: observed}).proxy;
+						}
+						if (prev.hasOwnProperty(i)) {
+							tmpTarget = prev[i];
+							if (tmpTarget && typeof tmpTarget === 'object') {
+								let tmpObserved = tmpTarget[sysObsKey];
+								if (tmpObserved) {
+									tmpTarget = tmpObserved.revoke();
+								}
+							}
+
+							path = ad.path.slice(0);
+							path.push(i);
+							changes.push({type: UPDATE, path: path, value: target[i], oldValue: tmpTarget});
+						} else {
+							path = ad.path.slice(0);
+							path.push(i);
+							changes.push({type: INSERT, path: path, value: target[i]});
+						}
+					}
+
+					//	publish changes
+					if (ad.observers.length) {
+						callObservers(ad.observers, changes);
+					}
+					return observed.proxy;
+				},
+				splice: function proxiedSplice(target, observed) {
+					let ad = getAncestorInfo(observed),
+						spliceContent, spliceResult, changes = [], tmpObserved,
+						startIndex, removed, inserted, splLen, tarLen = target.length;
+
+					spliceContent = Array.from(arguments);
+					spliceContent.splice(0, 2);
+					splLen = spliceContent.length;
+
+					//	observify the newcomers
+					for (let i = 2, item; i < splLen; i++) {
+						item = spliceContent[i];
+						if (item && typeof item === 'object' && !nonObservables.hasOwnProperty(item.constructor.name)) {
+							spliceContent[i] = Array.isArray(item)
+								? new ArrayObserver({target: item, ownKey: i, parent: observed}).proxy
+								: new ObjectObserver({target: item, ownKey: i, parent: observed}).proxy;
+						}
+					}
+
+					//	calculate pointers
+					startIndex = splLen === 0 ? 0 : (spliceContent[0] < 0 ? tarLen + spliceContent[0] : spliceContent[0]);
+					removed = splLen < 2 ? tarLen - startIndex : spliceContent[1];
+					inserted = Math.max(splLen - 2, 0);
+					spliceResult = Reflect.apply(target.splice, target, spliceContent);
+					tarLen = target.length;
+
+					//	reindex the paths
+					for (let i = 0, item; i < tarLen; i++) {
+						item = target[i];
+						if (item && typeof item === 'object') {
+							tmpObserved = item[sysObsKey];
+							if (tmpObserved) {
+								tmpObserved.ownKey = i;
+							}
+						}
+					}
+
+					//	revoke removed Observed
+					let i, l, item;
+					for (i = 0, l = spliceResult.length; i < l; i++) {
+						item = spliceResult[i];
+						if (item && typeof item === 'object') {
+							tmpObserved = item[sysObsKey];
+							if (tmpObserved) {
+								spliceResult[i] = tmpObserved.revoke();
+							}
+						}
+					}
+
+					//	publish changes
+					if (ad.observers.length) {
+						let index, path;
+						for (index = 0; index < removed; index++) {
+							path = ad.path.slice(0);
+							path.push(startIndex + index);
+							if (index < inserted) {
+								changes.push({
+									type: UPDATE,
+									path: path,
+									value: target[startIndex + index],
+									oldValue: spliceResult[index]
+								});
+							} else {
+								changes.push({type: DELETE, path: path, oldValue: spliceResult[index]});
+							}
+						}
+						for (; index < inserted; index++) {
+							path = ad.path.slice(0);
+							path.push(startIndex + index);
+							changes.push({type: INSERT, path: path, value: target[startIndex + index]});
+						}
+						callObservers(ad.observers, changes);
+					}
+					return spliceResult;
+				}
+			};
+			if (proxiedArrayMethods.hasOwnProperty(key)) {
+				return proxiedArrayMethods[key].bind(undefined, target, this);
+			} else {
+				return target[key];
+			}
+		}
+
+		set(target, key, value) {
+			let oldValue = target[key], ad, changes;
+
+			if (value && typeof value === 'object' && !nonObservables.hasOwnProperty(value.constructor.name)) {
+				target[key] = Array.isArray(value)
+					? new ArrayObserver({target: value, ownKey: key, parent: this}).proxy
+					: new ObjectObserver({target: value, ownKey: key, parent: this}).proxy;
+			} else {
+				target[key] = value;
+			}
+
+			if (oldValue && typeof oldValue === 'object') {
+				let tmpObserved = oldValue[sysObsKey];
+				if (tmpObserved) {
+					oldValue = tmpObserved.revoke();
+				}
+			}
+
+			//	publish changes
+			ad = getAncestorInfo(this);
+			if (ad.observers.length) {
+				ad.path.push(key);
+				changes = typeof oldValue === 'undefined'
+					? [{type: INSERT, path: ad.path, value: value}]
+					: [{type: UPDATE, path: ad.path, value: value, oldValue: oldValue}];
+				callObservers(ad.observers, changes);
+			}
+			return true;
+		}
+
+		deleteProperty(target, key) {
+			let oldValue = target[key], ad, changes;
+
+			if (delete target[key]) {
+				if (oldValue && typeof oldValue === 'object') {
+					let tmpObserved = oldValue[sysObsKey];
+					if (tmpObserved) {
+						oldValue = tmpObserved.revoke();
 					}
 				}
 
 				//	publish changes
-				let index;
-				for (index = 0; index < removed; index++) {
-					if (index < inserted) {
-						changes.push(new UpdateChange(observed.path.concat(startIndex + index), target[startIndex + index], spliceResult[index]));
-					} else {
-						changes.push(new DeleteChange(observed.path.concat(startIndex + index), spliceResult[index]));
-					}
+				ad = getAncestorInfo(this);
+				if (ad.observers.length) {
+					ad.path.push(key);
+					changes = [{type: DELETE, path: ad.path, oldValue: oldValue}];
+					callObservers(ad.observers, changes);
 				}
-				for (; index < inserted; index++) {
-					changes.push(new InsertChange(observed.path.concat(startIndex + index), target[startIndex + index]));
-				}
-				observable.notify(changes);
-
-				return spliceResult;
-			};
-		} else {
-			result = Reflect.get(target, key);
-		}
-		return result;
-	}
-
-	function proxiedSet(target, key, value) {
-		let oldValuePresent = target.hasOwnProperty(key),
-			oldValue = target[key],
-			result,
-			oldTarget,
-			observed = targetsToObserved.get(target),
-			observable = observedToObservable.get(observed.root);
-
-		if (value && typeof value === 'object' && !isNonObservable(value)) {
-			result = Reflect.set(target, key, new Observed(value, key, observed).proxy);
-		} else {
-			result = Reflect.set(target, key, value);
-		}
-
-		if (result) {
-			oldTarget = proxiesToTargetsMap.get(oldValue);
-			if (oldTarget) {
-				targetsToObserved.get(oldTarget).revoke();
-			}
-
-			if (observable.hasListeners) {
-				let path = observed.path.concat(key),
-					changes = [oldValuePresent ? new UpdateChange(path, value, oldTarget || oldValue) : new InsertChange(path, value)];
-				if (!observed.preventCallbacks) {
-					observable.notify(changes);
-				}
-			}
-		}
-		return result;
-	}
-
-	function proxiedDelete(target, key) {
-		let oldValue = target[key],
-			result,
-			oldTarget,
-			observed = targetsToObserved.get(target),
-			observable = observedToObservable.get(observed.root);
-
-		result = Reflect.deleteProperty(target, key);
-
-		if (result) {
-			oldTarget = proxiesToTargetsMap.get(oldValue);
-			if (oldTarget) {
-				targetsToObserved.get(oldTarget).revoke();
-			}
-
-			if (observable.hasListeners) {
-				let path = observed.path.concat(key),
-					changes = [new DeleteChange(path, oldTarget || oldValue)];
-				if (!observed.preventCallbacks) {
-					observable.notify(changes);
-				}
-			}
-		}
-		return result;
-	}
-
-	function processArraySubgraph(graph, parentObserved) {
-		for (let i = 0, l = graph.length, item; i < l; i++) {
-			item = graph[i];
-			if (item && typeof item === 'object' && !isNonObservable(item)) {
-				graph[i] = new Observed(item, i, parentObserved).proxy;
+				return true;
+			} else {
+				return false;
 			}
 		}
 	}
 
-	function processObjectSubgraph(graph, parentObserved) {
-		let keys = Object.keys(graph);
-		for (let i = 0, l = keys.length, key, item; i < l; i++) {
-			key = keys[i];
-			item = graph[key];
-			if (item && typeof item === 'object' && !isNonObservable(item)) {
-				graph[key] = new Observed(item, key, parentObserved).proxy;
+	class ObjectObserver {
+		constructor(properties) {
+			let origin = properties.target, clone = {};
+			if (properties.parent === null) {
+				this.isRevoked = false;
+				this.observers = [];
+				Object.defineProperties(clone, observableDefinition);
+			} else {
+				this.parent = properties.parent;
+				this.ownKey = properties.ownKey;
 			}
-		}
-	}
-
-	//	CLASSES
-
-	function Observed(origin, ownKey, parent) {
-		let targetClone, revokable, proxy;
-
-		if (!origin || typeof origin !== 'object') {
-			throw new Error('Observed MUST be created from a non null object origin');
-		}
-		if (parent && (typeof ownKey === 'undefined' || ownKey === null)) {
-			throw new Error('any non-root (parent-less) Observed MUST have an own path; now parent is ' + parent + '; key is ' + ownKey);
-		}
-		if (parent && !(parent instanceof Observed)) {
-			throw new Error('parent, when supplied, MUST be an instance of Observed');
+			prepareObject(origin, clone, this);
+			this.revokable = Proxy.revocable(clone, this);
+			this.proxy = this.revokable.proxy;
+			this.target = clone;
 		}
 
-		targetClone = copyShallow(origin);
-
-		if (Array.isArray(targetClone)) {
-			processArraySubgraph(targetClone, this);
-			revokable = Proxy.revocable(targetClone, {
-				set: proxiedSet,
-				get: proxiedArrayGet,
-				deleteProperty: proxiedDelete
-			});
-		} else {
-			processObjectSubgraph(targetClone, this);
-			revokable = Proxy.revocable(targetClone, {
-				set: proxiedSet,
-				deleteProperty: proxiedDelete
-			});
-		}
-		proxy = revokable.proxy;
-
-		targetsToObserved.set(targetClone, this);
-		proxiesToTargetsMap.set(proxy, targetClone);
-		Object.defineProperties(this, {
-			revokable: {value: revokable},
-			proxy: {value: proxy},
-			parent: {value: parent},
-			ownKey: {value: ownKey, writable: true}
-		});
-	}
-
-	Object.defineProperty(Observed.prototype, 'root', {
-		get: function() {
-			let result = this;
-			while (result.parent) {
-				result = result.parent;
-			}
-			return result;
-		}
-	});
-	Object.defineProperty(Observed.prototype, 'path', {
-		get: function() {
-			let result = [], pointer = this;
-			while (typeof pointer.ownKey !== 'undefined') {
-				result.unshift(pointer.ownKey);
-				pointer = pointer.parent;
-			}
-			return result;
-		}
-	});
-	Object.defineProperty(Observed.prototype, 'revoke', {
-		value: function() {
-			let target = proxiesToTargetsMap.get(this.proxy),
-				keys = Object.keys(target);
-
+		//	returns an unobserved graph (effectively this is an opposite of an ObjectObserver constructor logic)
+		revoke() {
 			//	revoke native proxy
 			this.revokable.revoke();
 
-			//	roll back observed graph to unobserved one
-			for (let i = 0, l = keys.length, key, tmpTarget; i < l; i++) {
-				key = keys[i];
-				tmpTarget = proxiesToTargetsMap.get(target[key]);
-				if (tmpTarget) {
-					target[key] = targetsToObserved.get(tmpTarget).revoke();
+			//	roll back observed graph to an unobserved one
+			let target = this.target, keys = Object.keys(target), l = keys.length, key, item;
+			while (l--) {
+				key = keys[l];
+				item = target[key];
+				if (item && typeof item === 'object') {
+					let tmpObserved = item[sysObsKey];
+					if (tmpObserved) {
+						target[key] = tmpObserved.revoke();
+					}
 				}
 			}
-
-			//	clean revoked Observed from the maps
-			proxiesToTargetsMap.delete(this.proxy);
-			targetsToObserved.delete(target);
-
-			//	return an unobserved graph (effectively this is an opposite of an Observed constructor logic)
 			return target;
 		}
-	});
 
-	function Observable(observed) {
-		let isRevoked = false, callbacks = [];
+		set(target, key, value) {
+			let oldValue = target[key], ad, changes;
 
-		function observe(callback) {
-			if (isRevoked) { throw new TypeError('revoked Observable MAY NOT be observed anymore'); }
-			if (typeof callback !== 'function') { throw new Error('observer (callback) parameter MUST be a function'); }
-
-			if (callbacks.indexOf(callback) < 0) {
-				callbacks.push(callback);
+			if (value && typeof value === 'object' && !nonObservables.hasOwnProperty(value.constructor.name)) {
+				target[key] = Array.isArray(value)
+					? new ArrayObserver({target: value, ownKey: key, parent: this}).proxy
+					: new ObjectObserver({target: value, ownKey: key, parent: this}).proxy;
 			} else {
-				console.info('observer (callback) may be bound to an observable only once');
+				target[key] = value;
 			}
-		}
 
-		function unobserve() {
-			if (isRevoked) { throw new TypeError('revoked Observable MAY NOT be unobserved anymore'); }
-			if (arguments.length) {
-				for (let i = 0, l = arguments.length, idx; i < l; i++) {
-					idx = callbacks.indexOf(arguments[i]);
-					if (idx >= 0) callbacks.splice(idx, 1);
-				}
-			} else {
-				callbacks.splice(0, callbacks.length);
-			}
-		}
-
-		function revoke() {
-			if (!isRevoked) {
-				isRevoked = true;
-				observed.revoke();
-			} else {
-				console.log('revoking of Observable effective only once');
-			}
-		}
-
-		function hasListeners() {
-			return callbacks.length > 0;
-		}
-
-		function notify(changes) {
-			for (let i = 0, l = callbacks.length, callback; i < l; i++) {
-				callback = callbacks[i];
-				try {
-					callback(changes);
-				} catch (e) {
-					console.error('one/some of the observing callbacks failed with ', e);
+			if (oldValue && typeof oldValue === 'object') {
+				let tmpObserved = oldValue[sysObsKey];
+				if (tmpObserved) {
+					oldValue = tmpObserved.revoke();
 				}
 			}
-		}
 
-		Object.defineProperties(observed.proxy, {
-			observe: {value: observe},
-			unobserve: {value: unobserve},
-			revoke: {value: revoke}
-		});
-
-		Object.defineProperties(this, {
-			hasListeners: {value: hasListeners},
-			notify: {value: notify}
-		});
-	}
-
-	function InsertChange(path, value) {
-		Object.defineProperties(this, {
-			type: {value: 'insert'},
-			path: {value: path},
-			value: {value: value}
-		});
-	}
-
-	function UpdateChange(path, value, oldValue) {
-		Object.defineProperties(this, {
-			type: {value: 'update'},
-			path: {value: path},
-			value: {value: value},
-			oldValue: {value: oldValue}
-		});
-	}
-
-	function DeleteChange(path, oldValue) {
-		Object.defineProperties(this, {
-			type: {value: 'delete'},
-			path: {value: path},
-			oldValue: {value: oldValue}
-		});
-	}
-
-	function ReverseChange() {
-		Object.defineProperties(this, {
-			type: {value: 'reverse'}
-		});
-	}
-
-	function ShuffleChange() {
-		Object.defineProperties(this, {
-			type: {value: 'shuffle'}
-		});
-	}
-
-	Object.defineProperty(Observable, 'from', {
-		value: function(target) {
-			if (!target || typeof target !== 'object') {
-				throw new Error('observable MAY ONLY be created from non-null object only');
-			} else if ('observe' in target || 'unobserve' in target || 'revoke' in target) {
-				throw new Error('target object MUST NOT have nor own neither inherited properties from the following list: "observe", "unobserve", "revoke"');
-			} else if (isNonObservable(target)) {
-				throw new Error(target + ' found to be one of non-observable object types: ' + nonObservables);
+			//	publish changes
+			ad = getAncestorInfo(this);
+			if (ad.observers.length) {
+				ad.path.push(key);
+				changes = typeof oldValue === 'undefined'
+					? [{type: INSERT, path: ad.path, value: value}]
+					: [{type: UPDATE, path: ad.path, value: value, oldValue: oldValue}];
+				callObservers(ad.observers, changes);
 			}
-			let observed = new Observed(target),
-				observable = new Observable(observed);
-			observedToObservable.set(observed, observable);
-			return observed.proxy;
+			return true;
 		}
-	});
 
+		deleteProperty(target, key) {
+			let oldValue = target[key], ad, changes;
+
+			if (delete target[key]) {
+				if (oldValue && typeof oldValue === 'object') {
+					let tmpObserved = oldValue[sysObsKey];
+					if (tmpObserved) {
+						oldValue = tmpObserved.revoke();
+					}
+				}
+
+				//	publish changes
+				ad = getAncestorInfo(this);
+				if (ad.observers.length) {
+					ad.path.push(key);
+					changes = [{type: DELETE, path: ad.path, oldValue: oldValue}];
+					callObservers(ad.observers, changes);
+				}
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	class Observable {
+		constructor() {
+			throw new Error('Observable MAY NOT be created via constructor, see "Observable.from" API');
+		}
+
+		static from(target) {
+			if (target && typeof target === 'object' && !nonObservables.hasOwnProperty(target.constructor.name) && !('observe' in target) && !('unobserve' in target) && !('revoke' in target)) {
+				let observed = Array.isArray(target)
+					? new ArrayObserver({target: target, ownKey: null, parent: null})
+					: new ObjectObserver({target: target, ownKey: null, parent: null});
+				return observed.proxy;
+			} else {
+				if (!target || typeof target !== 'object') {
+					throw new Error('observable MAY ONLY be created from non-null object only');
+				} else if ('observe' in target || 'unobserve' in target || 'revoke' in target) {
+					throw new Error('target object MUST NOT have nor own neither inherited properties from the following list: "observe", "unobserve", "revoke"');
+				} else if (nonObservables.hasOwnProperty(target.constructor.name)) {
+					throw new Error(target + ' found to be one of non-observable object types: ' + nonObservables);
+				}
+			}
+		}
+	}
+
+	Object.freeze(Observable);
 	Object.defineProperty(scope, 'Observable', {value: Observable});
 })();
 (() => {
@@ -696,7 +785,7 @@
 	}
 
 	function defaultIsChangedPathRelevant(changedPath, viewedPath) {
-		return viewedPath.startsWith(changedPath);
+		return viewedPath.indexOf(changedPath) === 0;
 	}
 
 	function setPath(ref, path, value) {
@@ -734,8 +823,9 @@
 	//	TODO: this is similar to setPath in controllers-service - unify
 	function getPath(ref, path) {
 		if (!ref) return;
-		for (let i = 0, pathLength = path.length; i < pathLength; i++) {
-			if (ref && path[i] in ref) ref = ref[path[i]];
+		for (let i = 0, l = path.length, n; i < l; i++) {
+			n = path[i];
+			if (ref && ref.hasOwnProperty(n)) ref = ref[n];
 			else return;
 		}
 		return ref;
@@ -773,59 +863,53 @@
 		view.removeEventListener(changeDOMEventType, changeListener);
 	}
 
-	function add(view) {
-		let localCustomElementName;
-		if (view.nodeName === 'IFRAME') {
-			initDocumentObserver(view.contentDocument);
-			view.addEventListener('load', function() {
-				initDocumentObserver(this.contentDocument);
-				collect(this.contentDocument);
-			});
-			collect(view.contentDocument);
-		} else if (Node.ELEMENT_NODE === view.nodeType && (localCustomElementName = getLocalNameIfCustomElement(view))) {
-			customElements.whenDefined(localCustomElementName).then(() => processAddedView(view));
-		} else if (view.dataset) {
-			processAddedView(view);
+	function add(elements) {
+		if (!elements.length) elements = [elements];
+		for (let i = 0, l = elements.length; i < l; i++) {
+			let element = elements[i];
+			if (element.nodeName === 'IFRAME') {
+				initDocumentObserver(element.contentDocument);
+				element.addEventListener('load', function() {
+					initDocumentObserver(this.contentDocument);
+					collect(this.contentDocument);
+				});
+				collect(element.contentDocument);
+			} else if (Node.ELEMENT_NODE === element.nodeType) {
+				if (element.localName.indexOf('-') < 0 && !element.hasAttribute('is')) {
+					processAddedElement(element);
+				} else {
+					customElements.whenDefined(element.getAttribute('is') || element.localName).then(() => processAddedElement(element));
+				}
+			}
 		}
 	}
 
-	function getLocalNameIfCustomElement(view) {
-		let result;
-		if (view.localName.includes('-')) {
-			result = view.localName;
-		} else if (!(result = view.getAttribute('is')) || !result.includes('-')) {
-			result = null;
-		}
-		return result;
-	}
+	function processAddedElement(element) {
+		let ds = element.dataset, keys = Object.keys(ds), l = keys.length;
+		while (l--) {
+			let key = keys[l];
+			if (key.indexOf('tie') !== 0) continue;
 
-	function processAddedView(view) {
-		let keys = Object.keys(view.dataset), key,
-			controller, controllerParam, pathString,
-			tieViews, procViews, pathViews, i;
-		i = keys.length;
-		while (i--) {
-			key = keys[i];
-			if (!key.startsWith('tie')) continue;
-			controller = controllers.get(key);
+			let controller = controllers.get(key);
 			if (controller) {
-				controllerParam = controller.parseParam(view.dataset[controller.name]);
-				pathString = controllerParam.dataPath.join('.');
-				tieViews = views[controllerParam.tieName] || (views[controllerParam.tieName] = {});
-				procViews = tieViews[controller.name] || (tieViews[controller.name] = {});
-				pathViews = procViews[pathString] || (procViews[pathString] = []);
+				let controllerParam = controller.parseParam(ds[controller.name]),
+					pathString = controllerParam.dataPath.join('.');
 
-				if (pathViews.indexOf(view) < 0) {
-					pathViews.push(view);
-					update(view, controller.name);
+				let tieViews = views[controllerParam.tieName] || (views[controllerParam.tieName] = {}),
+					ctrlViews = tieViews[controller.name] || (tieViews[controller.name] = {}),
+					pathViews = ctrlViews[pathString] || (ctrlViews[pathString] = []);
+
+				if (pathViews.indexOf(element) < 0) {
+					pathViews.push(element);
+					update(element, controller.name);
 					if (controller.changeDOMEventType) {
-						addChangeListener(view, controller.changeDOMEventType);
+						addChangeListener(element, controller.changeDOMEventType);
 					}
 				}
 			} else {
 				//	collect potentially future controller's element and put them into some tracking storage
 				if (!nlvs[key]) nlvs[key] = [];
-				nlvs[key].push(view);
+				nlvs[key].push(element);
 			}
 		}
 	}
@@ -843,7 +927,7 @@
 
 	function collect(rootElement) {
 		if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-			let list, i;
+			let list;
 			if (rootElement.nodeName === 'IFRAME') {
 				list = rootElement.contentDocument.getElementsByTagName('*');
 			} else {
@@ -851,8 +935,7 @@
 			}
 
 			add(rootElement);
-			i = list.length;
-			while (i--) add(list[i]);
+			add(list);
 		}
 	}
 

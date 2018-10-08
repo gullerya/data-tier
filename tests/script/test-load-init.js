@@ -11,7 +11,7 @@
 
 	suite.addTest({name: 'custom namespace loading test'}, (pass, fail) => {
 		let ns = {};
-		fetch('../dist/data-tier.js')
+		fetch('../../dist/data-tier.js')
 			.then(response => {
 				if (response.ok) {
 					return response.text();

@@ -15,8 +15,9 @@
 	//	TODO: this is similar to setPath in controllers-service - unify
 	function getPath(ref, path) {
 		if (!ref) return;
-		for (let i = 0, pathLength = path.length; i < pathLength; i++) {
-			if (ref && path[i] in ref) ref = ref[path[i]];
+		for (let i = 0, l = path.length, n; i < l; i++) {
+			n = path[i];
+			if (ref && ref.hasOwnProperty(n)) ref = ref[n];
 			else return;
 		}
 		return ref;
@@ -54,59 +55,53 @@
 		view.removeEventListener(changeDOMEventType, changeListener);
 	}
 
-	function add(view) {
-		let localCustomElementName;
-		if (view.nodeName === 'IFRAME') {
-			initDocumentObserver(view.contentDocument);
-			view.addEventListener('load', function() {
-				initDocumentObserver(this.contentDocument);
-				collect(this.contentDocument);
-			});
-			collect(view.contentDocument);
-		} else if (Node.ELEMENT_NODE === view.nodeType && (localCustomElementName = getLocalNameIfCustomElement(view))) {
-			customElements.whenDefined(localCustomElementName).then(() => processAddedView(view));
-		} else if (view.dataset) {
-			processAddedView(view);
+	function add(elements) {
+		if (!elements.length) elements = [elements];
+		for (let i = 0, l = elements.length; i < l; i++) {
+			let element = elements[i];
+			if (element.nodeName === 'IFRAME') {
+				initDocumentObserver(element.contentDocument);
+				element.addEventListener('load', function() {
+					initDocumentObserver(this.contentDocument);
+					collect(this.contentDocument);
+				});
+				collect(element.contentDocument);
+			} else if (Node.ELEMENT_NODE === element.nodeType) {
+				if (element.localName.indexOf('-') < 0 && !element.hasAttribute('is')) {
+					processAddedElement(element);
+				} else {
+					customElements.whenDefined(element.getAttribute('is') || element.localName).then(() => processAddedElement(element));
+				}
+			}
 		}
 	}
 
-	function getLocalNameIfCustomElement(view) {
-		let result;
-		if (view.localName.includes('-')) {
-			result = view.localName;
-		} else if (!(result = view.getAttribute('is')) || !result.includes('-')) {
-			result = null;
-		}
-		return result;
-	}
+	function processAddedElement(element) {
+		let ds = element.dataset, keys = Object.keys(ds), l = keys.length;
+		while (l--) {
+			let key = keys[l];
+			if (key.indexOf('tie') !== 0) continue;
 
-	function processAddedView(view) {
-		let keys = Object.keys(view.dataset), key,
-			controller, controllerParam, pathString,
-			tieViews, procViews, pathViews, i;
-		i = keys.length;
-		while (i--) {
-			key = keys[i];
-			if (!key.startsWith('tie')) continue;
-			controller = controllers.get(key);
+			let controller = controllers.get(key);
 			if (controller) {
-				controllerParam = controller.parseParam(view.dataset[controller.name]);
-				pathString = controllerParam.dataPath.join('.');
-				tieViews = views[controllerParam.tieName] || (views[controllerParam.tieName] = {});
-				procViews = tieViews[controller.name] || (tieViews[controller.name] = {});
-				pathViews = procViews[pathString] || (procViews[pathString] = []);
+				let controllerParam = controller.parseParam(ds[controller.name]),
+					pathString = controllerParam.dataPath.join('.');
 
-				if (pathViews.indexOf(view) < 0) {
-					pathViews.push(view);
-					update(view, controller.name);
+				let tieViews = views[controllerParam.tieName] || (views[controllerParam.tieName] = {}),
+					ctrlViews = tieViews[controller.name] || (tieViews[controller.name] = {}),
+					pathViews = ctrlViews[pathString] || (ctrlViews[pathString] = []);
+
+				if (pathViews.indexOf(element) < 0) {
+					pathViews.push(element);
+					update(element, controller.name);
 					if (controller.changeDOMEventType) {
-						addChangeListener(view, controller.changeDOMEventType);
+						addChangeListener(element, controller.changeDOMEventType);
 					}
 				}
 			} else {
 				//	collect potentially future controller's element and put them into some tracking storage
 				if (!nlvs[key]) nlvs[key] = [];
-				nlvs[key].push(view);
+				nlvs[key].push(element);
 			}
 		}
 	}
@@ -124,7 +119,7 @@
 
 	function collect(rootElement) {
 		if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-			let list, i;
+			let list;
 			if (rootElement.nodeName === 'IFRAME') {
 				list = rootElement.contentDocument.getElementsByTagName('*');
 			} else {
@@ -132,8 +127,7 @@
 			}
 
 			add(rootElement);
-			i = list.length;
-			while (i--) add(list[i]);
+			add(list);
 		}
 	}
 

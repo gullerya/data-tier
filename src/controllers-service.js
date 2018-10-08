@@ -74,7 +74,7 @@
 	}
 
 	function defaultIsChangedPathRelevant(changedPath, viewedPath) {
-		return viewedPath.startsWith(changedPath);
+		return viewedPath.indexOf(changedPath) === 0;
 	}
 
 	function setPath(ref, path, value) {

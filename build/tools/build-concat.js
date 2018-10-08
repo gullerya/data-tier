@@ -1,6 +1,4 @@
-﻿'use strict';
-
-const
+﻿const
 	os = require('os'),
 	fs = require('fs'),
 	path = require('path'),
