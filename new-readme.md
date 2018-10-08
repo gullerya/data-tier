@@ -28,7 +28,6 @@
 ## Loading the Library
 
 ```javascript
-//  browser
 import * as DataTier from 'dist/module/data-tier.min.js';
 ```
 
