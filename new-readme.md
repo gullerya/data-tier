@@ -10,13 +10,13 @@
 > In future I may consider allowing provision of custom `Observable` implementation if there will be any interest in it.
 
 #### Support matrix: ![CHROME](https://github.com/gullerya/data-tier/blob/master/docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](https://github.com/gullerya/data-tier/blob/master/docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](https://github.com/gullerya/data-tier/blob/master/docs/icons/edge.png)<sub>16+</sub>
-Support matrix is currently as wide as that of [`object-observer`](https://github.com/gullerya/object-observer)'s module, assuming that in most of the cases consumers will not provide their own object observer, but will use an embedded one.
-`data-tier` supports custom elements as well, obviously this functionality is available only on supporting environments.
+
+#### Performance report: TBD
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
 * __0.6.20__
-  * initial provisioning of ES6 module
+  * initial provisioning of `data-tier` as ES6 module
   * new API defined and implemented in ES6 module distribution
 
 * __0.6.19__
