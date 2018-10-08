@@ -35,8 +35,6 @@ import * as DataTier from 'dist/module/data-tier.min.js';
 
 My, definitely opinionated, insights of how client application should look like in general and how `data-tier` library comes into that picture can be found [__here__](https://github.com/gullerya/data-tier/blob/master/docs/client-app-architecture.md). That would probably be the most completed overview of the library's overall usage intent.
 
-Here I'll just outline the very essentials, namely 2 main concepts: __`Tie`__ and __`Controller`__.
-
 #### Tie
 
 __`Tie`__ holds an observable data structure associated with tie's name, it's about __what__ to tie.
