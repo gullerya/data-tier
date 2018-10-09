@@ -61,6 +61,46 @@ let settingsTie = DataTier.ties.get('settings');
 ### `Tie`
 Tie is a binding unit between the model and the views tied to it (by name, see HTML syntax [below](#html-tying-declaration)).
 
+Tie holds an observable model, which will be a clone of the originally supplied data if it was not `Observable` and will stay as is, if it was (see [`object-observer`](https://github.com/gullerya/object-observer) for more info).
+
+Tie is also responsible to set up an observer of this model, react on any change and reflect it in the tied views.
+
+`Tie` object exposes the following properties:
+
+##### `name`
+Uniquely identifying string that was provides at the moment of creation. READ ONLY.
+
+```javascript
+userTie.name === 'user';        //  true
+```
+
+##### `model`
+Observable model, clone of an initially or lately supplied data.
+
+`getter` of this property returns the model.
+`setter` performs the following: set old model aside, ensure/make new model `Observable` if not null and store, revoke old model if made observable by `data-tier` in first place, update all views to the new model.
+
+```javascript
+let tiedUser = userTie.model;
+
+tiedUser === user;              //  false, remember, model is cloned for observation
+
+user.firstName = 'Newbie';      //  all views tied to this property are getting updated
+
+let tiedSettings = settingsTie.model;
+
+tiedSettings === null;          //  true
+
+settingsTie.model = {           //  this POJO is cloned and made into Observable
+    siteTheme: 'dark'           //  and set to be a model of the settingsTie
+};                              //  and any view tied to 'siteTheme' is getting updated
+
+tiedSettings = settingsTie.model;
+
+tiedSettings === null;          //  false, obviously
+
+tiedSettings.siteTheme === 'dark';      //  true
+```
 
 ### `HTML` tying declaration
 In order to tie **view** (DOM element) to **model** and vice-versa, some declaration in HTML is required.
