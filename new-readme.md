@@ -9,7 +9,7 @@
 
 > In future I may consider allowing provision of custom `Observable` implementation if there will be any interest in it.
 
-#### Support matrix: ![CHROME](https://github.com/gullerya/data-tier/blob/master/docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](https://github.com/gullerya/data-tier/blob/master/docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](https://github.com/gullerya/data-tier/blob/master/docs/icons/edge.png)<sub>16+</sub>
+#### Support matrix: ![CHROME](https://github.com/gullerya/data-tier/raw/master/docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](https://github.com/gullerya/data-tier/raw/master/docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](https://github.com/gullerya/data-tier/raw/master/docs/icons/edge.png)<sub>16+</sub>
 
 #### Performance report: TBD
 
