@@ -116,7 +116,7 @@ This declaration ties between span's `textContent` and the property `firstName` 
 * `data-tie` - attribute name, that `data-tier` is looking for when processing the DOM
 * `user:` - first part of tied view's parameter is the **tie name** (see above) followed by **colon**
 * `firstName` - **path** to the tied property within the tied model; the path can have any depth
-* `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** properties
+* `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** 'addresses'
 * `textContent` - view's **target property** tied to the given model
 
 The library scans for such an attributes, parses then and ties to the relevant model/s via relevant ties.
