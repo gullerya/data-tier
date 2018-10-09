@@ -15,7 +15,7 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
-* __0.6.20__
+* __0.6.21__
   * initial provisioning of `data-tier` as ES6 module
   * new API defined and implemented in ES6 module distribution
 
