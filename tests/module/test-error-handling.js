@@ -20,7 +20,7 @@ suite.addTest({name: 'accessing in other place the observable that was replaced'
 	data.model.observe(changes =>
 		changes.forEach(change =>
 			console.dir(change)));
-	elem.dataset.tie = 'errorA > textContent';
+	elem.dataset.tie = 'errorA => textContent';
 
 	document.body.appendChild(elem);
 

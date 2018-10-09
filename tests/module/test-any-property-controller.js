@@ -10,7 +10,7 @@ DataTier.ties.create('testAnyPropA', model);
 
 suite.addTest({name: 'testing any-property controller: binding test A'}, (pass, fail) => {
 	let e = document.createElement('div');
-	e.dataset.tie = 'testAnyPropA:text > textContent';
+	e.dataset.tie = 'testAnyPropA:text => textContent';
 	document.body.appendChild(e);
 	setTimeout(function() {
 		if (e.textContent !== model.text) fail('textContent of the element expected to be "' + model.text + '", found: ' + e.textContent);

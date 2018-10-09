@@ -6,7 +6,7 @@ const
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
 	views = {},
 	viewsParams = new WeakMap(),
-	PARAM_SPLITTER = /\s*>\s*/,
+	PARAM_SPLITTER = /\s*=>\s*/,
 	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/;
 
 class Tie {

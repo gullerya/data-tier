@@ -36,7 +36,7 @@ customElements.define('custom-input', CustomInput, {extends: 'input'});
 
 suite.addTest({name: 'testing basic controllers: binding value of custom element'}, (pass, fail) => {
 	let e = document.createElement('custom-element');
-	e.dataset.tie = 'testCustomsA:text > value';
+	e.dataset.tie = 'testCustomsA:text => value';
 	if (e.value) fail('precondition of the test failed');
 	document.body.appendChild(e);
 	setTimeout(function() {
@@ -51,7 +51,7 @@ suite.addTest({name: 'testing basic controllers: custom input'}, (pass, fail) =>
 			{text: 'some'},
 			{text: 'more'}
 		]);
-	e.dataset.tie = 'customInsTie:0.text > value';
+	e.dataset.tie = 'customInsTie:0.text => value';
 	document.body.appendChild(e);
 
 	setTimeout(() => {

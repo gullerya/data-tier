@@ -34,7 +34,7 @@ class CustomInputA extends HTMLInputElement {
 
 suite.addTest({name: 'testing custom elements - autonomous: undefined first and adding to DOM'}, (pass, fail) => {
 	let e = document.createElement('custom-element-a');
-	e.dataset.tie = 'testCustomsUndefined:text > value';
+	e.dataset.tie = 'testCustomsUndefined:text => value';
 	if (e.value) fail('precondition failed - was not expecting to get any value, got "' + e.value + '"');
 
 	document.body.appendChild(e);
@@ -53,7 +53,7 @@ suite.addTest({name: 'testing custom elements - autonomous: undefined first and 
 
 suite.addTest({name: 'testing custom elements - extended: undefined first and adding to DOM'}, (pass, fail) => {
 	let e = document.createElement('input', {is: 'custom-input-a'});
-	e.dataset.tie = 'testCustomsUndefined:text > valueA';
+	e.dataset.tie = 'testCustomsUndefined:text => valueA';
 	if (e.value) fail('precondition failed - was not expecting to get any value, got "' + e.value + '"');
 
 	document.body.appendChild(e);

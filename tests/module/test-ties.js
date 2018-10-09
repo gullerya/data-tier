@@ -9,7 +9,7 @@ suite.addTest({name: 'adding a tie and then a view'}, function(pass, fail) {
 
 	ties.create('tiesTestA', Observable.from({name: text}));
 
-	newEl.dataset.tie = 'tiesTestA:name > textContent';
+	newEl.dataset.tie = 'tiesTestA:name => textContent';
 	document.body.appendChild(newEl);
 
 	setTimeout(function() {
@@ -22,7 +22,7 @@ suite.addTest({name: 'adding a view and then a tie'}, function(pass, fail) {
 	let newEl = document.createElement('div'),
 		text = 'text test B';
 
-	newEl.dataset.tie = 'tiesTestB:name > textContent';
+	newEl.dataset.tie = 'tiesTestB:name => textContent';
 	document.body.appendChild(newEl);
 
 	setTimeout(function() {
@@ -36,7 +36,7 @@ suite.addTest({name: 'creating a tie with an undefined data'}, function(pass, fa
 	let newEl = document.createElement('div'),
 		o = {text: 'text test C'},
 		t = ties.create('tiesTestC');
-	newEl.dataset.tie = 'tiesTestC:text > textContent';
+	newEl.dataset.tie = 'tiesTestC:text => textContent';
 	document.body.appendChild(newEl);
 
 	setTimeout(function() {
@@ -51,7 +51,7 @@ suite.addTest({name: 'creating a tie with a NULL data'}, function(pass, fail) {
 	let newEl = document.createElement('div'),
 		o = {text: 'text test D'},
 		t = ties.create('tiesTestD', null);
-	newEl.dataset.tie = 'tiesTestD:text > textContent';
+	newEl.dataset.tie = 'tiesTestD:text => textContent';
 	document.body.appendChild(newEl);
 
 	setTimeout(function() {
@@ -66,7 +66,7 @@ suite.addTest({name: 'setting a tie with a non Observable object'}, function(pas
 	let newEl = document.createElement('div'),
 		o = {text: 'text test E'},
 		t = ties.create('tiesTestE', o);
-	newEl.dataset.tie = 'tiesTestE:text > textContent';
+	newEl.dataset.tie = 'tiesTestE:text => textContent';
 	document.body.appendChild(newEl);
 
 	setTimeout(function() {

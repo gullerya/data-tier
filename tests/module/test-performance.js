@@ -23,7 +23,7 @@ suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fai
 	for (let i = 0; i < 500; i++) {
 		let m = document.createElement('movable-element');
 		m.style.cssText = 'position: absolute;width: 10px;height: 10px; border-radius: 5px; background-color: rgb(' + 255 * Math.random() + ',' + 255 * Math.random() + ',' + 255 * Math.random() + ');';
-		m.dataset.tie = 'm' + i + ':top > top, m' + i + ':left > left';
+		m.dataset.tie = 'm' + i + ':top => top, m' + i + ':left => left';
 		movables.push({
 			e: m,
 			t: DataTier.ties.create('m' + i, {top: 190 * Math.random(), left: 190 * Math.random()}),

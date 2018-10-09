@@ -9,16 +9,16 @@ DataTier.ties.create('userA', obsrvblUser);
 
 let s1, s2, s3, s4;
 s1 = document.createElement('input');
-s1.dataset.tie = 'userA:name > value';
+s1.dataset.tie = 'userA:name => value';
 document.body.appendChild(s1);
 s2 = document.createElement('div');
-s2.dataset.tie = 'userA:age > textContent';
+s2.dataset.tie = 'userA:age => textContent';
 document.body.appendChild(s2);
 s3 = document.createElement('div');
-s3.dataset.tie = 'userA:address.street > textContent';
+s3.dataset.tie = 'userA:address.street => textContent';
 document.body.appendChild(s3);
 s4 = document.createElement('div');
-s4.dataset.tie = 'userA:address.apt > textContent';
+s4.dataset.tie = 'userA:address.apt => textContent';
 document.body.appendChild(s4);
 
 suite.addTest({name: 'new model bound'}, (pass, fail) => {
@@ -69,7 +69,7 @@ suite.addTest({name: 'full model replace (to new data)'}, (pass, fail) => {
 
 suite.addTest({name: 'binding view to object'}, (pass, fail) => {
 	let t = DataTier.ties.get('userA');
-	s3.dataset.tie = 'userA:address > textContent';
+	s3.dataset.tie = 'userA:address => textContent';
 	if (s3.textContent !== '') fail(new Error('expected the content to be empty, found: ' + s3.textContent));
 	t.model.address = {street: 'street name', apt: 17};
 	t.model.address.toString = function() {
