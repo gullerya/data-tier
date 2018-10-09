@@ -34,7 +34,7 @@ If `Observable` was provided by hosting application, it remains intact.
 
 If no tie found by the given `name`, nothing will happen.
 
-* `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`, unique
+* `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`
 
 ```javascript
 DataTier.ties.remove('settings');
@@ -45,7 +45,7 @@ Retrieves tie by name.
 
 If no tie found by the given `name`, will return `undefined`.
 
-* `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`, unique
+* `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`
 
 ```javascript
 let settingsTie = DataTier.ties.get('settings');
