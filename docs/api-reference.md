@@ -14,7 +14,7 @@ Any JS related functionality will be available through the properties of this ob
 Ties (more about `Tie` [below](#tie)) management namespace having the following APIs:
 ##### `create(name, [model])`
 Creates a new tie with the specified (unique) name.
-Updates any elements already found in DOM and tied to it (by name, see HTML syntax [below](#html)).
+Updates any elements already found in DOM and tied to it (by name, see HTML syntax [below](#html-tying-declaration)).
 Sets up model's observer, which will immediately reflect any changes in the tied views.
 
 * `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`, unique
@@ -59,7 +59,7 @@ let settingsTie = DataTier.ties.get('settings');
 ```
 
 ### `Tie`
-Tie is a binding unit between the model and the views tied to it (by name, see HTML syntax [below](#html)).
+Tie is a binding unit between the model and the views tied to it (by name, see HTML syntax [below](#html-tying-declaration)).
 
 
 ### `HTML` tying declaration
