@@ -68,7 +68,7 @@ Tie is also responsible to set up an observer of this model, react on any change
 `Tie` object exposes the following properties:
 
 ##### `name`
-Uniquely identifying string that was provides at the moment of creation. READ ONLY.
+Uniquely identifying string, that was provided at the moment of creation. READ ONLY.
 
 ```javascript
 userTie.name === 'user';        //  true
@@ -77,8 +77,10 @@ userTie.name === 'user';        //  true
 ##### `model`
 Observable model, clone of an initially or lately supplied data.
 
+IMPORTANT! Any changes that are meant to be part of the tied state and reflected in views must be done on **tie's model** and NOT on the original object!
+
 `getter` of this property returns the model.
-`setter` performs the following: set old model aside, ensure/make new model `Observable` if not null and store, revoke old model if made observable by `data-tier` in first place, update all views to the new model.
+`setter` performs the following: set old model aside, ensure/make new model `Observable` if not null and store, revoke old model if not null and made observable by `data-tier` in first place, update all views to the new model.
 
 ```javascript
 let tiedUser = userTie.model;
