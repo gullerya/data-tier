@@ -119,17 +119,17 @@ This declaration ties between span's `textContent` and the property `firstName` 
 * `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** 'addresses'
 * `textContent` - view's **target property** tied to the given model
 
-The library scans for such an attributes, parses then and ties to the relevant model/s via relevant ties.
+The library scans for such an attributes, parses them and ties to the relevant model/s via relevant ties.
 
 Elements found and processed as valid `data-tier`'s views said to be **tied to** their corresponding tie.
 `span` from the example is tied to the `userTie`.
 
-Actual view update happens immediately when (using 'user' tie as example):
-* tied element just being added to the document, and 'user' Tie is already defined
+Actual view update happens immediately when:
+* tied element just being added to the document, and relevant Tie is already defined
 * element's tying definition (attribute value) is being changed and a corresponding Tie is already defined
   * tie definition may be set as an attribute in HTML or setting `element.dataset.tie` property from JS
-* 'user' Tie is being created and a tied element is already found in the document
-* model's property that the element is tied to is being changed
+* new Tie is being created and a pre-tied element is already found in the document
+* model's property, that the element is tied to, is being changed
 
 To continue with our example, once the 'user' Tie is defined and the above `span` is added to the document, it's `textContent` will immediately be updated to 'Ploni'.
 
@@ -140,6 +140,9 @@ Let's see more advanced example:
 ```
 
 In this case we have a multi-valued tying parameter, one for an element's `value` property and another one for the `title`.
+There may be any number of tying values in a multi-valued parameter.
+Multi-valued parameter should be separated by some string matching `/\s*[,;]\s*/` (basically `,` [comma] and `;` [semicolon] surrounded by any number of spacings).
+
 Few simple and obvious rules to keep in mind here:
 
 * Same property of a single element MAY NOT be tied more than once
