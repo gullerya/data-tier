@@ -71,7 +71,7 @@ and then tie any UI element to it via the tie name and the path:
 </div>
 ```
 where:
-* the first item in the path is always the tie's name
+* the first item in the path is always the tie's name, having colon separating it from an actual path within the model
 * `bandsTie.0` - refer to the whole object at index 0 of our array
 * `bandsTie.length` - `length` property, inherited from the native `Array`, may also be used
 * `bandsTie.0.name` - path can get deeper...
