@@ -85,21 +85,21 @@ IMPORTANT! Any changes that are meant to be part of the tied state and reflected
 ```javascript
 let tiedUser = userTie.model;
 
-tiedUser === user;              //  false, remember, model is cloned for observation
+tiedUser === user;                      //  false, remember, model is cloned for observation
 
-user.firstName = 'Newbie';      //  all views tied to this property are getting updated
+user.firstName = 'Newbie';              //  all views tied to this property are getting updated
 
 let tiedSettings = settingsTie.model;
 
-tiedSettings === null;          //  true
+tiedSettings === null;                  //  true
 
-settingsTie.model = {           //  this POJO is cloned and made into Observable
-    siteTheme: 'dark'           //  and set to be a model of the settingsTie
-};                              //  and any view tied to 'siteTheme' is getting updated
+settingsTie.model = {                   //  this POJO is cloned and made into Observable
+    siteTheme: 'dark'                   //  and set to be a model of the settingsTie
+};                                      //  and any view tied to 'siteTheme' is getting updated
 
 tiedSettings = settingsTie.model;
 
-tiedSettings === null;          //  false, obviously
+tiedSettings === null;                  //  false, obviously
 
 tiedSettings.siteTheme === 'dark';      //  true
 ```
@@ -112,11 +112,11 @@ This declaration is done via element's attribute `data-tie`:
 <span data-tie="user:firstName => textContent"></span>
 ```
 
-This declaration ties between span's `textContent` and the property `firstName` of the `userTie`'s model. To break it to the parts:
+This declaration ties between span's `textContent` and the property `firstName` of the `userTie`'s model.
 * `data-tie` - attribute name, that `data-tier` is looking for when processing the DOM
 * `user:` - first part of tied view's parameter is the **tie name** (see above) followed by **colon**
 * `firstName` - **path** to the tied property within the tied model; the path can have any depth
-* `=>` - arrow (with any number of surrounding spacing characters) separates **model's source** from **view's target** property
+* `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** properties
 * `textContent` - view's **target property** tied to the given model
 
 The library scans for such an attributes, parses then and ties to the relevant model/s via relevant ties.
