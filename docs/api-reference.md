@@ -77,7 +77,7 @@ userTie.name === 'user';        //  true
 ##### `model`
 Observable model, clone of an initially or lately supplied data.
 
-IMPORTANT! Any changes that are meant to be part of the tied state and reflected in views must be done on **tie's model** and NOT on the original object!
+IMPORTANT! Any changes that are meant to be part of the tied state and reflected in views must be done on the **tie's model** and NOT on the original object!
 
 `getter` of this property returns the model.
 `setter` performs the following: set old model aside, ensure/make new model `Observable` if not null and store, revoke old model if not null and made observable by `data-tier` in first place, update all views to the new model.
