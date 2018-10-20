@@ -113,7 +113,7 @@ function ensureObservable(o) {
 		return o;
 	} else if (typeof o !== 'object') {
 		throw new Error(o + ' is not of type Observable and not an object');
-	} else if (typeof o.observe === 'function' && typeof o.unobserve === 'function' && typeof o.revoke === 'function') {
+	} else if (Observable.isObservable(o)) {
 		return o;
 	} else if (!Observable) {
 		throw new Error(o + ' is not of type Observable and no embedded Observable implementation found');

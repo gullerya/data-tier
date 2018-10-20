@@ -1,6 +1,8 @@
 (() => {
 	'use strict';
 
+	console.warn('The usage of DataTier as a script is deprecated in favor of ES6-style module, see the relevant info on library\'s NPM/GitHib pages');
+
 	(() => {
 		let w = window, s = Symbol.for('data-tier');
 		while (w.parent !== w) w = w.parent;

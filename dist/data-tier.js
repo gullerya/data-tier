@@ -599,6 +599,13 @@
 				}
 			}
 		}
+
+		static isObservable(input) {
+			return typeof input === 'object' && input !== null &&
+				typeof input.revoke === 'function' &&
+				typeof input.observe === 'function' &&
+				typeof input.unobserve === 'function';
+		}
 	}
 
 	Object.freeze(Observable);
@@ -606,6 +613,8 @@
 })();
 (() => {
 	'use strict';
+
+	console.warn('The usage of DataTier as a script is deprecated in favor of ES6-style module, see the relevant info on library\'s NPM/GitHib pages');
 
 	(() => {
 		let w = window, s = Symbol.for('data-tier');

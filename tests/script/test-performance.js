@@ -1,14 +1,11 @@
-import * as DataTier from '../../dist/module/data-tier.js';
-
 let suite = Utils.JustTest.createSuite({name: 'Testing Performance'});
 
 class Movable extends HTMLElement {
-	set top(top) {
-		this.style.top = top + 'px';
-	}
-
-	set left(left) {
-		this.style.left = left + 'px';
+	set coords(c) {
+		if (c) {
+			this.style.top = c.top + 'px';
+			this.style.left = c.left + 'px';
+		}
 	}
 }
 
@@ -23,7 +20,7 @@ suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fai
 	for (let i = 0; i < 500; i++) {
 		let m = document.createElement('movable-element');
 		m.style.cssText = 'position: absolute;width: 10px;height: 10px; border-radius: 5px; background-color: rgb(' + 255 * Math.random() + ',' + 255 * Math.random() + ',' + 255 * Math.random() + ');';
-		m.dataset.tie = 'm' + i + ':top => top, m' + i + ':left => left';
+		m.dataset.tieProperty = 'm' + i + ' => coords';
 		movables.push({
 			t: DataTier.ties.create('m' + i, {top: 190 * Math.random(), left: 190 * Math.random()}),
 			xi: 3 * Math.random(),
@@ -37,11 +34,13 @@ suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fai
 
 		function render() {
 			movables.forEach(movable => {
-				let m = movable.t.model;
+				let m = movable.t.data;
 				if (m.top + 10 > 200 || m.top < 0) movable.xi *= -1;
 				if (m.left + 10 > 200 || m.left < 0) movable.yi *= -1;
-				m.top += movable.xi;
-				m.left += movable.yi;
+				movable.t.data = {
+					top: m.top + movable.xi,
+					left: m.left + movable.yi
+				};
 			});
 
 			if (--moves > 0) {
