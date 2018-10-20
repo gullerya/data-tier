@@ -3,7 +3,7 @@
 Medieval
 --------
 
-* __0.6.20__
+* __0.6.22__
   * initial provisioning of ES6 module
   * new API defined and implemented in ES6 module distribution
 
