@@ -17,6 +17,8 @@ Support matrix is currently as wide as that of [`object-observer`](https://githu
 Yet, this one comes with API breaking changes as it is reflecting somewhat different approach to the architecture or data binding in web applications.
 Read more on [this new API page](https://github.com/gullerya/data-tier/blob/master/new-readme.md).
 
+> IMPORTANT! At some point of the first quarter of 2019 the non-ES6 module distribution will be removed from the `data-tier` and will be no longer supported in the following versions.
+
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
 * __0.6.21__
