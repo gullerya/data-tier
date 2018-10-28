@@ -38,14 +38,25 @@ class Tie {
 			tieData = this[PRIVATE_MODEL_SYMBOL],
 			i, l, change, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
 			tieViews = views[tieName],
-			tiedPaths = Object.keys(tieViews);
+			tiedPaths = Object.keys(tieViews),
+			arrayFullUpdate;
 
 		if (!tiedPaths.length) return;
 
 		for (i = 0, l = changes.length; i < l; i++) {
 			change = changes[i];
 			arrPath = change.path;
-			changedPath = arrPath && arrPath.length ? arrPath.join('.') : '';
+
+			if (Array.isArray(change.object) &&
+				(change.type === 'insert' || change.type === 'delete') &&
+				!isNaN(arrPath[arrPath.length - 1]) &&
+				change.object.length - 1 > arrPath[arrPath.length - 1]) {
+				changedPath = arrPath.slice(0, -1).join('.');
+				arrayFullUpdate = true;
+			} else {
+				changedPath = arrPath && arrPath.length ? arrPath.join('.') : '';
+				arrayFullUpdate = false;
+			}
 
 			pl = tiedPaths.length;
 			while (pl--) {
@@ -54,7 +65,7 @@ class Tie {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
 					while (pvl--) {
-						update(pathViews[pvl], tieData, changedPath, change);
+						update(pathViews[pvl], tieData, changedPath, !arrayFullUpdate ? change : null);
 					}
 				}
 			}
