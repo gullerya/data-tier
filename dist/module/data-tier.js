@@ -49,8 +49,7 @@ class Tie {
 
 			if (Array.isArray(change.object) &&
 				(change.type === 'insert' || change.type === 'delete') &&
-				!isNaN(arrPath[arrPath.length - 1]) &&
-				change.object.length - 1 > arrPath[arrPath.length - 1]) {
+				!isNaN(arrPath[arrPath.length - 1])) {
 				changedPath = arrPath.slice(0, -1).join('.');
 				arrayFullUpdate = true;
 			} else {
