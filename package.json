@@ -40,8 +40,8 @@
     "build": "node ./build/tools/build-dist.js"
   },
   "dependencies": {
-    "object-observer": "^1.1.3",
-    "@gullerya/observable": "^1.1.3"
+    "object-observer": "^1.1.4",
+    "@gullerya/observable": "^1.1.4"
   },
   "devDependencies": {
     "eslint": "^5.8.0",

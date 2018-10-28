@@ -614,7 +614,7 @@
 (() => {
 	'use strict';
 
-	console.warn('The usage of DataTier as a script is deprecated in favor of ES6-style module, see the relevant info on library\'s NPM/GitHib pages');
+	console.warn('The usage of DataTier as a script is deprecated in favor of ES6-style module, see the relevant info on library\'s NPM/GitHib pages. Development of this flavor distribution is stopped and only critical defects will be fixed in a short term. At the first quarter of 2019 new version of DataTier will be released having only ES6 module distribution.');
 
 	(() => {
 		let w = window, s = Symbol.for('data-tier');

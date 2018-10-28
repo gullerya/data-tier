@@ -1,5 +1,4 @@
 import * as DataTier from '../../dist/module/data-tier.js';
-import Observable from '../../dist/module/object-observer.min.js';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing array changes (static binding)'}),
 	ordersTie = DataTier.ties.create('ordersASB'),
@@ -30,10 +29,19 @@ suite.addTest({name: 'array manipulation flow'}, async (pass, fail) => {
 	ordersTie.model.shift();
 	await new Promise(res => setTimeout(res, 0));
 	if (element.textContent !== '3') fail('expected textContent to be "3", found ' + element.textContent);
+	ordersTie.model.shift();
+	await new Promise(res => setTimeout(res, 0));
+	if (element.textContent !== '') fail('expected textContent to be "", found ' + element.textContent);
 
 	//	push
+	ordersTie.model.push('_');
+	await new Promise(res => setTimeout(res, 0));
+	if (element.textContent !== '_') fail('expected textContent to be "_", found ' + element.textContent);
 
 	//	pop
+	ordersTie.model.pop();
+	await new Promise(res => setTimeout(res, 0));
+	if (element.textContent !== '') fail('expected textContent to be "", found ' + element.textContent);
 
 	pass();
 });
