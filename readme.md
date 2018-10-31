@@ -53,7 +53,7 @@ let bands = [
         ]
     }
 ];
-bands.totalTooltip = generateTooltipText();
+bands.totalTooltip = 'My hall-of-fame bands';
 ```
 one can create a tie named, say, 'bandsTie', having its data set to the bands array:
 ```javascript
@@ -65,9 +65,8 @@ and then tie any UI element to it via the tie name and the path:
 <span data-tie="bandsTie:length > textContent, bandsTie:totalTooltip > tooltip"></span>
 
 <div>
-    <template data-tie="bandsTie:0.albums > data">
-        <span data-tie="bandsTie:0.albums.1.name > textContent"></span>
-    </template>
+    <span data-tie="bandsTie:0.albums.1.name => textContent"></span>
+    <custom-album-viewer data-tie="bandsTie:0.albums => data"></custom-album-viewer>
 </div>
 ```
 where:
@@ -83,35 +82,6 @@ Having say that, I'll note, that there is no limitations on the size or the stru
 `Tie` object not only meant to hold the link between the data and its namespace, but also tie's specific configurations/customizations and data management APIs.
 For more details see [__API reference__](https://github.com/gullerya/data-tier/blob/master/docs/api-reference.md).
 
-
-#### Controller
-> This part of the API will undergo significant change (mostly removal) in the ES6 module approach and eventually will become deprecated.
-See [new api](https://github.com/gullerya/data-tier/blob/master/new-readme.md) for more info.
-
-__`Controller`__ is a holder of the transition logic, it's about __how__ to translate the data from/to view/data.
-
-Each controller has it's own unique name given to it upon registration.
-Controllers are applied via the DOM's `data-*` attributes joining the `data-` prefix with rule's name: for example `data-tie-text` employs the controller 'tieText'.
-```html
-<span data-tie-text="bandsTie.length"
-      data-tie-tooltip="bandsTie.totalTooltip">
-</span>
-
-<div>
-    <template data-tie-list="bandsTie.0.albums => album">
-        <span data-tie-text="album.name"></span>
-    </template>
-</div>
-```
-In the first part we tie between the `span` (view) and the model (we have tied it to both, `length` and `totalTooltip` values), while using 2 different OOTB controllers: 'tieText', 'tieTooltip'.
-Attributes' values (`bandsTie.length`, `bandsTie.totalTooltip`) are controllers' configurations for this specific instance and their syntax/content is part of each controller's own API.
-
-Thus, in the second part a `template` element tied by another OOTB controller: 'tieList'.
-This one expects a richer content in its configuration: tie name and path for sure, but also some name for an item within iteration (here - 'album', and see its usage in the inner span element).
-
-But even more important is the fact, that any custom controllers may be provided by the consuming application.
-This can be done at any phase of application's lifecycle, so that there is no special ceremony around it whatsoever.
-Controllers' management described in the relevant section in [__API reference__](https://github.com/gullerya/data-tier/blob/master/docs/api-reference.md).
 
 ## Documentation
 [__New `data-tier`__](https://github.com/gullerya/data-tier/blob/master/new-readme.md)
