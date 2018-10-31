@@ -13,6 +13,8 @@ Let's review the actual example, where we have some `user` object which is our m
 ##### JS
 
 ```javascript
+import * as DataTier from '../node_modules/dist/data-tier.min.js';   //  node_modules is for example only
+
 let user = {
 	name: 'User Name',
 	age: 7,
@@ -38,7 +40,6 @@ DataTier.ties.create('userInfo', user);
 		<input type="text" data-tie-value="userInfo.address.apartment">
 	</div>
 </div>
-<script src="data-tier.js"></script>
 ```
  
  
@@ -57,7 +58,6 @@ Users content and localization part are not related to each other, it's just two
 In the HTML part below there are various `data-tie-...` attributes which are the declarative part of the tying process between the view and the model.
 
 ```html
-<script src="data-tier.js"></script>
 <div id="title-bar">
     <select id="language-selector">
         <template data-tie-list="userLanguages => language">
@@ -99,6 +99,8 @@ Most important part here is the __ties__ definitions and their manipulations wit
 See, for example, how in a single line of code one can translate the whole site, assuming that the binding was properly done, of course.
 
 ```javascript
+import * as DataTier from '../node_modules/dist/data-tier.min.js';   //  node_modules is for example only
+
 let strings = {
     en: {
         user: {

@@ -28,7 +28,7 @@
 ## Loading the Library
 
 ```javascript
-import * as DataTier from 'dist/module/data-tier.min.js';
+import * as DataTier from 'dist/data-tier.min.js';
 ```
 
 ## Basic concepts

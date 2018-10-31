@@ -1,5 +1,5 @@
-import {ties} from '../../dist/module/data-tier.js';
-import Observable from '../../dist/module/object-observer.min.js';
+import {ties} from '../dist/data-tier.js';
+import Observable from '../dist/object-observer.min.js';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing ties'});
 

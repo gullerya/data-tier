@@ -1,4 +1,4 @@
-import * as DataTier from '../../dist/module/data-tier.js';
+import * as DataTier from '../dist/data-tier.js';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing array changes (static binding)'});
 

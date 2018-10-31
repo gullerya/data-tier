@@ -1,5 +1,5 @@
-import * as DataTier from '../../dist/module/data-tier.js';
-import Observable from '../../dist/module/object-observer.min.js';
+import * as DataTier from '../dist/data-tier.js';
+import Observable from '../dist/object-observer.min.js';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing views changes'}),
 	user = {name: 'some name', age: 7, address: {street: 'str', apt: 9}},
