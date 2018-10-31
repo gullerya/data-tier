@@ -21,15 +21,15 @@ Read more on [this new API page](https://github.com/gullerya/data-tier/blob/mast
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __0.6.25__
+  * Fixed [issue no. 13](https://github.com/gullerya/data-tier/issues/13)
+
 * __0.6.22__
   * initial provisioning of `data-tier` as ES6 module
   * new API defined and implemented in ES6 module distribution
 
 * __0.6.19__
   * Fixed incorrect behavior when `tie-property` configured on the element **after** it was added to the DOM
-
-* __0.6.18__
-  * Fixed [issue no. 12](https://github.com/gullerya/data-tier/issues/12)
 
 ## Loading the Library
 

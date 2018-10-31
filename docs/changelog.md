@@ -3,6 +3,9 @@
 Medieval
 --------
 
+* __0.6.25__
+  * Fixed [issue no. 13](https://github.com/gullerya/data-tier/issues/13)
+
 * __0.6.22__
   * initial provisioning of ES6 module
   * new API defined and implemented in ES6 module distribution

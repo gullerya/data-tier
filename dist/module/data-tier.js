@@ -39,7 +39,8 @@ class Tie {
 			i, l, change, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
 			tieViews = views[tieName],
 			tiedPaths = Object.keys(tieViews),
-			arrayFullUpdate;
+			arrayFullUpdate,
+			fullUpdatesMap = {};
 
 		if (!tiedPaths.length) return;
 
@@ -51,7 +52,12 @@ class Tie {
 				(change.type === 'insert' || change.type === 'delete') &&
 				!isNaN(arrPath[arrPath.length - 1])) {
 				changedPath = arrPath.slice(0, -1).join('.');
-				arrayFullUpdate = true;
+				if (fullUpdatesMap[changedPath] === change.object) {
+					continue;
+				} else {
+					fullUpdatesMap[changedPath] = change.object;
+					arrayFullUpdate = true;
+				}
 			} else {
 				changedPath = arrPath && arrPath.length ? arrPath.join('.') : '';
 				arrayFullUpdate = false;
