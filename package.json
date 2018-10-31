@@ -1,6 +1,6 @@
 {
   "name": "data-tier",
-  "version": "0.6.26-snapshot",
+  "version": "1.0.0-snapshot",
   "description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
   "keywords": [
     "two",
