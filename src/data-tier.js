@@ -169,7 +169,7 @@ function changeListener(event) {
 		tieParam = tieParams[i];
 		tie = ties.get(tieParam.tieName);
 		if (tie) {
-			setPath(tie[PRIVATE_MODEL_SYMBOL], tieParam.path, element.value);
+			setPath(tie[PRIVATE_MODEL_SYMBOL], tieParam.path, element.nodeName === 'INPUT' && element.type === 'checkbox' ? element.checked : element.value);
 		} else {
 			console.warn('no Tie identified by "' + tieParam.tieName + '" found');
 		}
@@ -321,6 +321,7 @@ function discard(rootElement) {
 		for (; i <= l; i++) {
 			element = i < l ? list[i] : rootElement;
 			tieParams = viewsParams.get(element);
+			if (!tieParams) continue;
 			for (j = 0, k = tieParams.length; j < k; j++) {
 				tieParam = tieParams[j];
 				if (!views[tieParam.tieName]) continue;

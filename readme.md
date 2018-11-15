@@ -15,15 +15,17 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.0.0__
+  * First release to hold an ES6 module flavor distribution only (pay attention to the library loading)
+  * Fixed view -> model flow for `input` of type `checkbox`
+  * Fixed an error in the log where non-tied elements were removed from DOM
+
 * __0.6.25__
   * Fixed [issue no. 13](https://github.com/gullerya/data-tier/issues/13)
 
 * __0.6.21__
   * initial provisioning of `data-tier` as ES6 module
   * new API defined and implemented in ES6 module distribution
-
-* __0.6.19__
-  * Fixed incorrect behavior when `tie-property` configured on the element **after** it was added to the DOM
 
 ## Loading the Library
 
@@ -71,10 +73,10 @@ and then tie any UI element to it via the tie name and the path:
 ```
 where:
 * the first item in the path is always the tie's name, having colon separating it from an actual path within the model
-* `bandsTie.0` - refer to the whole object at index 0 of our array
-* `bandsTie.length` - `length` property, inherited from the native `Array`, may also be used
-* `bandsTie.0.name` - path can get deeper...
-* `bandsTie.0.albums.1.since` - ...actually, it can get to any level of deepness
+* `bandsTie:0` - refer to the whole object at index 0 of our array
+* `bandsTie:length` - `length` property, inherited from the native `Array`, may also be used
+* `bandsTie:0.name` - path can get deeper...
+* `bandsTie:0.albums.1.since` - ...actually, it can get to any level of deepness
 
 Basically, it is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating everything from there, but IMHO it would be a bad practice.
 Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.

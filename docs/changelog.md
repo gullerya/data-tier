@@ -1,5 +1,13 @@
 # Change log
 
+Modern
+------
+
+* __1.0.0__
+  * First release to hold an ES6 module flavor distribution only (pay attention to the library loading)
+  * Fixed view -> model flow for `input` of type `checkbox`
+  * Fixed an error in the log where non-tied elements were removed from DOM
+
 Medieval
 --------
 
