@@ -3,7 +3,7 @@
 Modern
 ------
 
-* __1.0.1__
+* __1.0.2__
   * Fixed [issue no. 14](https://github.com/gullerya/data-tier/issues/14)
 
 * __1.0.0__

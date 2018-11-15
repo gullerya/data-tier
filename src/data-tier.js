@@ -282,7 +282,7 @@ function update(element, tieData, changedPath, change) {
 		if (changedPath && param.rawPath.indexOf(changedPath) !== 0) {
 			continue;
 		}
-		if (!change || changedPath !== param.rawPath) {
+		if (!change || changedPath !== param.rawPath || typeof change.value === 'undefined') {
 			newValue = getPath(tieData, param.path);
 		} else {
 			newValue = change.value;
