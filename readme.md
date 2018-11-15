@@ -15,6 +15,9 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.0.1__
+  * Fixed [issue no. 14](https://github.com/gullerya/data-tier/issues/14)
+
 * __1.0.0__
   * First release to hold an ES6 module flavor distribution only (pay attention to the library loading)
   * Fixed view -> model flow for `input` of type `checkbox`
@@ -22,10 +25,6 @@
 
 * __0.6.25__
   * Fixed [issue no. 13](https://github.com/gullerya/data-tier/issues/13)
-
-* __0.6.21__
-  * initial provisioning of `data-tier` as ES6 module
-  * new API defined and implemented in ES6 module distribution
 
 ## Loading the Library
 

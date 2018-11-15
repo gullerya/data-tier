@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.0.1__
+  * Fixed [issue no. 14](https://github.com/gullerya/data-tier/issues/14)
+
 * __1.0.0__
   * First release to hold an ES6 module flavor distribution only (pay attention to the library loading)
   * Fixed view -> model flow for `input` of type `checkbox`
