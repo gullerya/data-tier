@@ -252,7 +252,7 @@ function parseTiePropertyParam(rawParam) {
 	return {
 		tieName: origin[0],
 		rawPath: rawPath,
-		path: rawPath.split('.'),
+		path: rawPath.split('.').filter(node => node),
 		targetProperty: parts[1]
 	};
 }
