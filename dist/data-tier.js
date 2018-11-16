@@ -275,7 +275,7 @@ function parseTiePropertiesParam(multiParam) {
 }
 
 function update(element, tieData, changedPath, change) {
-	let parsedParams, param, newValue, i = 0, l;
+	let parsedParams, param, newValue, i = 0, l, tp;
 	parsedParams = viewsParams.get(element);
 	for (l = parsedParams.length; i < l; i++) {
 		param = parsedParams[i];
@@ -290,8 +290,11 @@ function update(element, tieData, changedPath, change) {
 		if (typeof newValue === 'undefined') {
 			newValue = '';
 		}
-		if (param.targetProperty === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
+		tp = param.targetProperty;
+		if (tp === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
 			element.checked = newValue;
+		} else if (tp === 'href') {
+			element.href.baseVal = newValue;
 		} else {
 			element[param.targetProperty] = newValue;
 		}
