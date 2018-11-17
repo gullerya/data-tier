@@ -312,7 +312,13 @@ function collect(rootElement) {
 
 		add(rootElement);
 		i = list.length;
-		while (i--) add(list[i]);
+		while (i--) {
+			try {
+				add(list[i]);
+			} catch (e) {
+				console.error('failed to process/add element', e);
+			}
+		}
 	}
 }
 
