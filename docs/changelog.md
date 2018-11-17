@@ -3,6 +3,10 @@
 Modern
 ------
 
+* __1.0.3__
+  * Fixed [issue no. 15](https://github.com/gullerya/data-tier/issues/15)
+  * Improved error handling during elements collection in order to not break the flow due to a single failure
+
 * __1.0.2__
   * Fixed [issue no. 14](https://github.com/gullerya/data-tier/issues/14)
 
