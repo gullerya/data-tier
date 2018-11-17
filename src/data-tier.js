@@ -252,7 +252,7 @@ function parseTiePropertyParam(rawParam) {
 	return {
 		tieName: origin[0],
 		rawPath: rawPath,
-		path: rawPath.split('.'),
+		path: rawPath.split('.').filter(node => node),
 		targetProperty: parts[1]
 	};
 }
@@ -275,14 +275,14 @@ function parseTiePropertiesParam(multiParam) {
 }
 
 function update(element, tieData, changedPath, change) {
-	let parsedParams, param, newValue, i = 0, l;
+	let parsedParams, param, newValue, i = 0, l, tp;
 	parsedParams = viewsParams.get(element);
 	for (l = parsedParams.length; i < l; i++) {
 		param = parsedParams[i];
 		if (changedPath && param.rawPath.indexOf(changedPath) !== 0) {
 			continue;
 		}
-		if (!change || changedPath !== param.rawPath) {
+		if (!change || changedPath !== param.rawPath || typeof change.value === 'undefined') {
 			newValue = getPath(tieData, param.path);
 		} else {
 			newValue = change.value;
@@ -290,8 +290,11 @@ function update(element, tieData, changedPath, change) {
 		if (typeof newValue === 'undefined') {
 			newValue = '';
 		}
-		if (param.targetProperty === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
+		tp = param.targetProperty;
+		if (tp === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
 			element.checked = newValue;
+		} else if (tp === 'href') {
+			element.href.baseVal = newValue;
 		} else {
 			element[param.targetProperty] = newValue;
 		}
@@ -309,7 +312,13 @@ function collect(rootElement) {
 
 		add(rootElement);
 		i = list.length;
-		while (i--) add(list[i]);
+		while (i--) {
+			try {
+				add(list[i]);
+			} catch (e) {
+				console.error('failed to process/add element', e);
+			}
+		}
 	}
 }
 
