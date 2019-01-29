@@ -40,18 +40,18 @@
     "build": "node ./build/tools/build-dist.js"
   },
   "dependencies": {
-    "object-observer": "^1.1.4",
-    "@gullerya/observable": "^1.1.4"
+    "@gullerya/observable": "^2.0.0",
+    "object-observer": "^2.0.0"
   },
   "devDependencies": {
-    "eslint": "^5.9.0",
-    "eslint-plugin-node": "^8.0.0",
-    "eslint-plugin-import": "^2.14.0",
+    "eslint": "^5.12.1",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "eslint-config-standard": "^12.0.0",
     "fs-extra": "^7.0.1",
-    "uglify-es": "^3.3.9",
-    "just-test": "^0.1.0"
+    "just-test": "^0.1.0",
+    "uglify-es": "^3.3.9"
   }
 }

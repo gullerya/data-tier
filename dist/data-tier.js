@@ -1,4 +1,4 @@
-import Observable from './object-observer.js';
+import {Observable} from './object-observer.js';
 
 export const ties = new Ties();
 
@@ -192,7 +192,7 @@ function delChangeListener(view) {
 function add(element) {
 	if (element.nodeName === 'IFRAME') {
 		initDocumentObserver(element.contentDocument);
-		element.addEventListener('load', function() {
+		element.addEventListener('load', function () {
 			initDocumentObserver(this.contentDocument);
 			collect(this.contentDocument);
 		});
@@ -408,7 +408,7 @@ function processDomChanges(changes) {
 						initDocumentObserver(node.contentDocument);
 						collect(node.contentDocument);
 					}
-					node.addEventListener('load', function() {
+					node.addEventListener('load', function () {
 						initDocumentObserver(this.contentDocument);
 						collect(this.contentDocument);
 					});

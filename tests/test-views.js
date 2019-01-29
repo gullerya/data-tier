@@ -1,11 +1,9 @@
 import * as DataTier from '../dist/data-tier.js';
-import Observable from '../dist/object-observer.min.js';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing views changes'}),
-	user = {name: 'some name', age: 7, address: {street: 'str', apt: 9}},
-	observableUser = Observable.from(user);
+	user = {name: 'some name', age: 7, address: {street: 'str', apt: 9}};
 
-DataTier.ties.create('userB', observableUser);
+DataTier.ties.create('userB', user);
 
 let s1, s2, s3, s4;
 s1 = document.createElement('div');
@@ -60,7 +58,7 @@ suite.addTest({name: 'adding checkbox view and verifying its value set correctly
 	newEl.type = 'checkbox';
 	newEl.dataset.tie = 'cbValueTest:test => value';
 	document.body.appendChild(newEl);
-	DataTier.ties.create('cbValueTest', Observable.from({test: true}));
+	DataTier.ties.create('cbValueTest', {test: true});
 	setTimeout(() => {
 		if (newEl.checked !== true) fail(new Error('expected the value to be "true", but found "' + newEl.checked + '"'));
 		pass();
