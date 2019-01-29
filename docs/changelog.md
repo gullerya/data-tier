@@ -3,6 +3,10 @@
 Modern
 ------
 
+* __1.1.0__
+  * upgraded `object-observer` dependency to `2.0.0`, which affects the support matrix
+  * fixed an issue with not-yet upgraded customized elements (not ideal, but works, waiting for spec to have it ideal)
+
 * __1.0.3__
   * Fixed [issue no. 15](https://github.com/gullerya/data-tier/issues/15)
   * Improved error handling during elements collection in order to not break the flow due to a single failure

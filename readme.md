@@ -15,17 +15,16 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.1.0__
+  * upgraded `object-observer` dependency to `2.0.0`, which affects the support matrix
+  * fixed an issue with not-yet upgraded customized elements (not ideal, but works, waiting for spec to have it ideal)
+
 * __1.0.3__
   * Fixed [issue no. 15](https://github.com/gullerya/data-tier/issues/15)
   * Improved error handling during elements collection in order to not break the flow due to a single failure
 
 * __1.0.2__
   * Fixed [issue no. 14](https://github.com/gullerya/data-tier/issues/14)
-
-* __1.0.0__
-  * First release to hold an ES6 module flavor distribution only (pay attention to the library loading)
-  * Fixed view -> model flow for `input` of type `checkbox`
-  * Fixed an error in the log where non-tied elements were removed from DOM
 
 ## Loading the Library
 
