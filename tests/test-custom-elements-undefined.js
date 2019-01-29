@@ -4,10 +4,6 @@ let suite = Utils.JustTest.createSuite({name: 'Testing Custom Elements when Unde
 	tie = DataTier.ties.create('testCustomsUndefined', {text: 'some text'});
 
 class CustomElementA extends HTMLElement {
-	constructor() {
-		super();
-	}
-
 	get value() {
 		return this.__value;
 	}
@@ -19,10 +15,6 @@ class CustomElementA extends HTMLElement {
 }
 
 class CustomInputA extends HTMLInputElement {
-	constructor() {
-		super();
-	}
-
 	get valueA() {
 		return this.value;
 	}

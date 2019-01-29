@@ -198,10 +198,26 @@ function add(element) {
 		});
 		collect(element.contentDocument);
 	} else if (Node.ELEMENT_NODE === element.nodeType) {
-		if (element.localName.indexOf('-') < 0 && !element.hasAttribute('is')) {
+		if (element.matches(':defined')) {
 			processAddedElement(element);
 		} else {
-			customElements.whenDefined(element.getAttribute('is') || element.localName).then(() => processAddedElement(element));
+			let customElementToWait = '';
+			if (element.localName.indexOf('-') > 0) {
+				customElementToWait = element.localName;
+			} else if (element.getAttribute('is')) {
+				customElementToWait = element.getAttribute('is');
+			} else {
+				let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
+				if (matches && matches.length > 1) {
+					customElementToWait = matches[1];
+				}
+			}
+			if (customElementToWait) {
+				customElements.whenDefined(customElementToWait).then(() => processAddedElement(element));
+			} else {
+				console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
+				processAddedElement(element);
+			}
 		}
 	}
 }
