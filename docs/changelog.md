@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.1.2__
+  * upgraded `object-observer` dependency to `2.0.2`, having some essential fix for issue #20
+
 * __1.1.0__
   * upgraded `object-observer` dependency to `2.0.0`, which affects the support matrix
   * fixed an issue with not-yet upgraded customized elements (not ideal, but works, waiting for spec to have it ideal)

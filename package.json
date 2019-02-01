@@ -1,6 +1,6 @@
 {
   "name": "data-tier",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
   "keywords": [
     "two",
@@ -40,8 +40,8 @@
     "build": "node ./build/tools/build-dist.js"
   },
   "dependencies": {
-    "@gullerya/observable": "^2.0.0",
-    "object-observer": "^2.0.0"
+    "@gullerya/observable": "^2.0.2",
+    "object-observer": "^2.0.2"
   },
   "devDependencies": {
     "eslint": "^5.12.1",
