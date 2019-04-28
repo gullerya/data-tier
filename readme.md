@@ -15,16 +15,16 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.2.0__
+  * fixed an issue where single element mapped to few different ties was not updated correctly
+  * upgraded dependencies
+
 * __1.1.2__
   * upgraded `object-observer` dependency to `2.0.2`, having some essential fix for issue #20
 
 * __1.1.0__
   * upgraded `object-observer` dependency to `2.0.0`, which affects the support matrix
   * fixed an issue with not-yet upgraded customized elements (not ideal, but works, waiting for spec to have it ideal)
-
-* __1.0.3__
-  * Fixed [issue no. 15](https://github.com/gullerya/data-tier/issues/15)
-  * Improved error handling during elements collection in order to not break the flow due to a single failure
 
 ## Loading the Library
 
