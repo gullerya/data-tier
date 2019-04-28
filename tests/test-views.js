@@ -97,4 +97,17 @@ suite.addTest({name: 'adding tie property after the element was added to the DOM
 	}, 0);
 });
 
+suite.addTest({name: 'mapping element to 2 different ties'}, (pass, fail) => {
+	let newEl = document.createElement('div');
+	DataTier.ties.create('multiTiesA', {test: 'test'});
+	DataTier.ties.create('multiTiesB', {else: 'else'});
+	newEl.dataset.tie = 'multiTiesA:test => textContent, multiTiesB:else => testContent';
+	document.body.appendChild(newEl);
+	setTimeout(() => {
+		if (newEl.textContent !== 'test') fail(new Error('expected the value to be "test", but found ' + newEl.textContent));
+		if (newEl.testContent !== 'else') fail(new Error('expected the value to be "else", but found ' + newEl.testContent));
+		pass();
+	}, 0);
+});
+
 suite.run();

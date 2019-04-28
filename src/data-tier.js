@@ -35,7 +35,6 @@ class Tie {
 
 	processDataChanges(changes) {
 		let tieName = this.name,
-			tieData = this[PRIVATE_MODEL_SYMBOL],
 			i, l, change, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
 			tieViews = views[tieName],
 			tiedPaths = Object.keys(tieViews),
@@ -70,7 +69,7 @@ class Tie {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
 					while (pvl--) {
-						update(pathViews[pvl], tieData, changedPath, !arrayFullUpdate ? change : null);
+						update(pathViews[pvl], changedPath, !arrayFullUpdate ? change : null);
 					}
 				}
 			}
@@ -223,8 +222,7 @@ function add(element) {
 }
 
 function processAddedElement(element) {
-	let tieParams, tieName, rawPath, tieViews, pathViews, tie,
-		i = 0, l;
+	let tieParams, tieName, rawPath, tieViews, pathViews, i = 0, l;
 	tieParams = extractTieParams(element);
 	for (l = tieParams.length; i < l; i++) {
 		tieName = tieParams[i].tieName;
@@ -234,8 +232,7 @@ function processAddedElement(element) {
 		if (pathViews.indexOf(element) < 0) {
 			pathViews.push(element);
 			viewsParams.set(element, tieParams);
-			tie = ties.get(tieName);
-			update(element, tie ? tie[PRIVATE_MODEL_SYMBOL] : null);
+			update(element);
 			addChangeListenerIfRelevant(element);
 		}
 	}
@@ -290,14 +287,16 @@ function parseTiePropertiesParam(multiParam) {
 	return result;
 }
 
-function update(element, tieData, changedPath, change) {
-	let parsedParams, param, newValue, i = 0, l, tp;
+function update(element, changedPath, change) {
+	let parsedParams, param, tie, tieData, newValue, i = 0, l, tp;
 	parsedParams = viewsParams.get(element);
 	for (l = parsedParams.length; i < l; i++) {
 		param = parsedParams[i];
 		if (changedPath && param.rawPath.indexOf(changedPath) !== 0) {
 			continue;
 		}
+		tie = ties.get(param.tieName);
+		tieData = tie ? tie.model : null;
 		if (!change || changedPath !== param.rawPath || typeof change.value === 'undefined') {
 			newValue = getPath(tieData, param.path);
 		} else {
@@ -389,7 +388,7 @@ function move(element, attributeName, oldParam, newParam) {
 			pathViews = tieViews[tieParam.rawPath] || (tieViews[tieParam.rawPath] = []);
 			if (pathViews.indexOf(element) < 0) {
 				pathViews.push(element);
-				update(element, ties.get(tieParam.tieName)[PRIVATE_MODEL_SYMBOL], tieParam.rawPath);
+				update(element, tieParam.rawPath);
 			}
 		}
 		addChangeListenerIfRelevant(element);

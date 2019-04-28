@@ -19,6 +19,7 @@ const
 		Promise: true,
 		RegExp: true
 	},
+	validOptionsKeys = ['path', 'pathsFrom'],
 	observableDefinition = {
 		revoke: {
 			value: function () {
@@ -26,15 +27,31 @@ const
 			}
 		},
 		observe: {
-			value: function (observer) {
+			value: function (observer, options) {
 				let systemObserver = this[sysObsKey],
 					observers = systemObserver.observers;
+
 				if (typeof observer !== 'function') {
 					throw new Error('observer parameter MUST be a function');
 				}
+				if (options) {
+					if ('path' in options && (typeof options.path !== 'string' || !options.path)) {
+						throw new Error('"path" option, if/when provided, MUST be a non-empty string');
+					}
+					if ('pathsFrom' in options && options.path) {
+						throw new Error('"pathsFrom" option MAY NOT be specified together with "path" option');
+					}
+					if ('pathsFrom' in options && (typeof options.pathsFrom !== 'string' || !options.pathsFrom)) {
+						throw new Error('"pathsFrom" option, if/when provided, MUST be a non-empty string');
+					}
+					let invalidOption = Object.keys(options).find(option => !validOptionsKeys.includes(option));
+					if (invalidOption) {
+						throw new Error('"' + invalidOption + '" is not a one of the valid options (' + validOptionsKeys.join(', ') + ')');
+					}
+				}
 
-				if (observers.indexOf(observer) < 0) {
-					observers.push(observer);
+				if (!observers.has(observer)) {
+					observers.set(observer, Object.assign({}, options));
 				} else {
 					console.info('observer may be bound to an observable only once');
 				}
@@ -44,15 +61,16 @@ const
 			value: function () {
 				let systemObserver = this[sysObsKey],
 					observers = systemObserver.observers,
-					l, idx;
-				l = arguments.length;
-				if (l) {
-					while (l--) {
-						idx = observers.indexOf(arguments[l]);
-						if (idx >= 0) observers.splice(idx, 1);
+					l;
+				if (observers.size) {
+					l = arguments.length;
+					if (l) {
+						while (l--) {
+							observers.delete(arguments[l]);
+						}
+					} else {
+						observers.clear();
 					}
-				} else {
-					observers.splice(0);
 				}
 			}
 		}
@@ -90,12 +108,20 @@ const
 		return target;
 	},
 	callObservers = function (observers, changes) {
-		let l = observers.length;
-		while (l--) {
+		for (let target of observers.keys()) {
 			try {
-				observers[l](changes);
+				let relevantChanges = changes,
+					options = observers.get(target);
+				if (options.path) {
+					let oPath = options.path;
+					relevantChanges = changes.filter(change => change.path.join('.') === oPath);
+				} else if (options.pathsFrom) {
+					let oPaths = options.pathsFrom;
+					relevantChanges = changes.filter(change => change.path.join('.').startsWith(oPaths));
+				}
+				target(relevantChanges);
 			} catch (e) {
-				console.error('failed to deliver changes to listener' + observers[l], e);
+				console.error('failed to deliver changes to listener ' + target, e);
 			}
 		}
 	},
@@ -111,6 +137,22 @@ const
 	};
 
 class ObserverBase {
+	constructor(properties, cloningFunction) {
+		let source = properties.target,
+			targetClone = cloningFunction(source, this);
+		if (properties.parent === null) {
+			this.isRevoked = false;
+			Object.defineProperty(this, 'observers', {value: new Map()});
+			Object.defineProperties(targetClone, observableDefinition);
+		} else {
+			this.parent = properties.parent;
+			this.ownKey = properties.ownKey;
+		}
+		this.revokable = Proxy.revocable(targetClone, this);
+		this.proxy = this.revokable.proxy;
+		this.target = targetClone;
+	}
+
 	set(target, key, value) {
 		let newValue, oldValue = target[key], ad, changes;
 
@@ -132,7 +174,7 @@ class ObserverBase {
 
 		//	publish changes
 		ad = getAncestorInfo(this);
-		if (ad.observers.length) {
+		if (ad.observers.size) {
 			ad.path.push(key);
 			changes = typeof oldValue === 'undefined'
 				? [{type: INSERT, path: ad.path, value: newValue, object: this.proxy}]
@@ -155,7 +197,7 @@ class ObserverBase {
 
 			//	publish changes
 			ad = getAncestorInfo(this);
-			if (ad.observers.length) {
+			if (ad.observers.size) {
 				ad.path.push(key);
 				changes = [{type: DELETE, path: ad.path, oldValue: oldValue, object: this.proxy}];
 				callObservers(ad.observers, changes);
@@ -169,20 +211,7 @@ class ObserverBase {
 
 class ArrayObserver extends ObserverBase {
 	constructor(properties) {
-		super();
-		let source = properties.target,
-			target = prepareArray(source, this);
-		if (properties.parent === null) {
-			this.isRevoked = false;
-			this.observers = [];
-			Object.defineProperties(target, observableDefinition);
-		} else {
-			this.parent = properties.parent;
-			this.ownKey = properties.ownKey;
-		}
-		this.revokable = Proxy.revocable(target, this);
-		this.proxy = this.revokable.proxy;
-		this.target = target;
+		super(properties, prepareArray);
 	}
 
 	//	returns an unobserved graph (effectively this is an opposite of an ArrayObserver constructor logic)
@@ -219,7 +248,7 @@ class ArrayObserver extends ObserverBase {
 
 				//	publish changes
 				let ad = getAncestorInfo(observed);
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					ad.path.push(poppedIndex);
 					callObservers(ad.observers, [{
 						type: DELETE,
@@ -247,7 +276,7 @@ class ArrayObserver extends ObserverBase {
 				pushResult = Reflect.apply(target.push, target, pushContent);
 
 				//	publish changes
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					changes = [];
 					for (i = initialLength, l = target.length; i < l; i++) {
 						let path = ad.path.slice(0);
@@ -287,7 +316,7 @@ class ArrayObserver extends ObserverBase {
 
 				//	publish changes
 				ad = getAncestorInfo(observed);
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					ad.path.push(0);
 					changes = [{type: DELETE, path: ad.path, oldValue: shiftResult, object: observed.proxy}];
 					callObservers(ad.observers, changes);
@@ -318,7 +347,7 @@ class ArrayObserver extends ObserverBase {
 
 				//	publish changes
 				ad = getAncestorInfo(observed);
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					let l = unshiftContent.length, path;
 					changes = new Array(l);
 					for (let i = 0; i < l; i++) {
@@ -345,7 +374,7 @@ class ArrayObserver extends ObserverBase {
 
 				//	publish changes
 				ad = getAncestorInfo(observed);
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					changes = [{type: REVERSE, path: ad.path, object: observed.proxy}];
 					callObservers(ad.observers, changes);
 				}
@@ -366,7 +395,7 @@ class ArrayObserver extends ObserverBase {
 
 				//	publish changes
 				ad = getAncestorInfo(observed);
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					changes = [{type: SHUFFLE, path: ad.path, object: observed.proxy}];
 					callObservers(ad.observers, changes);
 				}
@@ -416,7 +445,7 @@ class ArrayObserver extends ObserverBase {
 				}
 
 				//	publish changes
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					callObservers(ad.observers, changes);
 				}
 				return observed.proxy;
@@ -471,7 +500,7 @@ class ArrayObserver extends ObserverBase {
 				}
 
 				//	publish changes
-				if (ad.observers.length) {
+				if (ad.observers.size) {
 					let index, path;
 					for (index = 0; index < removed; index++) {
 						path = ad.path.slice(0);
@@ -518,20 +547,7 @@ class ArrayObserver extends ObserverBase {
 
 class ObjectObserver extends ObserverBase {
 	constructor(properties) {
-		super();
-		let origin = properties.target,
-			clone = prepareObject(origin, this);
-		if (properties.parent === null) {
-			this.isRevoked = false;
-			this.observers = [];
-			Object.defineProperties(clone, observableDefinition);
-		} else {
-			this.parent = properties.parent;
-			this.ownKey = properties.ownKey;
-		}
-		this.revokable = Proxy.revocable(clone, this);
-		this.proxy = this.revokable.proxy;
-		this.target = clone;
+		super(properties, prepareObject);
 	}
 
 	//	returns an unobserved graph (effectively this is an opposite of an ObjectObserver constructor logic)
