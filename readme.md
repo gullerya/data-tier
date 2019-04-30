@@ -63,7 +63,7 @@ let bandsDataStore = DataTier.ties.create('bandsTie', bands);
 
 and then tie any UI element to it via the tie name and the path:
 ```html
-<span data-tie="bandsTie:length > textContent, bandsTie:totalTooltip > tooltip"></span>
+<span data-tie="bandsTie:length => textContent, bandsTie:totalTooltip => tooltip"></span>
 
 <div>
     <span data-tie="bandsTie:0.albums.1.name => textContent"></span>
@@ -89,7 +89,7 @@ While previous versions of `data-tier` prior to `1.0` were concerned with provid
 
 I believe, and already outlined that [somewhere else](https://github.com/gullerya/data-tier/blob/master/docs/client-app-architecture.md), that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s.
 
-Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by **dedicated components**, presumably building on top of `data-tier` framework or any other one.
+Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by **dedicated components**, probably, yet not necessary, built on top of `data-tier` or any other framework.
 
 Having said that, me myself investing some effort in building `data-tier` oriented components. I'll maintain the list below, updating it from time to time (please update me if you have something to add here).
 * [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on the single template
