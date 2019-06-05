@@ -1,6 +1,8 @@
 import {Observable} from './object-observer.js';
 
 export const ties = new Ties();
+export const CHANGE_EVENT_NAME_PROVIDER = 'changeEventName';
+export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
 
 const
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
@@ -161,31 +163,47 @@ function setPath(ref, path, value) {
 }
 
 function changeListener(event) {
-	let element = event.currentTarget, tieParams, tieParam, tie, i;
+	let element = event.currentTarget, tieParams, tieParam, tie, i, newValue;
 	tieParams = viewsParams.get(element);
 	i = tieParams.length;
 	while (i--) {
 		tieParam = tieParams[i];
 		tie = ties.get(tieParam.tieName);
 		if (tie) {
-			setPath(tie[PRIVATE_MODEL_SYMBOL], tieParam.path, element.nodeName === 'INPUT' && element.type === 'checkbox' ? element.checked : element.value);
+			newValue = element.nodeName === 'INPUT' && element.type === 'checkbox'
+				? element.checked
+				: element[getDefaultTargetProperty(element)];
+			setPath(tie[PRIVATE_MODEL_SYMBOL], tieParam.path, newValue);
 		} else {
 			console.warn('no Tie identified by "' + tieParam.tieName + '" found');
 		}
 	}
 }
 
-//	TODO: here we'll add and extensibility contract for custom elements to provide us a hint that specific custom element also able to raise change event
-function addChangeListenerIfRelevant(view) {
-	if (view.nodeName === 'INPUT' ||
-		view.nodeName === 'SELECT' ||
-		view.nodeName === 'TEXTAREA') {
-		view.addEventListener('change', changeListener);
+function addChangeListenerIfRelevant(element) {
+	let cen = obtainChangeEventName(element);
+	if (cen) {
+		element.addEventListener(cen, changeListener);
 	}
 }
 
-function delChangeListener(view) {
-	view.removeEventListener('change', changeListener);
+function delChangeListener(element) {
+	let cen = obtainChangeEventName(element);
+	if (cen) {
+		element.removeEventListener(cen, changeListener);
+	}
+}
+
+function obtainChangeEventName(element) {
+	let changeEventName = element[CHANGE_EVENT_NAME_PROVIDER];
+	if (!changeEventName) {
+		if (element.nodeName === 'INPUT' ||
+			element.nodeName === 'SELECT' ||
+			element.nodeName === 'TEXTAREA') {
+			changeEventName = 'change';
+		}
+	}
+	return changeEventName;
 }
 
 function add(element) {
@@ -241,25 +259,24 @@ function processAddedElement(element) {
 function extractTieParams(element) {
 	let result = [], param;
 	if (element && element.dataset && (param = element.dataset.tie)) {
-		result = parseTiePropertiesParam(param);
+		result = parseTiePropertiesParam(param, element);
 	}
 	return result;
 }
 
-//	syntax example: data-tie="orders:0.address.street > textContent"
-function parseTiePropertyParam(rawParam) {
-	if (!rawParam || typeof rawParam !== 'string') {
-		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example): "orders:0.address.street > textContent"');
-	}
+//	syntax example: data-tie="orders:0.address.street => textContent"
+function parseTiePropertyParam(rawParam, element) {
 	let parts = rawParam.split(PARAM_SPLITTER),
 		origin,
 		rawPath;
-	if (parts.length !== 2 || !parts[1]) {
-		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example): "orders:0.address.street > textContent"');
+	//  add default 'to' property if needed
+	if (parts.length === 1) {
+		parts.push(getDefaultTargetProperty(element));
 	}
+	//  process 'from' part
 	origin = parts[0].split(':');
 	if (!origin.length || origin.length > 2 || !origin[0]) {
-		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example): "orders:0.address.street > textContent"');
+		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example): "orders:0.address.street => textContent"');
 	}
 	rawPath = origin.length > 1 ? origin[1] : '';
 	return {
@@ -270,18 +287,36 @@ function parseTiePropertyParam(rawParam) {
 	};
 }
 
-//	syntax example: data-tie="orders:0.address.street > textContent, orders:0.address.apt > title"
-function parseTiePropertiesParam(multiParam) {
+//	syntax example: data-tie="orders:0.address.street => textContent, orders:0.address.apt => title"
+function parseTiePropertiesParam(multiParam, element) {
 	if (!multiParam || typeof multiParam !== 'string') {
-		throw new Error('invalid tie value; found: "' + multiParam + '"; expected (example): "orders:0.address.street > textContent, orders:0.address.apt > title"');
+		throw new Error('invalid tie value; found: "' + multiParam + '"; expected (example): "orders:0.address.street => textContent, orders:0.address.apt => title"');
 	}
 	let result = [], rawParams = multiParam.split(MULTI_PARAMS_SPLITTER),
 		i = 0, l = rawParams.length;
 	for (; i < l; i++) {
+		if (!rawParams[i]) {
+			continue;
+		}
 		try {
-			result.push(parseTiePropertyParam(rawParams[i]));
+			result.push(parseTiePropertyParam(rawParams[i], element));
 		} catch (e) {
 			console.error('failed to parse one of a multi param parts', e)
+		}
+	}
+	return result;
+}
+
+function getDefaultTargetProperty(element) {
+	let result = element[DEFAULT_TIE_TARGET_PROVIDER];
+	if (!result) {
+		let eName = element.nodeName;
+		if (eName === 'INPUT' ||
+			eName === 'SELECT' ||
+			eName === 'TEXTAREA') {
+			result = 'value';
+		} else {
+			result = 'textContent';
 		}
 	}
 	return result;
@@ -380,7 +415,7 @@ function move(element, attributeName, oldParam, newParam) {
 	}
 
 	if (newParam) {
-		tieParams = parseTiePropertiesParam(newParam);
+		tieParams = parseTiePropertiesParam(newParam, element);
 		viewsParams.set(element, tieParams);
 		for (i = 0, l = tieParams.length; i < l; i++) {
 			tieParam = tieParams[i];
