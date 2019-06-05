@@ -125,12 +125,12 @@ This declaration ties between span's `textContent` and the property `firstName` 
 * `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** 'addresses'
 * `textContent` - view's **target property** tied to the given model
 
-Last item, targeted property, is **optional**, and thus is the separator.
-Shortened example is shown above.
-When short syntax is used, `DataTier` will resolve the **default** target property, which resolved in the following order:
-* custom default property used if the element has property `defaultTieTarget` defined
-* `value` used for elements `INPUT`, `SELECT`, `TEXTAREA`
-* `textContent` for the rest
+>Last item, targeted property, is **optional**, and thus is the separator.
+>Shortened example is shown above.
+>When short syntax is used, `DataTier` will resolve the **default** target property, which resolved in the following order:
+>* custom default property used if the element has property `defaultTieTarget` defined
+>* `value` used for elements `INPUT`, `SELECT`, `TEXTAREA`
+>* `textContent` for the rest
 
 The library scans for such an attributes, parses them and ties to the relevant model/s via relevant ties.
 
