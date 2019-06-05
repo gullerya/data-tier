@@ -2,7 +2,7 @@ import * as DataTier from '../dist/data-tier.js';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing erroneous cases'});
 
-suite.addTest({name: 'adding view with empty tie definition'}, function(pass, fail) {
+suite.addTest({name: 'adding view with empty tie definition'}, function (pass, fail) {
 	let elem = document.createElement('div');
 
 	elem.dataset.tie = '';
@@ -11,7 +11,7 @@ suite.addTest({name: 'adding view with empty tie definition'}, function(pass, fa
 	pass();
 });
 
-suite.addTest({name: 'accessing in other place the observable that was replaced'}, function(pass, fail) {
+suite.addTest({name: 'accessing in other place the observable that was replaced'}, function (pass, fail) {
 	let inner = {},
 		raw = {o: inner},
 		data = DataTier.ties.create('errorA', raw),
@@ -30,9 +30,7 @@ suite.addTest({name: 'accessing in other place the observable that was replaced'
 		document.body.removeChild(elem);
 
 		setTimeout(() => {
-
 			document.body.appendChild(elem);
-
 		}, 0);
 
 		pass();

@@ -33,15 +33,17 @@ let user = {
     userTie = DataTier.ties.create('user', user),
     settingsTie = DataTier.ties.create('settings');
 ```
-##### `remove(name)`
-Removes tie by name.
+##### `remove(tieToRemove)`
+Removes tie.
 
 Tie's model becomes unobserved by the `data-tier` and is revoked if an `Observable` was initially created by `data-tier`.
 If `Observable` was provided by hosting application, it remains intact.
 
-If no tie found by the given `name`, nothing will happen.
+If no tie found by the given `tieToRemove`, nothing will happen.
 
-* `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`
+* `tieToRemove` - MUST parameter, may be one of:
+  * valid tie name (string matching the pattern `/^[a-zA-Z0-9]+$/`)
+  * tie object itself 
 
 ```javascript
 DataTier.ties.remove('settings');
@@ -109,7 +111,11 @@ In order to tie **view** (DOM element) to **model** and vice-versa, some declara
 This declaration is done via element's attribute `data-tie`:
 
 ```html
+//  explicit syntax
 <span data-tie="user:firstName => textContent"></span>
+
+//  shortened syntax (tying to default target property)
+<span data-tie="user:firstName"></span>
 ```
 
 This declaration ties between span's `textContent` and the property `firstName` of the `userTie`'s model.
@@ -118,6 +124,13 @@ This declaration ties between span's `textContent` and the property `firstName` 
 * `firstName` - **path** to the tied property within the tied model; the path can have any depth
 * `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** 'addresses'
 * `textContent` - view's **target property** tied to the given model
+
+Last item, targeted property, is **optional**, and thus is the separator.
+Shortened example is shown above.
+When short syntax is used, `DataTier` will resolve the **default** target property, which resolved in the following order:
+* custom default property used if the element has property `defaultTieTarget` defined
+* `value` used for elements `INPUT`, `SELECT`, `TEXTAREA`
+* `textContent` for the rest
 
 The library scans for such an attributes, parses them and ties to the relevant model/s via relevant ties.
 

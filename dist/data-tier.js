@@ -90,10 +90,11 @@ function Ties() {
 	};
 
 	this.create = function create(name, model) {
-		validateTieName(name);
 		if (ts[name]) {
 			throw new Error('tie (' + name + ') is already present and MAY NOT be re-created');
 		}
+		validateTieName(name);
+		ensureObservable(model);
 		let result = new Tie(name);
 		ts[name] = result;
 		if (!views.hasOwnProperty(name)) views[name] = {};
@@ -101,15 +102,23 @@ function Ties() {
 		return result;
 	};
 
-	this.remove = function remove(name) {
-		validateTieName(name);
-		delete views[name];
-		let tie = ts[name];
+	this.remove = function remove(tieToRemove) {
+		let tieNameToRemove;
+		if (typeof tieToRemove === 'object' && tieToRemove.name) {
+			tieNameToRemove = tieToRemove.name;
+		} else if (typeof tieToRemove === 'string' && validateTieName(tieToRemove)) {
+			tieNameToRemove = tieToRemove;
+		} else {
+			throw new Error('tie to remove MUST either be a valid tie name or tie self');
+		}
+
+		delete views[tieNameToRemove];
+		let tie = ts[tieNameToRemove];
 		if (tie) {
 			if (tie[PRIVATE_MODEL_SYMBOL]) {
 				tie[PRIVATE_MODEL_SYMBOL].revoke();
 			}
-			delete ts[name];
+			delete ts[tieNameToRemove];
 		}
 	};
 
@@ -120,6 +129,7 @@ function Ties() {
 		if (!vp.test(name)) {
 			throw new Error('tie name MUST contain alphanumeric characters ONLY (use ' + vp + ' to check yourself); "' + name + '" not fits');
 		}
+		return true;
 	}
 
 	Object.freeze(this);
@@ -129,13 +139,13 @@ function ensureObservable(o) {
 	if (typeof o === 'undefined' || o === null) {
 		return o;
 	} else if (typeof o !== 'object') {
-		throw new Error(o + ' is not of type Observable and not an object');
+		throw new Error(o + ' is not an object');
 	} else if (Observable.isObservable(o)) {
 		return o;
 	} else if (!Observable) {
 		throw new Error(o + ' is not of type Observable and no embedded Observable implementation found');
-	} else if (typeof o.observe === 'function' || typeof o.unobserve === 'function' || typeof o.revoke === 'function') {
-		throw new Error(o + ' is not of type Observable and can not be transformed into Observable (some of its functions already implemented?)');
+	} else if (o.observe || o.unobserve || o.revoke) {
+		throw new Error(o + ' is not of type Observable and can not be transformed into Observable (some of the properties already occupied?)');
 	} else {
 		return Observable.from(o);
 	}
@@ -221,8 +231,7 @@ function add(element) {
 			let customElementToWait = '';
 			if (element.localName.indexOf('-') > 0) {
 				customElementToWait = element.localName;
-			} else if (element.getAttribute('is')) {
-				customElementToWait = element.getAttribute('is');
+			} else if ((customElementToWait = element.getAttribute('is'))) {
 			} else {
 				let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
 				if (matches && matches.length > 1) {
@@ -346,7 +355,7 @@ function update(element, changedPath, change) {
 		} else if (tp === 'href') {
 			element.href.baseVal = newValue;
 		} else {
-			element[param.targetProperty] = newValue;
+			element[tp] = newValue;
 		}
 	}
 }

@@ -1,44 +1,102 @@
 import * as DataTier from '../dist/data-tier.js';
+import {Observable} from '../dist/object-observer.js';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing events'}),
-	testTie = DataTier.ties.create('eventsTest', {});
+	testTie = DataTier.ties.create('eventsTest', Observable.from({}));
 
-suite.addTest({name: 'binding default event'}, (pass, fail) => {
-	let i = document.createElement('input');
+function waitNextMicrotask() {
+	return new Promise(resolve => {
+		resolve();
+	});
+}
+
+suite.addTest({name: 'binding/unbinding default event'}, async (pass, fail) => {
+	let i = document.createElement('input'), event;
 	i.dataset.tie = 'eventsTest:someA';
 	document.body.appendChild(i);
 
-	setTimeout(() => {
-		if (i.value !== '') fail('expected to have empty value, found "' + i.value + '"');
-		i.value = 'text';
-		let event = new Event('change');
-		i.dispatchEvent(event);
+	await waitNextMicrotask();
 
-		if (testTie.model.someA !== 'text') fail('expected to have value "text" in tied model, found "' + testTie.model.someA + '"');
+	if (i.value !== '') fail('expected to have empty value, found "' + i.value + '"');
+	i.value = 'text';
+	event = new Event('change');
+	i.dispatchEvent(event);
 
-		pass();
-	}, 0);
+	if (testTie.model.someA !== 'text') fail('expected to have value "text" in tied model, found "' + testTie.model.someA + '"');
+
+	//  removal of element should untie
+	document.body.removeChild(i);
+
+	await waitNextMicrotask();
+
+	i.value = 'changed text';
+	event = new Event('change');
+	i.dispatchEvent(event);
+
+	if (testTie.model.someA !== 'text') fail('expected the value to stay "text" in tied model, found "' + testTie.model.someA + '"');
+
+	pass();
 });
 
-suite.addTest({name: 'binding custom event default value property'}, (pass, fail) => {
+suite.addTest({name: 'binding/unbinding default event (checkbox)'}, async (pass, fail) => {
+	let i = document.createElement('input'), event;
+	i.type = 'checkbox';
+	i.dataset.tie = 'eventsTest:bool';
+	document.body.appendChild(i);
+
+	await waitNextMicrotask();
+
+	if (i.value !== 'on') fail('expected to have value "on" (checkbox special), found "' + i.value + '"');
+	i.checked = true;
+	event = new Event('change');
+	i.dispatchEvent(event);
+
+	if (testTie.model.bool !== true) fail('expected to have value "true" in tied model, found "' + testTie.model.bool + '"');
+
+	//  removal of element should untie
+	document.body.removeChild(i);
+
+	await waitNextMicrotask();
+
+	i.checked = false;
+	event = new Event('change');
+	i.dispatchEvent(event);
+
+	if (testTie.model.bool !== true) fail('expected the value to stay "true" in tied model, found "' + testTie.model.bool + '"');
+
+	pass();
+});
+
+suite.addTest({name: 'binding/unbinding custom event default value property'}, async (pass, fail) => {
 	let i = document.createElement('input');
 	i[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
 	i.dataset.tie = 'eventsTest:someB';
 	document.body.appendChild(i);
 
-	setTimeout(() => {
-		if (i.value !== '') fail('expected to have empty value, found "' + i.value + '"');
-		i.value = 'text';
-		let event = new Event('customChange');
-		i.dispatchEvent(event);
+	await waitNextMicrotask();
 
-		if (testTie.model.someB !== 'text') fail('expected to have value "text" in tied model, found "' + testTie.model.someB + '"');
+	if (i.value !== '') fail('expected to have empty value, found "' + i.value + '"');
+	i.value = 'text';
+	let event = new Event('customChange');
+	i.dispatchEvent(event);
 
-		pass();
-	}, 0);
+	if (testTie.model.someB !== 'text') fail('expected to have value "text" in tied model, found "' + testTie.model.someB + '"');
+
+	//  removal of element should untie
+	document.body.removeChild(i);
+
+	await waitNextMicrotask();
+
+	i.value = 'changed text';
+	event = new Event('customChange');
+	i.dispatchEvent(event);
+
+	if (testTie.model.someB !== 'text') fail('expected the value to stay "text" in tied model, found "' + testTie.model.someB + '"');
+
+	pass();
 });
 
-suite.addTest({name: 'binding custom event custom value property'}, (pass, fail) => {
+suite.addTest({name: 'binding custom event custom value property'}, async (pass, fail) => {
 	let d = document.createElement('div');
 	d[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
 	d[DataTier.DEFAULT_TIE_TARGET_PROVIDER] = 'customValue';
@@ -46,16 +104,16 @@ suite.addTest({name: 'binding custom event custom value property'}, (pass, fail)
 	d.dataset.tie = 'eventsTest:someC';
 	document.body.appendChild(d);
 
-	setTimeout(() => {
-		if (d.customValue !== '') fail('expected to have empty customValue, found "' + d.customValue + '"');
-		d.customValue = 'text';
-		let event = new Event('customChange');
-		d.dispatchEvent(event);
+	await waitNextMicrotask();
 
-		if (testTie.model.someC !== 'text') fail('expected to have value "text" in tied model, found "' + testTie.model.someC + '"');
+	if (d.customValue !== '') fail('expected to have empty customValue, found "' + d.customValue + '"');
+	d.customValue = 'text';
+	let event = new Event('customChange');
+	d.dispatchEvent(event);
 
-		pass();
-	}, 0);
+	if (testTie.model.someC !== 'text') fail('expected to have value "text" in tied model, found "' + testTie.model.someC + '"');
+
+	pass();
 });
 
 suite.run();
