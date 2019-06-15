@@ -15,7 +15,7 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
-* __1.4.0__
+* __1.4.1__
   * implemented [issue #21](https://github.com/gullerya/data-tier/issues/21) - missing `Tie` won't do anything with tied elements - allowing to work with multiple unrelated instances of `DataTier` in the same application (microfrontends - we are coming!!!) 
 
 * __1.3.0__

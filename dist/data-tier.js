@@ -340,7 +340,11 @@ function update(element, changedPath, change) {
 			continue;
 		}
 		tie = ties.get(param.tieName);
-		tieData = tie ? tie.model : null;
+		if (!tie) {
+			continue;
+		}
+
+		tieData = tie.model;
 		if (!change || changedPath !== param.rawPath || typeof change.value === 'undefined') {
 			newValue = getPath(tieData, param.path);
 		} else {
