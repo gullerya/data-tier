@@ -15,6 +15,9 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.4.0__
+  * implemented [issue #21](https://github.com/gullerya/data-tier/issues/21) - missing `Tie` won't do anything with tied elements - allowing to work with multiple unrelated instances of `DataTier` in the same application (microfrontends - we are coming!!!) 
+
 * __1.3.0__
   * implemented [issue #18](https://github.com/gullerya/data-tier/issues/18) - well defined API to customize `change`-like event
   * implemented [issue #19](https://github.com/gullerya/data-tier/issues/19) - graceful handling of removing (already) non-existing ties
@@ -23,9 +26,6 @@
 * __1.2.0__
   * fixed an issue where single element mapped to few different ties was not updated correctly
   * upgraded dependencies
-
-* __1.1.2__
-  * upgraded `object-observer` dependency to `2.0.2`, having some essential fix for issue #20
 
 ## Loading the Library
 

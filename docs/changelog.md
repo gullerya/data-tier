@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.4.0__
+  * implemented [issue #21](https://github.com/gullerya/data-tier/issues/21) - missing `Tie` won't do anything with tied elements - allowing to work with multiple unrelated instances of `DataTier` in the same application (microfrontends - we are coming!!!) 
+
 * __1.3.0__
   * implemented [issue #18](https://github.com/gullerya/data-tier/issues/18) - well defined API to customize `change`-like event
   * implemented [issue #19](https://github.com/gullerya/data-tier/issues/19) - graceful handling of removing (already) non-existing ties
