@@ -6,6 +6,7 @@
 
 process.stdout.write('*** INSTALL OO (into src) ***' + os.EOL);
 fsExtra.copySync('node_modules/object-observer/dist/object-observer.js', 'src/object-observer.js');
+fsExtra.copySync('node_modules/object-observer/dist/object-observer.min.js', 'src/object-observer.min.js');
 
 process.stdout.write('*** CLEANUP ***' + os.EOL);
 fsExtra.emptyDirSync('./dist');
