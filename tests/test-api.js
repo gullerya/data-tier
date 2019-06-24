@@ -1,4 +1,4 @@
-import * as DataTier from '../dist/data-tier.js';
+import * as DataTier from '../dist/data-tier.js?rootNodeId=testing';
 
 let suite = Utils.JustTest.createSuite({name: 'Testing Tie APIs'});
 

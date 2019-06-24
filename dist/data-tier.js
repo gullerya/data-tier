@@ -4,6 +4,13 @@ export const ties = new Ties();
 export const CHANGE_EVENT_NAME_PROVIDER = 'changeEventName';
 export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
 
+let rnid;
+if ((rnid = new URL(import.meta.url).searchParams.get('rootNodeId'))) {
+	console.log('initializing DataTier on the root element with ID "' + rnid + '"');
+} else {
+	console.log('no root node ID specified, initializing DataTier on the whole document');
+}
+
 const
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
 	views = {},
