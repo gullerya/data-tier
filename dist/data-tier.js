@@ -217,14 +217,7 @@ function obtainChangeEventName(element) {
 }
 
 function add(element) {
-	if (element.nodeName === 'IFRAME') {
-		initDocumentObserver(element.contentDocument);
-		element.addEventListener('load', function () {
-			initDocumentObserver(this.contentDocument);
-			collect(this.contentDocument);
-		});
-		collect(element.contentDocument);
-	} else if (Node.ELEMENT_NODE === element.nodeType) {
+	if (Node.ELEMENT_NODE === element.nodeType) {
 		if (element.matches(':defined')) {
 			processAddedElement(element);
 		} else {
@@ -366,15 +359,10 @@ function update(element, changedPath, change) {
 
 function collect(rootElement) {
 	if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-		let list, i;
-		if (rootElement.nodeName === 'IFRAME') {
-			list = rootElement.contentDocument.getElementsByTagName('*');
-		} else {
-			list = rootElement.getElementsByTagName('*');
-		}
+		let list = rootElement.getElementsByTagName('*');
+		let i = list.length;
 
 		add(rootElement);
-		i = list.length;
 		while (i--) {
 			try {
 				add(list[i]);
@@ -454,11 +442,6 @@ function processDomChanges(changes) {
 			if (attributeName === 'data-tie') {
 				node = change.target;
 				move(node, attributeName, change.oldValue, node.getAttribute(attributeName));
-			} else if (attributeName === 'src') {
-				node = change.target;
-				if (node.nodeName === 'IFRAME') {
-					discard(node.contentDocument);
-				}
 			}
 		} else if (changeType === 'childList') {
 			//	process added nodes
@@ -466,19 +449,8 @@ function processDomChanges(changes) {
 			i2 = added.length;
 			while (i2--) {
 				node = added[i2];
-				if (node.nodeName === 'IFRAME') {
-					if (node.contentDocument) {
-						initDocumentObserver(node.contentDocument);
-						collect(node.contentDocument);
-					}
-					node.addEventListener('load', function () {
-						initDocumentObserver(this.contentDocument);
-						collect(this.contentDocument);
-					});
-				} else {
-					if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
-						collect(node);
-					}
+				if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
+					collect(node);
 				}
 			}
 
@@ -487,12 +459,8 @@ function processDomChanges(changes) {
 			i3 = removed.length;
 			while (i3--) {
 				node = removed[i3];
-				if (node.nodeName === 'IFRAME') {
-					discard(node.contentDocument);
-				} else {
-					if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
-						discard(node);
-					}
+				if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
+					discard(node);
 				}
 			}
 		}
