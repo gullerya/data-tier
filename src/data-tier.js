@@ -4,19 +4,30 @@ export const ties = new Ties();
 export const CHANGE_EVENT_NAME_PROVIDER = 'changeEventName';
 export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
 
-let rnid;
-if ((rnid = new URL(import.meta.url).searchParams.get('rootNodeId'))) {
-	console.log('initializing DataTier on the root element with ID "' + rnid + '"');
-} else {
-	console.log('no root node ID specified, initializing DataTier on the whole document');
-}
+console.info('DT: starting initialization...');
+let initStartTime = performance.now();
 
 const
+	initParams = {},
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
 	views = {},
 	viewsParams = new WeakMap(),
 	PARAM_SPLITTER = /\s*=>\s*/,
 	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/;
+
+//  read init params
+Array
+	.from(new URL(import.meta.url).searchParams)
+	.forEach(entryPair => {
+		initParams[entryPair[0]] = entryPair[1]
+	});
+
+if (Object.keys(initParams).length) {
+	console.info('DT: init params are as following');
+	console.dir(initParams);
+} else {
+	console.info('DT: no init params found');
+}
 
 class Tie {
 	constructor(name) {
@@ -365,17 +376,15 @@ function update(element, changedPath, change) {
 }
 
 function collect(rootElement) {
-	if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-		let list = rootElement.getElementsByTagName('*');
-		let i = list.length;
+	let list = rootElement.getElementsByTagName('*');
+	let i = list.length;
 
-		add(rootElement);
-		while (i--) {
-			try {
-				add(list[i]);
-			} catch (e) {
-				console.error('failed to process/add element', e);
-			}
+	add(rootElement);
+	while (i--) {
+		try {
+			add(list[i]);
+		} catch (e) {
+			console.error('failed to process/add element', e);
 		}
 	}
 }
@@ -486,5 +495,12 @@ function initDocumentObserver(document) {
 	});
 }
 
+console.info('DT: initializing DOM observer on ' + document);
 initDocumentObserver(document);
+
+console.info('DT: scanning the ' + document + ' for a views...');
+let baseDocumentScanStartTime = performance.now();
 collect(document);
+console.info('DT: ... scanning the ' + document + ' for a views DONE (took ' + Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms)');
+
+console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
