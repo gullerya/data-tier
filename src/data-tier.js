@@ -55,7 +55,7 @@ class Tie {
 
 	processDataChanges(changes) {
 		let tieName = this.name,
-			i, l, change, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
+			i, l, change, changedObject, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
 			tieViews = views[tieName],
 			tiedPaths = Object.keys(tieViews),
 			arrayFullUpdate,
@@ -65,16 +65,17 @@ class Tie {
 
 		for (i = 0, l = changes.length; i < l; i++) {
 			change = changes[i];
+			changedObject = change.object;
 			arrPath = change.path;
 
-			if (Array.isArray(change.object) &&
+			if (Array.isArray(changedObject) &&
 				(change.type === 'insert' || change.type === 'delete') &&
 				!isNaN(arrPath[arrPath.length - 1])) {
 				changedPath = arrPath.slice(0, -1).join('.');
-				if (fullUpdatesMap[changedPath] === change.object) {
+				if (fullUpdatesMap[changedPath] === changedObject) {
 					continue;
 				} else {
-					fullUpdatesMap[changedPath] = change.object;
+					fullUpdatesMap[changedPath] = changedObject;
 					arrayFullUpdate = true;
 				}
 			} else {
