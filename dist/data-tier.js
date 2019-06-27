@@ -503,4 +503,4 @@ let baseDocumentScanStartTime = performance.now();
 collect(document);
 console.info('DT: ... scanning the ' + document + ' for a views DONE (took ' + Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms)');
 
-console.info('DT: initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
+console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
