@@ -27,7 +27,7 @@ suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fai
 		movables.push({
 			t: DataTier.ties.create('m' + i, {top: 190 * Math.random(), left: 190 * Math.random()}),
 			xi: 3 * Math.random(),
-			yi: 3 * Math.random(),
+			yi: 3 * Math.random()
 		});
 		pg.appendChild(m);
 	}
@@ -37,9 +37,11 @@ suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fai
 
 		function render() {
 			movables.forEach(movable => {
-				let m = movable.t.model;
-				if (m.top + 10 > 200 || m.top < 0) movable.xi *= -1;
-				if (m.left + 10 > 200 || m.left < 0) movable.yi *= -1;
+				let m = movable.t.model,
+					top = m.top,
+					left = m.left;
+				if (top + 10 > 200 || top < 0) movable.xi *= -1;
+				if (left + 10 > 200 || left < 0) movable.yi *= -1;
 				m.top += movable.xi;
 				m.left += movable.yi;
 			});

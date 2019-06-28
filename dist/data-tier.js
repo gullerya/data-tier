@@ -1,8 +1,32 @@
 import {Observable} from './object-observer.min.js';
 
-export const ties = new Ties();
 export const CHANGE_EVENT_NAME_PROVIDER = 'changeEventName';
 export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
+export const ties = new Ties();
+export const addRootDocument = rootDocument => {
+	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
+		throw new Error('not an argument of the valid type (DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE)');
+	}
+	if (roots.has(rootDocument)) {
+		console.warn('any root document may be added only once');
+		return;
+	}
+
+	console.info('DT: scanning the ' + rootDocument + ' for a views...');
+	let baseDocumentScanStartTime = performance.now();
+	let collected = collect(rootDocument);
+	console.info('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
+		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms, collected ' +
+		collected + ' element/s)');
+	roots.add(rootDocument);
+};
+export const removeRootDocument = rootDocument => {
+	if (roots.has(rootDocument)) {
+		discard(rootDocument);
+	} else {
+		console.warn('no root document ' + rootDocument + ' known');
+	}
+};
 
 console.info('DT: starting initialization...');
 let initStartTime = performance.now();
@@ -10,6 +34,7 @@ let initStartTime = performance.now();
 const
 	initParams = {},
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
+	roots = new WeakSet(),
 	views = {},
 	viewsParams = new WeakMap(),
 	PARAM_SPLITTER = /\s*=>\s*/,
@@ -375,11 +400,13 @@ function update(element, changedPath, change) {
 }
 
 function collect(rootElement) {
-	let list = rootElement.querySelectorAll('*[data-tie]');
-	let i = list.length;
+	let list = rootElement.querySelectorAll('*[data-tie]'),
+		i = list.length,
+		result = list.length;
 
 	if (Node.ELEMENT_NODE === rootElement.nodeType) {
 		add(rootElement);
+		result++;
 	}
 	while (i--) {
 		try {
@@ -388,10 +415,11 @@ function collect(rootElement) {
 			console.error('failed to process/add element', e);
 		}
 	}
+	return result;
 }
 
 function discard(rootElement) {
-	if (rootElement && rootElement.getElementsByTagName) {
+	if (rootElement && rootElement.querySelectorAll) {
 		let list = rootElement.querySelectorAll('*[data-tie]'),
 			element, tieParams, tieParam, pathViews, index,
 			i = 0, l = list.length, j, k;
@@ -449,7 +477,7 @@ function move(element, attributeName, oldParam, newParam) {
 }
 
 function processDomChanges(changes) {
-	let i = 0, l = changes.length, node, change, changeType,
+	let i = 0, l = changes.length, node, nodeType, change, changeType,
 		attributeName, added, i2, removed, i3;
 	for (; i < l; i++) {
 		change = changes[i];
@@ -466,7 +494,8 @@ function processDomChanges(changes) {
 			i2 = added.length;
 			while (i2--) {
 				node = added[i2];
-				if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
+				nodeType = node.nodeType;
+				if (Node.ELEMENT_NODE === nodeType) {
 					collect(node);
 				}
 			}
@@ -476,7 +505,8 @@ function processDomChanges(changes) {
 			i3 = removed.length;
 			while (i3--) {
 				node = removed[i3];
-				if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
+				nodeType = node.nodeType;
+				if (Node.ELEMENT_NODE === nodeType) {
 					discard(node);
 				}
 			}
@@ -488,10 +518,11 @@ function initDocumentObserver(document) {
 	let domObserver = new MutationObserver(processDomChanges);
 	domObserver.observe(document, {
 		childList: true,
-		attributes: true,
-		characterData: false,
 		subtree: true,
+		attributes: true,
 		attributeOldValue: true,
+		attributeFilter: ['data-tie'],
+		characterData: false,
 		characterDataOldValue: false
 	});
 }
@@ -499,9 +530,7 @@ function initDocumentObserver(document) {
 console.info('DT: initializing DOM observer on ' + document);
 initDocumentObserver(document);
 
-console.info('DT: scanning the ' + document + ' for a views...');
-let baseDocumentScanStartTime = performance.now();
-collect(document);
-console.info('DT: ... scanning the ' + document + ' for a views DONE (took ' + Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms)');
+//  TODO: probably this one should be conditional in the future, based on the init parameters
+addRootDocument(document);
 
 console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
