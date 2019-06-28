@@ -15,6 +15,11 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.4.2__
+  * performance improvements (mainly in the area of collecting new view from DOM)
+  * improved print outs to clarify the library boot process/times
+  * add initial experimental implementation of support for a micro frontend design patterning [issue #3](https://github.com/gullerya/data-tier/issues/3)
+
 * __1.4.1__
   * implemented [issue #21](https://github.com/gullerya/data-tier/issues/21) - missing `Tie` won't do anything with tied elements - allowing to work with multiple unrelated instances of `DataTier` in the same application (microfrontends - we are coming!!!) 
 
@@ -22,10 +27,6 @@
   * implemented [issue #18](https://github.com/gullerya/data-tier/issues/18) - well defined API to customize `change`-like event
   * implemented [issue #19](https://github.com/gullerya/data-tier/issues/19) - graceful handling of removing (already) non-existing ties
   * implemented [issue #20](https://github.com/gullerya/data-tier/issues/20) - support for default target property as well as customization of it
-  
-* __1.2.0__
-  * fixed an issue where single element mapped to few different ties was not updated correctly
-  * upgraded dependencies
 
 ## Loading the Library
 
