@@ -236,26 +236,24 @@ function obtainChangeEventName(element) {
 }
 
 function add(element) {
-	if (Node.ELEMENT_NODE === element.nodeType) {
-		if (element.matches(':defined')) {
-			processAddedElement(element);
+	if (element.matches(':defined')) {
+		processAddedElement(element);
+	} else {
+		let customElementToWait = '';
+		if (element.localName.indexOf('-') > 0) {
+			customElementToWait = element.localName;
+		} else if ((customElementToWait = element.getAttribute('is'))) {
 		} else {
-			let customElementToWait = '';
-			if (element.localName.indexOf('-') > 0) {
-				customElementToWait = element.localName;
-			} else if ((customElementToWait = element.getAttribute('is'))) {
-			} else {
-				let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
-				if (matches && matches.length > 1) {
-					customElementToWait = matches[1];
-				}
+			let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
+			if (matches && matches.length > 1) {
+				customElementToWait = matches[1];
 			}
-			if (customElementToWait) {
-				customElements.whenDefined(customElementToWait).then(() => processAddedElement(element));
-			} else {
-				console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
-				processAddedElement(element);
-			}
+		}
+		if (customElementToWait) {
+			customElements.whenDefined(customElementToWait).then(() => processAddedElement(element));
+		} else {
+			console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
+			processAddedElement(element);
 		}
 	}
 }
@@ -380,7 +378,9 @@ function collect(rootElement) {
 	let list = rootElement.querySelectorAll('*[data-tie]');
 	let i = list.length;
 
-	add(rootElement);
+	if (Node.ELEMENT_NODE === rootElement.nodeType) {
+		add(rootElement);
+	}
 	while (i--) {
 		try {
 			add(list[i]);
