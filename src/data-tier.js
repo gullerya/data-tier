@@ -1,15 +1,58 @@
 import {Observable} from './object-observer.min.js';
 
-export const ties = new Ties();
 export const CHANGE_EVENT_NAME_PROVIDER = 'changeEventName';
 export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
+export const ties = new Ties();
+export const addRootDocument = rootDocument => {
+	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
+		throw new Error('not an argument of the valid type (DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE)');
+	}
+	if (roots.has(rootDocument)) {
+		console.warn('any root document may be added only once');
+		return;
+	}
+
+	console.info('DT: scanning the ' + rootDocument + ' for a views...');
+	let baseDocumentScanStartTime = performance.now();
+	let collected = collect(rootDocument);
+	console.info('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
+		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms, collected ' +
+		collected + ' element/s)');
+	roots.add(rootDocument);
+};
+export const removeRootDocument = rootDocument => {
+	if (roots.has(rootDocument)) {
+		discard(rootDocument);
+	} else {
+		console.warn('no root document ' + rootDocument + ' known');
+	}
+};
+
+console.info('DT: starting initialization...');
+let initStartTime = performance.now();
 
 const
+	initParams = {},
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
+	roots = new WeakSet(),
 	views = {},
 	viewsParams = new WeakMap(),
 	PARAM_SPLITTER = /\s*=>\s*/,
 	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/;
+
+//  read init params
+Array
+	.from(new URL(import.meta.url).searchParams)
+	.forEach(entryPair => {
+		initParams[entryPair[0]] = entryPair[1]
+	});
+
+if (Object.keys(initParams).length) {
+	console.info('DT: init params are as following');
+	console.dir(initParams);
+} else {
+	console.info('DT: no init params found');
+}
 
 class Tie {
 	constructor(name) {
@@ -37,7 +80,7 @@ class Tie {
 
 	processDataChanges(changes) {
 		let tieName = this.name,
-			i, l, change, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
+			i, l, change, changedObject, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
 			tieViews = views[tieName],
 			tiedPaths = Object.keys(tieViews),
 			arrayFullUpdate,
@@ -47,16 +90,17 @@ class Tie {
 
 		for (i = 0, l = changes.length; i < l; i++) {
 			change = changes[i];
+			changedObject = change.object;
 			arrPath = change.path;
 
-			if (Array.isArray(change.object) &&
+			if (Array.isArray(changedObject) &&
 				(change.type === 'insert' || change.type === 'delete') &&
 				!isNaN(arrPath[arrPath.length - 1])) {
 				changedPath = arrPath.slice(0, -1).join('.');
-				if (fullUpdatesMap[changedPath] === change.object) {
+				if (fullUpdatesMap[changedPath] === changedObject) {
 					continue;
 				} else {
-					fullUpdatesMap[changedPath] = change.object;
+					fullUpdatesMap[changedPath] = changedObject;
 					arrayFullUpdate = true;
 				}
 			} else {
@@ -217,33 +261,24 @@ function obtainChangeEventName(element) {
 }
 
 function add(element) {
-	if (element.nodeName === 'IFRAME') {
-		initDocumentObserver(element.contentDocument);
-		element.addEventListener('load', function () {
-			initDocumentObserver(this.contentDocument);
-			collect(this.contentDocument);
-		});
-		collect(element.contentDocument);
-	} else if (Node.ELEMENT_NODE === element.nodeType) {
-		if (element.matches(':defined')) {
-			processAddedElement(element);
+	if (element.matches(':defined')) {
+		processAddedElement(element);
+	} else {
+		let customElementToWait = '';
+		if (element.localName.indexOf('-') > 0) {
+			customElementToWait = element.localName;
+		} else if ((customElementToWait = element.getAttribute('is'))) {
 		} else {
-			let customElementToWait = '';
-			if (element.localName.indexOf('-') > 0) {
-				customElementToWait = element.localName;
-			} else if ((customElementToWait = element.getAttribute('is'))) {
-			} else {
-				let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
-				if (matches && matches.length > 1) {
-					customElementToWait = matches[1];
-				}
+			let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
+			if (matches && matches.length > 1) {
+				customElementToWait = matches[1];
 			}
-			if (customElementToWait) {
-				customElements.whenDefined(customElementToWait).then(() => processAddedElement(element));
-			} else {
-				console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
-				processAddedElement(element);
-			}
+		}
+		if (customElementToWait) {
+			customElements.whenDefined(customElementToWait).then(() => processAddedElement(element));
+		} else {
+			console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
+			processAddedElement(element);
 		}
 	}
 }
@@ -365,29 +400,27 @@ function update(element, changedPath, change) {
 }
 
 function collect(rootElement) {
-	if (rootElement && (rootElement.nodeType === Node.DOCUMENT_NODE || rootElement.nodeType === Node.ELEMENT_NODE)) {
-		let list, i;
-		if (rootElement.nodeName === 'IFRAME') {
-			list = rootElement.contentDocument.getElementsByTagName('*');
-		} else {
-			list = rootElement.getElementsByTagName('*');
-		}
+	let list = rootElement.querySelectorAll('*[data-tie]'),
+		i = list.length,
+		result = list.length;
 
+	if (Node.ELEMENT_NODE === rootElement.nodeType) {
 		add(rootElement);
-		i = list.length;
-		while (i--) {
-			try {
-				add(list[i]);
-			} catch (e) {
-				console.error('failed to process/add element', e);
-			}
+		result++;
+	}
+	while (i--) {
+		try {
+			add(list[i]);
+		} catch (e) {
+			console.error('failed to process/add element', e);
 		}
 	}
+	return result;
 }
 
 function discard(rootElement) {
-	if (rootElement && rootElement.getElementsByTagName) {
-		let list = rootElement.getElementsByTagName('*'),
+	if (rootElement && rootElement.querySelectorAll) {
+		let list = rootElement.querySelectorAll('*[data-tie]'),
 			element, tieParams, tieParam, pathViews, index,
 			i = 0, l = list.length, j, k;
 		for (; i <= l; i++) {
@@ -444,7 +477,7 @@ function move(element, attributeName, oldParam, newParam) {
 }
 
 function processDomChanges(changes) {
-	let i = 0, l = changes.length, node, change, changeType,
+	let i = 0, l = changes.length, node, nodeType, change, changeType,
 		attributeName, added, i2, removed, i3;
 	for (; i < l; i++) {
 		change = changes[i];
@@ -454,11 +487,6 @@ function processDomChanges(changes) {
 			if (attributeName === 'data-tie') {
 				node = change.target;
 				move(node, attributeName, change.oldValue, node.getAttribute(attributeName));
-			} else if (attributeName === 'src') {
-				node = change.target;
-				if (node.nodeName === 'IFRAME') {
-					discard(node.contentDocument);
-				}
 			}
 		} else if (changeType === 'childList') {
 			//	process added nodes
@@ -466,19 +494,9 @@ function processDomChanges(changes) {
 			i2 = added.length;
 			while (i2--) {
 				node = added[i2];
-				if (node.nodeName === 'IFRAME') {
-					if (node.contentDocument) {
-						initDocumentObserver(node.contentDocument);
-						collect(node.contentDocument);
-					}
-					node.addEventListener('load', function () {
-						initDocumentObserver(this.contentDocument);
-						collect(this.contentDocument);
-					});
-				} else {
-					if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
-						collect(node);
-					}
+				nodeType = node.nodeType;
+				if (Node.ELEMENT_NODE === nodeType) {
+					collect(node);
 				}
 			}
 
@@ -487,12 +505,9 @@ function processDomChanges(changes) {
 			i3 = removed.length;
 			while (i3--) {
 				node = removed[i3];
-				if (node.nodeName === 'IFRAME') {
-					discard(node.contentDocument);
-				} else {
-					if (node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.ELEMENT_NODE) {
-						discard(node);
-					}
+				nodeType = node.nodeType;
+				if (Node.ELEMENT_NODE === nodeType) {
+					discard(node);
 				}
 			}
 		}
@@ -503,13 +518,19 @@ function initDocumentObserver(document) {
 	let domObserver = new MutationObserver(processDomChanges);
 	domObserver.observe(document, {
 		childList: true,
-		attributes: true,
-		characterData: false,
 		subtree: true,
+		attributes: true,
 		attributeOldValue: true,
+		attributeFilter: ['data-tie'],
+		characterData: false,
 		characterDataOldValue: false
 	});
 }
 
+console.info('DT: initializing DOM observer on ' + document);
 initDocumentObserver(document);
-collect(document);
+
+//  TODO: probably this one should be conditional in the future, based on the init parameters
+addRootDocument(document);
+
+console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');

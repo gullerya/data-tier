@@ -131,4 +131,26 @@ suite.addTest({name: 'remove Tie - negative tests'}, (pass, fail) => {
 	pass();
 });
 
+suite.addTest({name: 'root APIs - negative tests'}, (pass, fail) => {
+	try {
+		DataTier.addRootDocument();
+		fail('should not be able to remove tie without name');
+	} catch (e) {
+	}
+
+	try {
+		DataTier.addRootDocument(null);
+		fail('should not be able to remove tie with empty name');
+	} catch (e) {
+	}
+
+	try {
+		DataTier.addRootDocument(document.createElement('span'));
+		fail('should not be able to remove tie with improper name');
+	} catch (e) {
+	}
+
+	pass();
+});
+
 suite.run();
