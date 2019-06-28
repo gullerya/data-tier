@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/eb34053e002648519fd3a2d78c45677b)](https://app.codacy.com/app/gullerya/data-tier?utm_source=github.com&utm_medium=referral&utm_content=gullerya/data-tier&utm_campaign=Badge_Grade_Dashboard)
 [![GitHub](https://img.shields.io/github/license/gullerya/data-tier.svg)](https://github.com/gullerya/data-tier)
 [![Travis](https://img.shields.io/travis/gullerya/data-tier.svg)](https://travis-ci.org/gullerya/data-tier)
 [![NPM](https://img.shields.io/npm/v/data-tier.svg?label=npm%20data-tier)](https://www.npmjs.com/package/data-tier)
