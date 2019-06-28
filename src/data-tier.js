@@ -196,12 +196,12 @@ function ensureObservable(o) {
 }
 
 function getPath(ref, path) {
-	if (!ref) return;
+	if (!ref) return null;
 	let i = 0, l = path.length, n;
 	for (; i < l; i++) {
 		n = path[i];
 		if (ref && ref.hasOwnProperty(n)) ref = ref[n];
-		else return;
+		else return null;
 	}
 	return ref;
 }
@@ -211,7 +211,12 @@ function setPath(ref, path, value) {
 	let i = 0, l = path.length, n;
 	for (; i < l - 1; i++) {
 		n = path[i];
-		ref = ref[n] && typeof ref[n] === 'object' ? ref[n] : ref[n] = {};
+		if (ref[n] && typeof ref[n] === 'object') {
+			ref = ref[n];
+		} else {
+			ref = {};
+			ref[n] = ref;
+		}
 	}
 	ref[path[i]] = value;
 }
@@ -267,7 +272,6 @@ function add(element) {
 		let customElementToWait = '';
 		if (element.localName.indexOf('-') > 0) {
 			customElementToWait = element.localName;
-		} else if ((customElementToWait = element.getAttribute('is'))) {
 		} else {
 			let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
 			if (matches && matches.length > 1) {
@@ -408,9 +412,9 @@ function collect(rootElement) {
 		add(rootElement);
 		result++;
 	}
-	while (i--) {
+	while (i) {
 		try {
-			add(list[i]);
+			add(list[--i]);
 		} catch (e) {
 			console.error('failed to process/add element', e);
 		}
