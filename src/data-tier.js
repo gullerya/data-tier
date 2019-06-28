@@ -109,13 +109,13 @@ class Tie {
 			}
 
 			pl = tiedPaths.length;
-			while (pl--) {
-				tiedPath = tiedPaths[pl];
+			while (pl) {
+				tiedPath = tiedPaths[--pl];
 				if (tiedPath.indexOf(changedPath) === 0) {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
-					while (pvl--) {
-						update(pathViews[pvl], changedPath, !arrayFullUpdate ? change : null);
+					while (pvl) {
+						update(pathViews[--pvl], changedPath, !arrayFullUpdate ? change : null);
 					}
 				}
 			}
