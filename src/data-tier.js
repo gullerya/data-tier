@@ -220,8 +220,8 @@ function changeListener(event) {
 	let element = event.currentTarget, tieParams, tieParam, tie, i, newValue;
 	tieParams = viewsParams.get(element);
 	i = tieParams.length;
-	while (i--) {
-		tieParam = tieParams[i];
+	while (i) {
+		tieParam = tieParams[--i];
 		tie = ties.get(tieParam.tieName);
 		if (tie) {
 			newValue = element.nodeName === 'INPUT' && element.type === 'checkbox'
@@ -492,8 +492,8 @@ function processDomChanges(changes) {
 			//	process added nodes
 			added = change.addedNodes;
 			i2 = added.length;
-			while (i2--) {
-				node = added[i2];
+			while (i2) {
+				node = added[--i2];
 				nodeType = node.nodeType;
 				if (Node.ELEMENT_NODE === nodeType) {
 					collect(node);
@@ -503,8 +503,8 @@ function processDomChanges(changes) {
 			//	process removed nodes
 			removed = change.removedNodes;
 			i3 = removed.length;
-			while (i3--) {
-				node = removed[i3];
+			while (i3) {
+				node = removed[--i3];
 				nodeType = node.nodeType;
 				if (Node.ELEMENT_NODE === nodeType) {
 					discard(node);
