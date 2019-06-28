@@ -377,7 +377,7 @@ function update(element, changedPath, change) {
 }
 
 function collect(rootElement) {
-	let list = rootElement.getElementsByTagName('*');
+	let list = rootElement.querySelectorAll('*[data-tie]');
 	let i = list.length;
 
 	add(rootElement);
@@ -392,7 +392,7 @@ function collect(rootElement) {
 
 function discard(rootElement) {
 	if (rootElement && rootElement.getElementsByTagName) {
-		let list = rootElement.getElementsByTagName('*'),
+		let list = rootElement.querySelectorAll('*[data-tie]'),
 			element, tieParams, tieParam, pathViews, index,
 			i = 0, l = list.length, j, k;
 		for (; i <= l; i++) {
