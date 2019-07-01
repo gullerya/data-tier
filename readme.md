@@ -16,6 +16,9 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.5.0__
+  * added default target property `src` for the following elements: `iframe`, `img`, `source`
+
 * __1.4.2__
   * performance improvements (mainly in the area of collecting new view from DOM)
   * improved print outs to clarify the library boot process/times
@@ -23,11 +26,6 @@
 
 * __1.4.1__
   * implemented [issue #21](https://github.com/gullerya/data-tier/issues/21) - missing `Tie` won't do anything with tied elements - allowing to work with multiple unrelated instances of `DataTier` in the same application (microfrontends - we are coming!!!) 
-
-* __1.3.0__
-  * implemented [issue #18](https://github.com/gullerya/data-tier/issues/18) - well defined API to customize `change`-like event
-  * implemented [issue #19](https://github.com/gullerya/data-tier/issues/19) - graceful handling of removing (already) non-existing ties
-  * implemented [issue #20](https://github.com/gullerya/data-tier/issues/20) - support for default target property as well as customization of it
 
 ## Loading the Library
 

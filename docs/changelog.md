@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.5.0__
+  * added default target property `src` for the following elements: `iframe`, `img`, `source`
+
 * __1.4.2__
   * performance improvements (mainly in the area of collecting new view from DOM)
   * improved print outs to clarify the library boot process/times
