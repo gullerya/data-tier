@@ -1,4 +1,4 @@
-import {Observable} from './object-observer.min.js';
+import { Observable } from './object-observer.min.js';
 
 export const CHANGE_EVENT_NAME_PROVIDER = 'changeEventName';
 export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
@@ -57,7 +57,7 @@ if (Object.keys(initParams).length) {
 class Tie {
 	constructor(name) {
 		this[PRIVATE_MODEL_SYMBOL] = null;
-		Object.defineProperty(this, 'name', {value: name});
+		Object.defineProperty(this, 'name', { value: name });
 		Object.seal(this);
 	}
 
@@ -73,7 +73,7 @@ class Tie {
 				newModel.observe(this.processDataChanges.bind(this));
 			}
 			this[PRIVATE_MODEL_SYMBOL] = newModel;
-			this.processDataChanges([{path: []}]);
+			this.processDataChanges([{ path: [] }]);
 			if (oldModel) oldModel.revoke();
 		}
 	}
@@ -359,10 +359,10 @@ function getDefaultTargetProperty(element) {
 	let result = element[DEFAULT_TIE_TARGET_PROVIDER];
 	if (!result) {
 		let eName = element.nodeName;
-		if (eName === 'INPUT' ||
-			eName === 'SELECT' ||
-			eName === 'TEXTAREA') {
+		if (eName === 'INPUT' || eName === 'SELECT' || eName === 'TEXTAREA') {
 			result = 'value';
+		} else if (eName === 'IMG' || eName === 'IFRAME' || eName === 'SOURCE') {
+			result = 'src';
 		} else {
 			result = 'textContent';
 		}

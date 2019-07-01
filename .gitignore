@@ -1,4 +1,7 @@
 *.iml
 .idea/
+.settings
+.vscode
+
 /node_modules
 tmp
