@@ -421,6 +421,9 @@ function collect(rootElement) {
 	}
 
 	//	lookup and handle the shadow DOM hosts
+	if (rootElement.shadowRoot) {
+		addRootDocument(rootElement.shadowRoot);
+	}
 	if (rootElement.getElementsByTagName) {
 		let allNested = rootElement.getElementsByTagName('*'),
 			candidate;
@@ -459,6 +462,9 @@ function discard(rootElement) {
 	}
 
 	//	lookup and handle the shadow DOM hosts
+	if (rootElement.shadowRoot) {
+		removeRootDocument(rootElement.shadowRoot);
+	}
 	if (rootElement.getElementsByTagName) {
 		let allNested = rootElement.getElementsByTagName('*'),
 			candidate;
