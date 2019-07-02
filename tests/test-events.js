@@ -1,7 +1,7 @@
 import * as DataTier from '../dist/data-tier.js';
-import {Observable} from '../dist/object-observer.js';
+import { Observable } from '../dist/object-observer.js';
 
-let suite = Utils.JustTest.createSuite({name: 'Testing events'}),
+let suite = Utils.JustTest.createSuite({ name: 'Testing events' }),
 	testTie = DataTier.ties.create('eventsTest', Observable.from({}));
 
 function waitNextMicrotask() {
@@ -10,7 +10,7 @@ function waitNextMicrotask() {
 	});
 }
 
-suite.addTest({name: 'binding/unbinding default event'}, async (pass, fail) => {
+suite.addTest({ name: 'binding/unbinding default event' }, async (pass, fail) => {
 	let i = document.createElement('input'), event;
 	i.dataset.tie = 'eventsTest:someA';
 	document.body.appendChild(i);
@@ -38,7 +38,7 @@ suite.addTest({name: 'binding/unbinding default event'}, async (pass, fail) => {
 	pass();
 });
 
-suite.addTest({name: 'binding/unbinding default event (checkbox)'}, async (pass, fail) => {
+suite.addTest({ name: 'binding/unbinding default event (checkbox)' }, async (pass, fail) => {
 	let i = document.createElement('input'), event;
 	i.type = 'checkbox';
 	i.dataset.tie = 'eventsTest:bool';
@@ -67,7 +67,7 @@ suite.addTest({name: 'binding/unbinding default event (checkbox)'}, async (pass,
 	pass();
 });
 
-suite.addTest({name: 'binding/unbinding custom event default value property'}, async (pass, fail) => {
+suite.addTest({ name: 'binding/unbinding custom event default value property' }, async (pass, fail) => {
 	let i = document.createElement('input');
 	i[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
 	i.dataset.tie = 'eventsTest:someB';
@@ -96,8 +96,11 @@ suite.addTest({name: 'binding/unbinding custom event default value property'}, a
 	pass();
 });
 
-suite.addTest({name: 'binding custom event custom value property'}, async (pass, fail) => {
+suite.addTest({ name: 'binding custom event custom value property' }, async (pass, fail) => {
+	testTie.model.someC = 'new value';
+
 	let d = document.createElement('div');
+	testTie.model.someC = 'new value';
 	d[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
 	d[DataTier.DEFAULT_TIE_TARGET_PROVIDER] = 'customValue';
 	d.customValue = '';
@@ -106,10 +109,9 @@ suite.addTest({name: 'binding custom event custom value property'}, async (pass,
 
 	await waitNextMicrotask();
 
-	if (d.customValue !== '') fail('expected to have empty customValue, found "' + d.customValue + '"');
+	if (d.customValue !== testTie.model.someC) fail('expected to have "' + testTie.model.someC + '", found "' + d.customValue + '"');
 	d.customValue = 'text';
-	let event = new Event('customChange');
-	d.dispatchEvent(event);
+	d.dispatchEvent(new Event('customChange'));
 
 	if (testTie.model.someC !== 'text') fail('expected to have value "text" in tied model, found "' + testTie.model.someC + '"');
 
