@@ -21,8 +21,14 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add element self)' },
 	document.body.appendChild(ce);
 
 	await new Promise(resolve => setInterval(resolve, 0));
-
 	let c = ce.shadowRoot.getElementById('test-a').textContent;
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
+
+	document.body.removeChild(ce);
+
+	await new Promise(resolve => setInterval(resolve, 0));
+	tie.model.data = 'not to be found';
+	c = ce.shadowRoot.getElementById('test-a').textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
@@ -42,6 +48,13 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 	await new Promise(resolve => setInterval(resolve, 0));
 
 	let c = ce.shadowRoot.getElementById('test-a').textContent;
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
+
+	document.body.removeChild(parent);
+
+	await new Promise(resolve => setInterval(resolve, 0));
+	tie.model.data = 'not to be found';
+	c = ce.shadowRoot.getElementById('test-a').textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
