@@ -1,4 +1,4 @@
-import { Observable } from './object-observer.min.js';
+import { Observable } from './object-observer.js';
 
 export const CHANGE_EVENT_NAME_PROVIDER = 'changeEventName';
 export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
