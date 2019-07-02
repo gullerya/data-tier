@@ -1,18 +1,15 @@
 # API
 
-> This page describes `data-tier`'s APIs as they are in the library's ES6 module distribution.
-Old APIs are effectively deprecated from 0.6.19.
-
-### Initialization
+## Initialization
 ```javascript
-import * as DataTier from 'dist/module/data-tier.min.js';
+import * as DataTier from './dist/data-tier.min.js';    // align the path with your folders structure
 ```
 `DataTier` variable here becomes a top level library's namespace.
 Any JS related functionality will be available through the properties of this object.
 
-### `ties` namespace
+## `ties` namespace
 Ties (more about `Tie` [below](#tie)) management namespace having the following APIs:
-##### `create(name, [model])`
+### `create(name, [model])`
 Creates a new tie with the specified (unique) name.
 Updates any elements already found in DOM and tied to it (by name, see HTML syntax [below](#html-tying-declaration)).
 Sets up model's observer, which will immediately reflect any changes in the tied views.
@@ -33,7 +30,7 @@ let user = {
     userTie = DataTier.ties.create('user', user),
     settingsTie = DataTier.ties.create('settings');
 ```
-##### `remove(tieToRemove)`
+### `remove(tieToRemove)`
 Removes tie.
 
 Tie's model becomes unobserved by the `data-tier` and is revoked if an `Observable` was initially created by `data-tier`.
@@ -49,7 +46,7 @@ If no tie found by the given `tieToRemove`, nothing will happen.
 DataTier.ties.remove('settings');
 ```
 
-##### `get(name)`
+### `get(name)`
 Retrieves tie by name.
 
 If no tie found by the given `name`, will return `undefined`.
@@ -60,7 +57,7 @@ If no tie found by the given `name`, will return `undefined`.
 let settingsTie = DataTier.ties.get('settings');
 ```
 
-### `Tie`
+## `Tie`
 Tie is a binding unit between the model and the views tied to it (by name, see HTML syntax [below](#html-tying-declaration)).
 
 Tie holds an observable model, which will be a clone of the originally supplied data if it was not `Observable` and will stay as is, if it was (see [`object-observer`](https://github.com/gullerya/object-observer) for more info).
@@ -69,14 +66,14 @@ Tie is also responsible to set up an observer of this model, react on any change
 
 `Tie` object exposes the following properties:
 
-##### `name`
+### `name`
 Uniquely identifying string, that was provided at the moment of creation. READ ONLY.
 
 ```javascript
 userTie.name === 'user';        //  true
 ```
 
-##### `model`
+### `model`
 Observable model, clone of an initially or lately supplied data.
 
 IMPORTANT! Any changes that are meant to be part of the tied state and reflected in views must be done on the **tie's model** and NOT on the original object!
@@ -106,7 +103,7 @@ tiedSettings === null;                  //  false, obviously
 tiedSettings.siteTheme === 'dark';      //  true
 ```
 
-### `HTML` tying declaration
+## `HTML` tying declaration
 In order to tie **view** (DOM element) to **model** and vice-versa, some declaration in HTML is required.
 This declaration is done via element's attribute `data-tie`:
 
@@ -114,7 +111,7 @@ This declaration is done via element's attribute `data-tie`:
 //  explicit syntax
 <span data-tie="user:firstName => textContent"></span>
 
-//  shortened syntax (tying to default target property)
+//  shortened syntax (tying to the default target property)
 <span data-tie="user:firstName"></span>
 ```
 
@@ -125,11 +122,12 @@ This declaration ties between span's `textContent` and the property `firstName` 
 * `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** 'addresses'
 * `textContent` - view's **target property** tied to the given model
 
->Last item, targeted property, is **optional**, and thus is the separator.
+>Last item, targeted property, is **optional** (when ommitted, `=>` separator should also be left out).
 >Shortened example is shown above.
 >When short syntax is used, `DataTier` will resolve the **default** target property, which resolved in the following order:
 >* custom default property used if the element has property `defaultTieTarget` defined
 >* `value` used for elements `INPUT`, `SELECT`, `TEXTAREA`
+>* `src` used for elements `IFRAME`, `IMG`, `SOURCE`
 >* `textContent` for the rest
 
 The library scans for such an attributes, parses them and ties to the relevant model/s via relevant ties.
@@ -160,4 +158,3 @@ Few simple and obvious rules to keep in mind here:
 
 * Same property of a single element MAY NOT be tied more than once
 * Several elements and several properties within a single element MAY be tied to the same model's property
-

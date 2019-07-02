@@ -30,7 +30,7 @@
 ## Loading the Library
 
 ```javascript
-import * as DataTier from 'dist/data-tier.min.js';
+import * as DataTier from './dist/data-tier.min.js';    // align the path with your folders structure
 ```
 
 ## Basic concepts
