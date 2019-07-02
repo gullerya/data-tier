@@ -1,45 +1,59 @@
 import * as DataTier from '../dist/data-tier.js';
 
-let suite = Utils.JustTest.createSuite({name: 'Testing Shadowing in ShadowDom'}),
-	addAsRoot = false;
+const
+	suite = Utils.JustTest.createSuite({ name: 'Testing Shadowing in ShadowDom' });
 
-customElements.define('shadowing-test', class extends HTMLElement {
+customElements.define('open-shadow-test', class extends HTMLElement {
 	constructor() {
 		super();
-		let shadowRoot = this.attachShadow({mode: 'open'});
+		let shadowRoot = this.attachShadow({ mode: 'open' });
 		shadowRoot.innerHTML = `
 			<span id="test-a" data-tie="tieForShadowDom:data">default content</span>
 		`;
-		if (addAsRoot) DataTier.addRootDocument(shadowRoot);
-	}
-
-	disconnectedCallback() {
-		DataTier.removeRootDocument(this.shadowRoot);
 	}
 });
 
-suite.addTest({name: 'ShadowDom as such should not be influenced by the DataTier'}, (pass, fail) => {
+suite.addTest({ name: 'Open ShadowDom should be auto-tied (add element self)' }, async (pass, fail) => {
 	const tieName = 'tieForShadowDom';
-	let tie = DataTier.ties.create(tieName, {data: 'data'});
+	let tie = DataTier.ties.create(tieName, { data: 'data' });
 
-	addAsRoot = false;
-	let ce = document.createElement('shadowing-test');
+	let ce = document.createElement('open-shadow-test');
 	document.body.appendChild(ce);
 
+	await new Promise(resolve => setInterval(resolve, 0));
+
 	let c = ce.shadowRoot.getElementById('test-a').textContent;
-	if (c !== 'default content') fail('expected textContent to be "default content" but found "' + c + '"');
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
 
 	pass();
 });
 
-suite.addTest({name: 'ShadowDom added as root to DataTier'}, async (pass, fail) => {
+suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, async (pass, fail) => {
 	const tieName = 'tieForShadowDom';
-	let tie = DataTier.ties.create(tieName, {data: 'data'});
+	let tie = DataTier.ties.create(tieName, { data: 'data' });
 
-	addAsRoot = true;
-	let ce = document.createElement('shadowing-test');
+	let parent = document.createElement('div');
+	let ce = document.createElement('open-shadow-test');
+	parent.appendChild(ce);
+	document.body.appendChild(parent);
+
+	await new Promise(resolve => setInterval(resolve, 0));
+
+	let c = ce.shadowRoot.getElementById('test-a').textContent;
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
+
+	DataTier.ties.remove(tie);
+
+	pass();
+});
+
+suite.addTest({ name: 'ShadowDom added as root to DataTier' }, async (pass, fail) => {
+	const tieName = 'tieForShadowDom';
+	let tie = DataTier.ties.create(tieName, { data: 'data' });
+
+	let ce = document.createElement('open-shadow-test');
 	document.body.appendChild(ce);
 
 	let e = ce.shadowRoot.getElementById('test-a'),

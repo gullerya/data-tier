@@ -419,11 +419,24 @@ function collect(rootElement) {
 			console.error('failed to process/add element', e);
 		}
 	}
+
+	//	lookup and handle the shadow DOM hosts
+	if (rootElement.getElementsByTagName) {
+		let allNested = rootElement.getElementsByTagName('*'),
+			candidate;
+		for (let i = 0, l = allNested.length; i < l; i++) {
+			candidate = allNested[i].shadowRoot;
+			if (candidate) {
+				addRootDocument(candidate);
+			}
+		}
+	}
+
 	return result;
 }
 
 function discard(rootElement) {
-	if (rootElement && rootElement.querySelectorAll) {
+	if (rootElement.querySelectorAll) {
 		let list = rootElement.querySelectorAll('*[data-tie]'),
 			element, tieParams, tieParam, pathViews, index,
 			i = 0, l = list.length, j, k;
@@ -442,6 +455,18 @@ function discard(rootElement) {
 				}
 			}
 			viewsParams.delete(element);
+		}
+	}
+
+	//	lookup and handle the shadow DOM hosts
+	if (rootElement.getElementsByTagName) {
+		let allNested = rootElement.getElementsByTagName('*'),
+			candidate;
+		for (let i = 0, l = allNested.length; i < l; i++) {
+			candidate = allNested[i].shadowRoot;
+			if (candidate) {
+				removeRootDocument(candidate);
+			}
 		}
 	}
 }
