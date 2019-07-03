@@ -5,12 +5,14 @@ export const DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget';
 export const ties = new Ties();
 export const addRootDocument = rootDocument => {
 	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
-		throw new Error('not an argument of the valid type (DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE)');
+		throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
 	}
 	if (roots.has(rootDocument)) {
 		console.warn('any root document may be added only once');
 		return;
 	}
+
+	initDocumentObserver(rootDocument);
 
 	console.info('DT: scanning the ' + rootDocument + ' for a views...');
 	let baseDocumentScanStartTime = performance.now();
@@ -338,7 +340,8 @@ function parseTiePropertyParam(rawParam, element) {
 //	syntax example: data-tie="orders:0.address.street => textContent, orders:0.address.apt => title"
 function parseTiePropertiesParam(multiParam, element) {
 	if (!multiParam || typeof multiParam !== 'string') {
-		throw new Error('invalid tie value; found: "' + multiParam + '"; expected (example): "orders:0.address.street => textContent, orders:0.address.apt => title"');
+		throw new Error('invalid tie value; found: "' + multiParam +
+			'"; expected (example): "orders:0.address.street => textContent, orders:0.address.apt => title"');
 	}
 	let result = [], rawParams = multiParam.split(MULTI_PARAMS_SPLITTER),
 		i = 0, l = rawParams.length;
@@ -550,6 +553,7 @@ function processDomChanges(changes) {
 }
 
 function initDocumentObserver(document) {
+	console.info('DT: initializing DOM observer on ' + document);
 	let domObserver = new MutationObserver(processDomChanges);
 	domObserver.observe(document, {
 		childList: true,
@@ -562,10 +566,8 @@ function initDocumentObserver(document) {
 	});
 }
 
-console.info('DT: initializing DOM observer on ' + document);
 initDocumentObserver(document);
 
-//  TODO: probably this one should be conditional in the future, based on the init parameters
 addRootDocument(document);
 
 console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
