@@ -17,15 +17,15 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add element self)' },
 	const tieName = 'tieForShadowDom';
 	let tie = DataTier.ties.create(tieName, { data: 'data' });
 
+	//	test add element with shadow DOM
 	let ce = document.createElement('open-shadow-test');
 	document.body.appendChild(ce);
-
 	await new Promise(resolve => setInterval(resolve, 0));
 	let c = ce.shadowRoot.getElementById('test-a').textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
+	//	test remove element with shadow DOM
 	document.body.removeChild(ce);
-
 	await new Promise(resolve => setInterval(resolve, 0));
 	tie.model.data = 'not to be found';
 	c = ce.shadowRoot.getElementById('test-a').textContent;
@@ -40,18 +40,17 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 	const tieName = 'tieForShadowDom';
 	let tie = DataTier.ties.create(tieName, { data: 'data' });
 
+	//	test add element with shadow HOST as its child
 	let parent = document.createElement('div');
 	let ce = document.createElement('open-shadow-test');
 	parent.appendChild(ce);
 	document.body.appendChild(parent);
-
 	await new Promise(resolve => setInterval(resolve, 0));
-
 	let c = ce.shadowRoot.getElementById('test-a').textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
+	//	test removnig element with shadow HOST as its child
 	document.body.removeChild(parent);
-
 	await new Promise(resolve => setInterval(resolve, 0));
 	tie.model.data = 'not to be found';
 	c = ce.shadowRoot.getElementById('test-a').textContent;
