@@ -39,8 +39,9 @@ My, definitely opinionated, insights of how client application should look like 
 
 #### Tie
 
-__`Tie`__ holds an observable data structure associated with tie's name, it's about __what__ to tie.
-Thus, ties serve most and foremost data segregation and management purposes.
+__`Tie`__ holds an observable data structure associated with some name/key, it's about __what__ to tie.
+This the the __model__, to use the classic terminology.
+Ties serve most and foremost data segregation and management purposes.
 
 Having the following data structure:
 ```javascript
@@ -68,7 +69,7 @@ and then tie any UI element to it via the tie name and the path:
 
 <div>
     <span data-tie="bandsTie:0.albums.1.name => textContent"></span>
-    <custom-album-viewer data-tie="bandsTie:0.albums => data"></custom-album-viewer>
+    <custom-album-viewer data-tie="bandsTie:0.albums.1 => data"></custom-album-viewer>
 </div>
 ```
 where:
@@ -97,5 +98,7 @@ Having said that, me myself investing some effort in building `data-tier` orient
 
 ## Documentation
 [__API__](https://github.com/gullerya/data-tier/blob/master/docs/api-reference.md)
+
+[__WebComponents, ShadowDOM, MicroFrontends__](https://github.com/gullerya/data-tier/blob/master/docs/web-components.md)
 
 [__Tutorials__](https://github.com/gullerya/data-tier/blob/master/docs/tutorials.md)
