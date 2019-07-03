@@ -75,6 +75,32 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 	pass();
 });
 
+suite.addTest({ name: 'Open ShadowDom should observe DOM Mutations (self being child)' }, async (pass, fail) => {
+	const tieName = 'tieForShadowDom';
+	let tie = DataTier.ties.create(tieName, { data: 'data' });
+
+	//	first, validate all in place
+	let parent = document.createElement('div');
+	let ce = document.createElement('open-shadow-test');
+	parent.appendChild(ce);
+	document.body.appendChild(parent);
+	await new Promise(resolve => setInterval(resolve, 0));
+	let c = ce.shadowRoot.firstElementChild.textContent;
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
+
+	//	now, append new child and see it being processed
+	let newChild = document.createElement('span');
+	newChild.dataset.tie = 'tieForShadowDom:data';
+	ce.shadowRoot.appendChild(newChild);
+	await new Promise(resolve => setInterval(resolve, 0));
+	c = ce.shadowRoot.lastElementChild.textContent;
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
+
+	DataTier.ties.remove(tie);
+
+	pass();
+});
+
 suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (element self)' }, async (pass, fail) => {
 	const tieName = 'tieForShadowDom';
 	let tie = DataTier.ties.create(tieName, { data: 'data' }),
@@ -145,6 +171,33 @@ suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as 
 	tie.model.data = 'now should not change';
 	c = e.textContent;
 	if (c !== 'one more time') fail('expected textContent to be "one more time" but found "' + c + '"');
+
+	DataTier.ties.remove(tie);
+
+	pass();
+});
+
+suite.addTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being child)' }, async (pass, fail) => {
+	const tieName = 'tieForShadowDom';
+	let tie = DataTier.ties.create(tieName, { data: 'data' });
+
+	//	first, validate all in place
+	let parent = document.createElement('div');
+	let ce = document.createElement('closed-shadow-test');
+	parent.appendChild(ce);
+	document.body.appendChild(parent);
+	DataTier.addRootDocument(ce.ownShadowRootProp);
+	await new Promise(resolve => setInterval(resolve, 0));
+	let c = ce.ownShadowRootProp.firstElementChild.textContent;
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
+
+	//	now, append new child and see it being processed
+	let newChild = document.createElement('span');
+	newChild.dataset.tie = 'tieForShadowDom:data';
+	ce.ownShadowRootProp.appendChild(newChild);
+	await new Promise(resolve => setInterval(resolve, 0));
+	c = ce.ownShadowRootProp.lastElementChild.textContent;
+	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
 
