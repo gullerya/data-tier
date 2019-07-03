@@ -8,8 +8,22 @@ customElements.define('open-shadow-test', class extends HTMLElement {
 		super();
 		let shadowRoot = this.attachShadow({ mode: 'open' });
 		shadowRoot.innerHTML = `
-			<span id="test-a" data-tie="tieForShadowDom:data">default content</span>
+			<span data-tie="tieForShadowDom:data">default content</span>
 		`;
+	}
+});
+
+customElements.define('closed-shadow-test', class extends HTMLElement {
+	constructor() {
+		super();
+		this._shadowRoot = this.attachShadow({ mode: 'closed' });
+		this._shadowRoot.innerHTML = `
+			<span data-tie="tieForShadowDom:data">default content</span>
+		`;
+	}
+
+	get ownShadowRootProp() {
+		return this._shadowRoot;
 	}
 });
 
@@ -21,14 +35,14 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add element self)' },
 	let ce = document.createElement('open-shadow-test');
 	document.body.appendChild(ce);
 	await new Promise(resolve => setInterval(resolve, 0));
-	let c = ce.shadowRoot.getElementById('test-a').textContent;
+	let c = ce.shadowRoot.firstElementChild.textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	//	test remove element with shadow DOM
 	document.body.removeChild(ce);
 	await new Promise(resolve => setInterval(resolve, 0));
 	tie.model.data = 'not to be found';
-	c = ce.shadowRoot.getElementById('test-a').textContent;
+	c = ce.shadowRoot.firstElementChild.textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
@@ -46,14 +60,14 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 	parent.appendChild(ce);
 	document.body.appendChild(parent);
 	await new Promise(resolve => setInterval(resolve, 0));
-	let c = ce.shadowRoot.getElementById('test-a').textContent;
+	let c = ce.shadowRoot.firstElementChild.textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	//	test removnig element with shadow HOST as its child
 	document.body.removeChild(parent);
 	await new Promise(resolve => setInterval(resolve, 0));
 	tie.model.data = 'not to be found';
-	c = ce.shadowRoot.getElementById('test-a').textContent;
+	c = ce.shadowRoot.firstElementChild.textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
@@ -61,27 +75,76 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 	pass();
 });
 
-suite.addTest({ name: 'ShadowDom added as root to DataTier' }, async (pass, fail) => {
+suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (element self)' }, async (pass, fail) => {
 	const tieName = 'tieForShadowDom';
-	let tie = DataTier.ties.create(tieName, { data: 'data' });
+	let tie = DataTier.ties.create(tieName, { data: 'data' }),
+		ce, e, c;
 
-	let ce = document.createElement('open-shadow-test');
+	//	add closed shadow HOST
+	ce = document.createElement('closed-shadow-test');
 	document.body.appendChild(ce);
-
-	let e = ce.shadowRoot.getElementById('test-a'),
-		c = e.textContent;
-	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
-
-	tie.model.data = 'change';
+	await new Promise(resolve => setInterval(resolve, 0));
+	e = ce.ownShadowRootProp.firstElementChild;
 	c = e.textContent;
-	if (c !== 'change') fail('expected textContent to be "change" but found "' + c + '"');
+	if (c !== 'default content') fail('expected textContent to be "default content" but found "' + c + '"');
 
-	//  removing the custom element should cleanup things
+	//	add it explicitly to the DataTier
+	DataTier.addRootDocument(ce.ownShadowRootProp);
+	tie.model.data = 'other content';
+	c = e.textContent;
+	if (c !== 'other content') fail('expected textContent to be "other content" but found "' + c + '"');
+
+	//  removing closed shadow HOST
 	document.body.removeChild(ce);
 	await new Promise(resolve => setTimeout(resolve, 0));
 	tie.model.data = 'one more time';
 	c = e.textContent;
-	if (c !== 'change') fail('expected textContent to be "change" but found "' + c + '"');
+	if (c !== 'one more time') fail('expected textContent to be "one more time" but found "' + c + '"');
+
+	//	remove explicitly from DataTier
+	DataTier.removeRootDocument(ce.ownShadowRootProp);
+	tie.model.data = 'now should not change';
+	c = e.textContent;
+	if (c !== 'one more time') fail('expected textContent to be "one more time" but found "' + c + '"');
+
+	DataTier.ties.remove(tie);
+
+	pass();
+});
+
+suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as child of other element)' }, async (pass, fail) => {
+	const tieName = 'tieForShadowDom';
+	let tie = DataTier.ties.create(tieName, { data: 'data' }),
+		parent, ce, e, c;
+
+	//	add closed shadow HOST
+	parent = document.createElement('div');
+	ce = document.createElement('closed-shadow-test');
+	parent.appendChild(ce);
+	document.body.appendChild(parent);
+	await new Promise(resolve => setInterval(resolve, 0));
+	e = ce.ownShadowRootProp.firstElementChild;
+	c = e.textContent;
+	if (c !== 'default content') fail('expected textContent to be "default content" but found "' + c + '"');
+
+	//	add it explicitly to the DataTier
+	DataTier.addRootDocument(ce.ownShadowRootProp);
+	tie.model.data = 'other content';
+	c = e.textContent;
+	if (c !== 'other content') fail('expected textContent to be "other content" but found "' + c + '"');
+
+	//  removing closed shadow HOST
+	document.body.removeChild(parent);
+	await new Promise(resolve => setTimeout(resolve, 0));
+	tie.model.data = 'one more time';
+	c = e.textContent;
+	if (c !== 'one more time') fail('expected textContent to be "one more time" but found "' + c + '"');
+
+	//	remove explicitly from DataTier
+	DataTier.removeRootDocument(ce.ownShadowRootProp);
+	tie.model.data = 'now should not change';
+	c = e.textContent;
+	if (c !== 'one more time') fail('expected textContent to be "one more time" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
 
