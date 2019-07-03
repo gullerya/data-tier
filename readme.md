@@ -16,6 +16,9 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.6.1__
+  * implemented [issue #23](https://github.com/gullerya/data-tier/issues/23) - auto-tying/untying the __open__ shadow DOM during the addition/removal of the host elements to the living DOM; providing APIs to explicitly add/remove shadow DOM for a __closed__ shadow DOM case and for the elements that the shadow DOM is attached to them 'post-factum' (when they are already in the living DOM)
+
 * __1.5.0__
   * added default target property `src` for the following elements: `iframe`, `img`, `source`
 
@@ -23,9 +26,6 @@
   * performance improvements (mainly in the area of collecting new view from DOM)
   * improved print outs to clarify the library boot process/times
   * add initial experimental implementation of support for a micro frontend design patterning [issue #3](https://github.com/gullerya/data-tier/issues/3)
-
-* __1.4.1__
-  * implemented [issue #21](https://github.com/gullerya/data-tier/issues/21) - missing `Tie` won't do anything with tied elements - allowing to work with multiple unrelated instances of `DataTier` in the same application (microfrontends - we are coming!!!) 
 
 ## Loading the Library
 

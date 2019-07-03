@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.6.1__
+  * implemented [issue #23](https://github.com/gullerya/data-tier/issues/23) - auto-tying/untying the __open__ shadow DOM during the addition/removal of the host elements to the living DOM; providing APIs to explicitly add/remove shadow DOM for a __closed__ shadow DOM case and for the elements that the shadow DOM is attached to them 'post-factum' (when they are already in the living DOM)
+
 * __1.5.0__
   * added default target property `src` for the following elements: `iframe`, `img`, `source`
 
