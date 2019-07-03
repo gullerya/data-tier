@@ -11,6 +11,10 @@ customElements.define('open-shadow-test', class extends HTMLElement {
 			<span data-tie="tieForShadowDom:data">default content</span>
 		`;
 	}
+
+	set customContent(c) {
+		this.shadowRoot.firstElementChild.textContent = c;
+	}
 });
 
 customElements.define('closed-shadow-test', class extends HTMLElement {
@@ -24,6 +28,16 @@ customElements.define('closed-shadow-test', class extends HTMLElement {
 
 	get ownShadowRootProp() {
 		return this._shadowRoot;
+	}
+});
+
+customElements.define('open-shadow-deep-test', class extends HTMLElement {
+	constructor() {
+		super();
+		let shadowRoot = this.attachShadow({ mode: 'open' });
+		shadowRoot.innerHTML = `
+			<open-shadow-test data-tie="tieForShadowDom:data => customContent"></open-shadow-test>
+		`;
 	}
 });
 
@@ -198,6 +212,24 @@ suite.addTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being
 	await new Promise(resolve => setInterval(resolve, 0));
 	c = ce.ownShadowRootProp.lastElementChild.textContent;
 	if (c !== 'data') fail('expected textContent to be "data" but found "' + c + '"');
+
+	DataTier.ties.remove(tie);
+
+	pass();
+});
+
+suite.addTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied)' }, async (pass, fail) => {
+	const tieName = 'tieForShadowDom';
+	let tie = DataTier.ties.create(tieName, { data: 'custom content' });
+
+	//	first, validate all in place
+	let parent = document.createElement('div');
+	let ce = document.createElement('open-shadow-deep-test');
+	parent.appendChild(ce);
+	document.body.appendChild(parent);
+	await new Promise(resolve => setInterval(resolve, 0));
+	let c = ce.shadowRoot.firstElementChild.shadowRoot.firstElementChild.textContent;
+	if (c !== 'custom content') fail('expected textContent to be "custom content" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
 
