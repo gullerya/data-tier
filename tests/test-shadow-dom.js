@@ -11,10 +11,6 @@ customElements.define('open-shadow-test', class extends HTMLElement {
 			<span data-tie="tieForShadowDom:data">default content</span>
 		`;
 	}
-
-	set customContent(c) {
-		this.shadowRoot.firstElementChild.textContent = c;
-	}
 });
 
 customElements.define('closed-shadow-test', class extends HTMLElement {
@@ -31,12 +27,26 @@ customElements.define('closed-shadow-test', class extends HTMLElement {
 	}
 });
 
-customElements.define('open-shadow-deep-test', class extends HTMLElement {
+customElements.define('open-shadow-child-test', class extends HTMLElement {
 	constructor() {
 		super();
 		let shadowRoot = this.attachShadow({ mode: 'open' });
 		shadowRoot.innerHTML = `
-			<open-shadow-test data-tie="tieForShadowDom:data => customContent"></open-shadow-test>
+			<span data-tie="tieForShadowDom:childData">default content</span>
+		`;
+	}
+
+	set customContent(childData) {
+		DataTier.ties.get('tieForShadowDom').model.childData = childData
+	}
+});
+
+customElements.define('open-shadow-parent-test', class extends HTMLElement {
+	constructor() {
+		super();
+		let shadowRoot = this.attachShadow({ mode: 'open' });
+		shadowRoot.innerHTML = `
+			<open-shadow-child-test data-tie="tieForShadowDom:data => customContent"></open-shadow-child-test>
 		`;
 	}
 });
@@ -218,13 +228,31 @@ suite.addTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being
 	pass();
 });
 
+// nested tied shadow DOMs
+
 suite.addTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied)' }, async (pass, fail) => {
 	const tieName = 'tieForShadowDom';
 	let tie = DataTier.ties.create(tieName, { data: 'custom content' });
 
 	//	first, validate all in place
+	let ce = document.createElement('open-shadow-parent-test');
+	document.body.appendChild(ce);
+	await new Promise(resolve => setInterval(resolve, 0));
+	let c = ce.shadowRoot.firstElementChild.shadowRoot.firstElementChild.textContent;
+	if (c !== 'custom content') fail('expected textContent to be "custom content" but found "' + c + '"');
+
+	DataTier.ties.remove(tie);
+
+	pass();
+});
+
+suite.addTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied) - self as child' }, async (pass, fail) => {
+	const tieName = 'tieForShadowDom';
+	let tie = DataTier.ties.create(tieName, { data: 'custom content' });
+
+	//	first, validate all in place
 	let parent = document.createElement('div');
-	let ce = document.createElement('open-shadow-deep-test');
+	let ce = document.createElement('open-shadow-parent-test');
 	parent.appendChild(ce);
 	document.body.appendChild(parent);
 	await new Promise(resolve => setInterval(resolve, 0));

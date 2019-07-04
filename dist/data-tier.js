@@ -427,8 +427,8 @@ function collect(rootElement) {
 	if (rootElement.shadowRoot) {
 		addRootDocument(rootElement.shadowRoot);
 	}
-	if (rootElement.getElementsByTagName) {
-		let allNested = rootElement.getElementsByTagName('*'),
+	if (rootElement.querySelectorAll) {
+		let allNested = rootElement.querySelectorAll('*'),
 			candidate;
 		for (let i = 0, l = allNested.length; i < l; i++) {
 			candidate = allNested[i].shadowRoot;
@@ -468,8 +468,8 @@ function discard(rootElement) {
 	if (rootElement.shadowRoot) {
 		removeRootDocument(rootElement.shadowRoot);
 	}
-	if (rootElement.getElementsByTagName) {
-		let allNested = rootElement.getElementsByTagName('*'),
+	if (rootElement.querySelectorAll) {
+		let allNested = rootElement.querySelectorAll('*'),
 			candidate;
 		for (let i = 0, l = allNested.length; i < l; i++) {
 			candidate = allNested[i].shadowRoot;
