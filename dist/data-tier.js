@@ -548,8 +548,6 @@ function initDocumentObserver(document) {
 	});
 }
 
-initDocumentObserver(document);
-
 addRootDocument(document);
 
 console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
