@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.7.0__
+  * fixed [issue #25](https://github.com/gullerya/data-tier/issues/25) - yet another issue with the nested tied elements within shadow DOMs
+
 * __1.6.2__
   * fixed [issue #24](https://github.com/gullerya/data-tier/issues/24) - adding `MutationObserver` to any shadow DOM (or even any document root) added to the `data-tier`
 
