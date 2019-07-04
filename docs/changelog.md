@@ -3,6 +3,10 @@
 Modern
 ------
 
+* __1.7.1__
+  * fixed [issue #26](https://github.com/gullerya/data-tier/issues/26) - shadow DOM hosts were not tied properly, when collected before than defined
+  * fixed [issue #27](https://github.com/gullerya/data-tier/issues/27) - accedentaly root document DOM was observed twice, leading to annoying warning in logs and wasted CPU cycles
+
 * __1.7.0__
   * fixed [issue #25](https://github.com/gullerya/data-tier/issues/25) - yet another issue with the nested tied elements within shadow DOMs
 

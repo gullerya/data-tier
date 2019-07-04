@@ -16,14 +16,15 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.7.1__
+  * fixed [issue #26](https://github.com/gullerya/data-tier/issues/26) - shadow DOM hosts were not tied properly, when collected before than defined
+  * fixed [issue #27](https://github.com/gullerya/data-tier/issues/27) - accedentaly root document DOM was observed twice, leading to annoying warning in logs and wasted CPU cycles
+
 * __1.7.0__
   * fixed [issue #25](https://github.com/gullerya/data-tier/issues/25) - yet another issue with the nested tied elements within shadow DOMs
 
 * __1.6.2__
   * fixed [issue #24](https://github.com/gullerya/data-tier/issues/24) - adding `MutationObserver` to any shadow DOM (or even any document root) added to the `data-tier`
-
-* __1.6.1__
-  * implemented [issue #23](https://github.com/gullerya/data-tier/issues/23) - auto-tying/untying the __open__ shadow DOM during the addition/removal of the host elements to the living DOM; providing APIs to explicitly add/remove shadow DOM for a __closed__ shadow DOM case and for the elements that the shadow DOM is attached to them 'post-factum' (when they are already in the living DOM)
 
 ## Loading the Library
 
