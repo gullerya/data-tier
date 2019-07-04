@@ -16,7 +16,7 @@ export const addRootDocument = rootDocument => {
 
 	console.info('DT: scanning the ' + rootDocument + ' for a views...');
 	let baseDocumentScanStartTime = performance.now();
-	let collected = collect(rootDocument);
+	let collected = addTree(rootDocument);
 	console.info('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
 		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms, collected ' +
 		collected + ' element/s)');
@@ -304,6 +304,10 @@ function processAddedElement(element) {
 			addChangeListenerIfRelevant(element);
 		}
 	}
+
+	if (element.shadowRoot) {
+		addRootDocument(element.shadowRoot);
+	}
 }
 
 function extractTieParams(element) {
@@ -406,8 +410,8 @@ function update(element, changedPath, change) {
 	}
 }
 
-function collect(rootElement) {
-	let list = rootElement.querySelectorAll('*[data-tie]'),
+function addTree(rootElement) {
+	let list = rootElement.querySelectorAll('*'),
 		i = list.length,
 		result = list.length;
 
@@ -423,85 +427,36 @@ function collect(rootElement) {
 		}
 	}
 
-	//	lookup and handle the shadow DOM hosts
-	if (rootElement.shadowRoot) {
-		addRootDocument(rootElement.shadowRoot);
-	}
-	if (rootElement.querySelectorAll) {
-		let allNested = rootElement.querySelectorAll('*'),
-			candidate;
-		for (let i = 0, l = allNested.length; i < l; i++) {
-			let element = allNested[i];
-			if (element.matches(':defined')) {
-				candidate = allNested[i].shadowRoot;
-				if (candidate) {
-					addRootDocument(candidate);
-				}
-			} else {
-				let customElementToWait = '';
-				if (element.localName.indexOf('-') > 0) {
-					customElementToWait = element.localName;
-				} else {
-					let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
-					if (matches && matches.length > 1) {
-						customElementToWait = matches[1];
-					}
-				}
-				if (customElementToWait) {
-					customElements.whenDefined(customElementToWait).then(() => {
-						candidate = customElementToWait.shadowRoot;
-						if (candidate) {
-							addRootDocument(candidate);
-						}
-					});
-				} else {
-					console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
-					candidate = element.shadowRoot;
-					if (candidate) {
-						addRootDocument(candidate);
-					}
-				}
-			}
-		}
-	}
-
 	return result;
 }
 
 function discard(rootElement) {
 	if (rootElement.querySelectorAll) {
-		let list = rootElement.querySelectorAll('*[data-tie]'),
+		let list = rootElement.querySelectorAll('*'),
 			element, tieParams, tieParam, pathViews, index,
 			i = 0, l = list.length, j, k;
 		for (; i <= l; i++) {
 			element = i < l ? list[i] : rootElement;
 			tieParams = viewsParams.get(element);
-			if (!tieParams) continue;
-			for (j = 0, k = tieParams.length; j < k; j++) {
-				tieParam = tieParams[j];
-				if (!views[tieParam.tieName]) continue;
-				pathViews = views[tieParam.tieName][tieParam.rawPath];
-				index = pathViews.indexOf(element);
-				if (index >= 0) {
-					pathViews.splice(index, 1);
-					delChangeListener(element);
-				}
-			}
-			viewsParams.delete(element);
-		}
-	}
 
-	//	lookup and handle the shadow DOM hosts
-	if (rootElement.shadowRoot) {
-		removeRootDocument(rootElement.shadowRoot);
-	}
-	if (rootElement.querySelectorAll) {
-		let allNested = rootElement.querySelectorAll('*'),
-			candidate;
-		for (let i = 0, l = allNested.length; i < l; i++) {
-			candidate = allNested[i].shadowRoot;
-			if (candidate) {
-				removeRootDocument(candidate);
+			//	untie
+			if (tieParams) {
+				for (j = 0, k = tieParams.length; j < k; j++) {
+					tieParam = tieParams[j];
+					if (!views[tieParam.tieName]) continue;
+					pathViews = views[tieParam.tieName][tieParam.rawPath];
+					index = pathViews.indexOf(element);
+					if (index >= 0) {
+						pathViews.splice(index, 1);
+						delChangeListener(element);
+					}
+				}
+				viewsParams.delete(element);
+			}
+
+			//	remove as root
+			if (element.shadowRoot) {
+				removeRootDocument(element.shadowRoot);
 			}
 		}
 	}
@@ -561,7 +516,7 @@ function processDomChanges(changes) {
 				node = added[--i2];
 				nodeType = node.nodeType;
 				if (Node.ELEMENT_NODE === nodeType) {
-					collect(node);
+					addTree(node);
 				}
 			}
 
