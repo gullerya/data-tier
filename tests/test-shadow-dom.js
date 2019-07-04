@@ -264,4 +264,30 @@ suite.addTest({ name: 'Open ShadowDom should be able to have another custom elem
 	pass();
 });
 
+suite.addTest({ name: 'Open ShadowDom should be propertly tied even if defined only after the tying' }, async (pass, fail) => {
+	const tieName = 'tieForShadowDom';
+	let tie = DataTier.ties.create(tieName, { data: 'custom content' });
+
+	//	create undefined element and attach it to living DOM (may also be already found in DOM)
+	let ue = document.createElement('undefined-first-shadow-holder');
+	document.body.appendChild(ue);
+
+	//	now let's define it with some inner element that is tied to the data
+	customElements.define('undefined-first-shadow-holder', class extends HTMLElement {
+		constructor() {
+			super();
+			this.attachShadow({ mode: 'open' });
+			this.shadowRoot.innerHTML = `<open-shadow-child-test data-tie="tieForShadowDom:data => customContent"></open-shadow-child-test>`;
+		}
+	});
+
+	await new Promise(resolve => setInterval(resolve, 0));
+	let it = ue.shadowRoot.firstElementChild.shadowRoot.firstElementChild.textContent;
+	if (it !== 'custom content') fail('unexpected content; expected "custom content" but found "' + it + '"');
+
+	DataTier.ties.remove(tie);
+
+	pass();
+});
+
 suite.run();

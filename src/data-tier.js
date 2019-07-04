@@ -431,9 +431,36 @@ function collect(rootElement) {
 		let allNested = rootElement.querySelectorAll('*'),
 			candidate;
 		for (let i = 0, l = allNested.length; i < l; i++) {
-			candidate = allNested[i].shadowRoot;
-			if (candidate) {
-				addRootDocument(candidate);
+			let element = allNested[i];
+			if (element.matches(':defined')) {
+				candidate = allNested[i].shadowRoot;
+				if (candidate) {
+					addRootDocument(candidate);
+				}
+			} else {
+				let customElementToWait = '';
+				if (element.localName.indexOf('-') > 0) {
+					customElementToWait = element.localName;
+				} else {
+					let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
+					if (matches && matches.length > 1) {
+						customElementToWait = matches[1];
+					}
+				}
+				if (customElementToWait) {
+					customElements.whenDefined(customElementToWait).then(() => {
+						candidate = customElementToWait.shadowRoot;
+						if (candidate) {
+							addRootDocument(candidate);
+						}
+					});
+				} else {
+					console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
+					candidate = element.shadowRoot;
+					if (candidate) {
+						addRootDocument(candidate);
+					}
+				}
 			}
 		}
 	}
