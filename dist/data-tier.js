@@ -15,8 +15,8 @@ export const addRootDocument = rootDocument => {
 	initDocumentObserver(rootDocument);
 
 	console.info('DT: scanning the ' + rootDocument + ' for a views...');
-	let baseDocumentScanStartTime = performance.now();
-	let collected = addTree(rootDocument);
+	const baseDocumentScanStartTime = performance.now();
+	const collected = addTree(rootDocument);
 	console.info('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
 		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms, collected ' +
 		collected + ' element/s)');
@@ -31,7 +31,7 @@ export const removeRootDocument = rootDocument => {
 };
 
 console.info('DT: starting initialization...');
-let initStartTime = performance.now();
+const initStartTime = performance.now();
 
 const
 	initParams = {},
@@ -68,9 +68,9 @@ class Tie {
 	}
 
 	set model(input) {
-		let oldModel = this[PRIVATE_MODEL_SYMBOL];
+		const oldModel = this[PRIVATE_MODEL_SYMBOL];
 		if (input !== oldModel) {
-			let newModel = ensureObservable(input);
+			const newModel = ensureObservable(input);
 			if (newModel) {
 				newModel.observe(this.processDataChanges.bind(this));
 			}
@@ -81,12 +81,13 @@ class Tie {
 	}
 
 	processDataChanges(changes) {
-		let tieName = this.name,
-			i, l, change, changedObject, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
+		const
+			tieName = this.name,
 			tieViews = views[tieName],
 			tiedPaths = Object.keys(tieViews),
-			arrayFullUpdate,
 			fullUpdatesMap = {};
+		let i, l, change, changedObject, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
+			arrayFullUpdate;
 
 		if (!tiedPaths.length) return;
 
@@ -141,9 +142,9 @@ function Ties() {
 		}
 		validateTieName(name);
 		ensureObservable(model);
-		let result = new Tie(name);
+		const result = new Tie(name);
 		ts[name] = result;
-		if (!views.hasOwnProperty(name)) views[name] = {};
+		if (!Object.prototype.hasOwnProperty.call(views, name)) views[name] = {};
 		result.model = model;
 		return result;
 	};
@@ -159,7 +160,7 @@ function Ties() {
 		}
 
 		delete views[tieNameToRemove];
-		let tie = ts[tieNameToRemove];
+		const tie = ts[tieNameToRemove];
 		if (tie) {
 			if (tie[PRIVATE_MODEL_SYMBOL]) {
 				tie[PRIVATE_MODEL_SYMBOL].revoke();
@@ -199,10 +200,11 @@ function ensureObservable(o) {
 
 function getPath(ref, path) {
 	if (!ref) return null;
-	let i = 0, l = path.length, n;
+	const l = path.length;
+	let i = 0, n;
 	for (; i < l; i++) {
 		n = path[i];
-		if (ref && ref.hasOwnProperty(n)) ref = ref[n];
+		if (ref && Object.prototype.hasOwnProperty.call(ref, n)) ref = ref[n];
 		else return null;
 	}
 	return ref;
@@ -210,7 +212,8 @@ function getPath(ref, path) {
 
 function setPath(ref, path, value) {
 	if (!ref) return;
-	let i = 0, l = path.length, n;
+	const l = path.length;
+	let i = 0, n;
 	for (; i < l - 1; i++) {
 		n = path[i];
 		if (ref[n] && typeof ref[n] === 'object') {
@@ -224,8 +227,11 @@ function setPath(ref, path, value) {
 }
 
 function changeListener(event) {
-	let element = event.currentTarget, tieParams, tieParam, tie, i, newValue;
-	tieParams = viewsParams.get(element);
+	const
+		element = event.currentTarget,
+		tieParams = viewsParams.get(element);
+	let tieParam, tie, i, newValue;
+
 	i = tieParams.length;
 	while (i) {
 		tieParam = tieParams[--i];
@@ -242,14 +248,14 @@ function changeListener(event) {
 }
 
 function addChangeListenerIfRelevant(element) {
-	let cen = obtainChangeEventName(element);
+	const cen = obtainChangeEventName(element);
 	if (cen) {
 		element.addEventListener(cen, changeListener);
 	}
 }
 
 function delChangeListener(element) {
-	let cen = obtainChangeEventName(element);
+	const cen = obtainChangeEventName(element);
 	if (cen) {
 		element.removeEventListener(cen, changeListener);
 	}
@@ -275,7 +281,7 @@ function add(element) {
 		if (element.localName.indexOf('-') > 0) {
 			customElementToWait = element.localName;
 		} else {
-			let matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
+			const matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
 			if (matches && matches.length > 1) {
 				customElementToWait = matches[1];
 			}
@@ -290,8 +296,9 @@ function add(element) {
 }
 
 function processAddedElement(element) {
-	let tieParams, tieName, rawPath, tieViews, pathViews, i = 0, l;
-	tieParams = extractTieParams(element);
+	const tieParams = extractTieParams(element);
+	let tieName, rawPath, tieViews, pathViews, i = 0, l;
+
 	for (l = tieParams.length; i < l; i++) {
 		tieName = tieParams[i].tieName;
 		rawPath = tieParams[i].rawPath;
@@ -320,19 +327,20 @@ function extractTieParams(element) {
 
 //	syntax example: data-tie="orders:0.address.street => textContent"
 function parseTiePropertyParam(rawParam, element) {
-	let parts = rawParam.split(PARAM_SPLITTER),
-		origin,
-		rawPath;
+	const parts = rawParam.split(PARAM_SPLITTER);
+
 	//  add default 'to' property if needed
 	if (parts.length === 1) {
 		parts.push(getDefaultTargetProperty(element));
 	}
+
 	//  process 'from' part
-	origin = parts[0].split(':');
+	const origin = parts[0].split(':');
 	if (!origin.length || origin.length > 2 || !origin[0]) {
 		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example): "orders:0.address.street => textContent"');
 	}
-	rawPath = origin.length > 1 ? origin[1] : '';
+
+	const rawPath = origin.length > 1 ? origin[1] : '';
 	return {
 		tieName: origin[0],
 		rawPath: rawPath,
@@ -347,8 +355,11 @@ function parseTiePropertiesParam(multiParam, element) {
 		throw new Error('invalid tie value; found: "' + multiParam +
 			'"; expected (example): "orders:0.address.street => textContent, orders:0.address.apt => title"');
 	}
-	let result = [], rawParams = multiParam.split(MULTI_PARAMS_SPLITTER),
-		i = 0, l = rawParams.length;
+	const
+		result = [],
+		rawParams = multiParam.split(MULTI_PARAMS_SPLITTER),
+		l = rawParams.length;
+	let i = 0;
 	for (; i < l; i++) {
 		if (!rawParams[i]) {
 			continue;
@@ -365,7 +376,7 @@ function parseTiePropertiesParam(multiParam, element) {
 function getDefaultTargetProperty(element) {
 	let result = element[DEFAULT_TIE_TARGET_PROVIDER];
 	if (!result) {
-		let eName = element.nodeName;
+		const eName = element.nodeName;
 		if (eName === 'INPUT' || eName === 'SELECT' || eName === 'TEXTAREA') {
 			result = 'value';
 		} else if (eName === 'IMG' || eName === 'IFRAME' || eName === 'SOURCE') {
@@ -378,8 +389,8 @@ function getDefaultTargetProperty(element) {
 }
 
 function update(element, changedPath, change) {
-	let parsedParams, param, tie, tieData, newValue, i = 0, l, tp;
-	parsedParams = viewsParams.get(element);
+	const parsedParams = viewsParams.get(element);
+	let param, tie, tieData, newValue, i = 0, l, tp;
 	for (l = parsedParams.length; i < l; i++) {
 		param = parsedParams[i];
 		if (changedPath && param.rawPath.indexOf(changedPath) !== 0) {
@@ -411,8 +422,8 @@ function update(element, changedPath, change) {
 }
 
 function addTree(rootElement) {
-	let list = rootElement.querySelectorAll('*'),
-		i = list.length,
+	const list = rootElement.querySelectorAll('*');
+	let i = list.length,
 		result = list.length;
 
 	if (Node.ELEMENT_NODE === rootElement.nodeType) {
@@ -432,9 +443,11 @@ function addTree(rootElement) {
 
 function discard(rootElement) {
 	if (rootElement.querySelectorAll) {
-		let list = rootElement.querySelectorAll('*'),
-			element, tieParams, tieParam, pathViews, index,
-			i = 0, l = list.length, j, k;
+		const
+			list = rootElement.querySelectorAll('*'),
+			l = list.length;
+		let element, tieParams, tieParam, pathViews, index,
+			i = 0, j, k;
 		for (; i <= l; i++) {
 			element = i < l ? list[i] : rootElement;
 			tieParams = viewsParams.get(element);
@@ -497,7 +510,8 @@ function move(element, attributeName, oldParam, newParam) {
 }
 
 function processDomChanges(changes) {
-	let i = 0, l = changes.length, node, nodeType, change, changeType,
+	const l = changes.length;
+	let i = 0, node, nodeType, change, changeType,
 		attributeName, added, i2, removed, i3;
 	for (; i < l; i++) {
 		change = changes[i];
@@ -536,7 +550,7 @@ function processDomChanges(changes) {
 
 function initDocumentObserver(document) {
 	console.info('DT: initializing DOM observer on ' + document);
-	let domObserver = new MutationObserver(processDomChanges);
+	const domObserver = new MutationObserver(processDomChanges);
 	domObserver.observe(document, {
 		childList: true,
 		subtree: true,

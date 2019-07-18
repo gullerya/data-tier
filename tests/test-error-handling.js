@@ -1,19 +1,21 @@
+import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-let suite = Utils.JustTest.createSuite({name: 'Testing erroneous cases'});
+const suite = createSuite({ name: 'Testing erroneous cases' });
 
-suite.addTest({name: 'adding view with empty tie definition'}, function (pass, fail) {
-	let elem = document.createElement('div');
+suite.addTest({ name: 'adding view with empty tie definition' }, test => {
+	const elem = document.createElement('div');
 
 	elem.dataset.tie = '';
 
 	document.body.appendChild(elem);
-	pass();
+	test.pass();
 });
 
-suite.addTest({name: 'accessing in other place the observable that was replaced'}, function (pass, fail) {
-	let inner = {},
-		raw = {o: inner},
+suite.addTest({ name: 'accessing in other place the observable that was replaced' }, async test => {
+	const
+		inner = {},
+		raw = { o: inner },
 		data = DataTier.ties.create('errorA', raw),
 		elem = document.createElement('div');
 
@@ -24,17 +26,17 @@ suite.addTest({name: 'accessing in other place the observable that was replaced'
 
 	document.body.appendChild(elem);
 
-	setTimeout(() => {
-		data.model.o = inner;
+	await new Promise(resolve => setTimeout(resolve, 0));
 
-		document.body.removeChild(elem);
+	data.model.o = inner;
 
-		setTimeout(() => {
-			document.body.appendChild(elem);
-		}, 0);
+	document.body.removeChild(elem);
 
-		pass();
-	}, 0);
+	await new Promise(resolve => setTimeout(resolve, 0));
+
+	document.body.appendChild(elem);
+
+	test.pass();
 });
 
 suite.run();

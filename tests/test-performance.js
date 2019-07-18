@@ -1,6 +1,7 @@
+import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-let suite = Utils.JustTest.createSuite({name: 'Testing Performance'});
+const suite = createSuite({ name: 'Testing Performance' });
 
 class Movable extends HTMLElement {
 	set top(top) {
@@ -14,18 +15,18 @@ class Movable extends HTMLElement {
 
 customElements.define('movable-element', Movable);
 
-suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fail) => {
-	let pg = document.createElement('div');
+suite.addTest({ name: 'perf test - many changes in loop', timeout: 60000 }, test => {
+	const pg = document.createElement('div');
 	pg.style.cssText = 'position: relative;width: 200px;height: 200px; border: 1px solid #aaa';
 	document.body.appendChild(pg);
 
-	let movables = [];
+	const movables = [];
 	for (let i = 0; i < 500; i++) {
-		let m = document.createElement('movable-element');
+		const m = document.createElement('movable-element');
 		m.style.cssText = 'position: absolute;width: 10px;height: 10px; border-radius: 5px; background-color: rgb(' + 255 * Math.random() + ',' + 255 * Math.random() + ',' + 255 * Math.random() + ');';
 		m.dataset.tie = 'm' + i + ':top => top, m' + i + ':left => left';
 		movables.push({
-			t: DataTier.ties.create('m' + i, {top: 190 * Math.random(), left: 190 * Math.random()}),
+			t: DataTier.ties.create('m' + i, { top: 190 * Math.random(), left: 190 * Math.random() }),
 			xi: 3 * Math.random(),
 			yi: 3 * Math.random()
 		});
@@ -37,7 +38,8 @@ suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fai
 
 		function render() {
 			movables.forEach(movable => {
-				let m = movable.t.model,
+				const
+					m = movable.t.model,
 					top = m.top,
 					left = m.left;
 				if (top + 10 > 200 || top < 0) movable.xi *= -1;
@@ -49,7 +51,7 @@ suite.addTest({name: 'perf test - many changes in loop', ttl: 60000}, (pass, fai
 			if (--moves > 0) {
 				requestAnimationFrame(render);
 			} else {
-				pass();
+				test.pass();
 			}
 		}
 

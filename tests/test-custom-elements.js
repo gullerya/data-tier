@@ -1,6 +1,8 @@
+import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-let suite = Utils.JustTest.createSuite({name: 'Testing Custom Elements behavior'}),
+const
+	suite = createSuite({ name: 'Testing Custom Elements behavior' }),
 	model = {
 		text: 'some text',
 		date: new Date()
@@ -10,10 +12,6 @@ DataTier.ties.create('testCustomsA', model);
 DataTier.ties.create('testCustomsB', model);
 
 class CustomElement extends HTMLElement {
-	constructor() {
-		super();
-	}
-
 	get value() {
 		return this.__value;
 	}
@@ -27,44 +25,44 @@ class CustomElement extends HTMLElement {
 customElements.define('custom-element', CustomElement);
 
 class CustomInput extends HTMLInputElement {
-	constructor() {
-		super();
-	}
 }
 
-customElements.define('custom-input', CustomInput, {extends: 'input'});
+customElements.define('custom-input', CustomInput, { extends: 'input' });
 
-suite.addTest({name: 'testing basic controllers: binding value of custom element'}, (pass, fail) => {
-	let e = document.createElement('custom-element');
+suite.addTest({ name: 'testing basic controllers: binding value of custom element' }, async test => {
+	const e = document.createElement('custom-element');
 	e.dataset.tie = 'testCustomsA:text => value';
-	if (e.value) fail('precondition of the test failed');
+	if (e.value) test.fail('precondition of the test failed');
 	document.body.appendChild(e);
-	setTimeout(function() {
-		if (e.value !== model.text.toUpperCase()) fail('textContent of the element expected to be ' + model.text.toUpperCase() + ', found: ' + e.value);
-		pass();
-	}, 0)
+
+	await new Promise(resolve => setTimeout(resolve, 0));
+
+	if (e.value !== model.text.toUpperCase()) test.fail('textContent of the element expected to be ' + model.text.toUpperCase() + ', found: ' + e.value);
+	test.pass();
 });
 
-suite.addTest({name: 'testing basic controllers: custom input'}, (pass, fail) => {
-	let e = document.createElement('input', {is: 'custom-input'}),
+suite.addTest({ name: 'testing basic controllers: custom input' }, async test => {
+	const
+		e = document.createElement('input', { is: 'custom-input' }),
 		tie = DataTier.ties.create('customInsTie', [
-			{text: 'some'},
-			{text: 'more'}
+			{ text: 'some' },
+			{ text: 'more' }
 		]);
 	e.dataset.tie = 'customInsTie:0.text => value';
 	document.body.appendChild(e);
 
-	setTimeout(() => {
-		if (e.value !== tie.model[0].text) fail('value of the element expected to be ' + tie.model[0].text.toUpperCase() + ', found: ' + e.value);
+	await new Promise(resolve => setTimeout(resolve, 0));
 
-		let ev = new Event('change');
-		e.dispatchEvent(ev);
+	if (e.value !== tie.model[0].text) test.fail('value of the element expected to be ' + tie.model[0].text.toUpperCase() + ', found: ' + e.value);
 
-		setTimeout(() => {
+	e.value = 'lowercase';
+	const ev = new Event('change');
+	e.dispatchEvent(ev);
 
-			pass();
-		}, 0);
-	}, 0)
+	await new Promise(resolve => setTimeout(resolve, 0));
+
+	if (tie.model[0].text !== 'lowercase') test.fail('value of the model expected to be ' + e.value + ' but found ' + tie.model[0].text);
+	test.pass();
 });
 
 suite.run();
