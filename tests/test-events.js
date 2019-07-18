@@ -122,7 +122,7 @@ suite.addTest({ name: 'binding custom event custom value property' }, async test
 	test.pass();
 });
 
-suite.addTest({ name: 'regular event multiple bindings' }, async test => {
+suite.addTest({ name: 'regular event/value multiple bindings' }, async test => {
 	const testTie = DataTier.ties.create('eventsA', { test: 'some', other: 'thing' });
 
 	const i = document.createElement('input');
@@ -138,6 +138,29 @@ suite.addTest({ name: 'regular event multiple bindings' }, async test => {
 
 	await waitNextMicrotask();
 	test.assertEqual(testTie.model.test, i.value);
+	test.assertEqual(testTie.model.other, 'thing');
+
+	test.pass();
+});
+
+suite.addTest({ name: 'custom event/value multiple bindings' }, async test => {
+	const testTie = DataTier.ties.create('eventsB', { test: 'some', other: 'thing' });
+
+	const d = document.createElement('input');
+	d[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
+	d[DataTier.DEFAULT_TIE_TARGET_PROVIDER] = 'customValue';
+	d.dataset.tie = 'eventsB:test, eventsB:other => customProp';
+	document.body.appendChild(d);
+
+	await waitNextMicrotask();
+	test.assertEqual(d.customValue, testTie.model.test);
+	test.assertEqual(d.customProp, testTie.model.other);
+
+	d.customValue = 'text';
+	d.dispatchEvent(new Event('customChange'));
+
+	await waitNextMicrotask();
+	test.assertEqual(testTie.model.test, d.customValue);
 	test.assertEqual(testTie.model.other, 'thing');
 
 	test.pass();

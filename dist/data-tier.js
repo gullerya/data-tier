@@ -26,8 +26,11 @@ export const addRootDocument = rootDocument => {
 export const removeRootDocument = rootDocument => {
 	if (roots.has(rootDocument)) {
 		discard(rootDocument);
+		roots.delete(rootDocument);
+		return true;
 	} else {
 		console.warn('no root document ' + rootDocument + ' known');
+		return false;
 	}
 };
 

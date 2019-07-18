@@ -155,7 +155,12 @@ suite.addTest({ name: 'root APIs - negative tests' }, test => {
 	let addResult = DataTier.addRootDocument(rootDocument);
 	test.assertTrue(addResult);
 	addResult = DataTier.addRootDocument(rootDocument);
-	test.assertTrue(!addResult);
+	test.assertFalse(addResult);
+
+	let removeResult = DataTier.removeRootDocument(rootDocument);
+	test.assertTrue(removeResult);
+	removeResult = DataTier.removeRootDocument(rootDocument);
+	test.assertFalse(removeResult);
 
 	test.pass();
 });
