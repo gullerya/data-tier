@@ -9,7 +9,7 @@ export const addRootDocument = rootDocument => {
 	}
 	if (roots.has(rootDocument)) {
 		console.warn('any root document may be added only once');
-		return;
+		return false;
 	}
 
 	initDocumentObserver(rootDocument);
@@ -21,6 +21,7 @@ export const addRootDocument = rootDocument => {
 		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms, collected ' +
 		collected + ' element/s)');
 	roots.add(rootDocument);
+	return true;
 };
 export const removeRootDocument = rootDocument => {
 	if (roots.has(rootDocument)) {
@@ -229,17 +230,20 @@ function setPath(ref, path, value) {
 function changeListener(event) {
 	const
 		element = event.currentTarget,
+		defaultTargetProperty = getDefaultTargetProperty(element),
 		tieParams = viewsParams.get(element);
 	let tieParam, tie, i, newValue;
 
 	i = tieParams.length;
 	while (i) {
 		tieParam = tieParams[--i];
+		if (tieParam.targetProperty !== defaultTargetProperty) {
+			continue;
+		}
+
 		tie = ties.get(tieParam.tieName);
 		if (tie) {
-			newValue = element.nodeName === 'INPUT' && element.type === 'checkbox'
-				? element.checked
-				: element[getDefaultTargetProperty(element)];
+			newValue = element[defaultTargetProperty];
 			setPath(tie[PRIVATE_MODEL_SYMBOL], tieParam.path, newValue);
 		} else {
 			console.warn('no Tie identified by "' + tieParam.tieName + '" found');
@@ -377,7 +381,9 @@ function getDefaultTargetProperty(element) {
 	let result = element[DEFAULT_TIE_TARGET_PROVIDER];
 	if (!result) {
 		const eName = element.nodeName;
-		if (eName === 'INPUT' || eName === 'SELECT' || eName === 'TEXTAREA') {
+		if (eName === 'INPUT' && element.type === 'checkbox') {
+			result = 'checked';
+		} else if (eName === 'INPUT' || eName === 'SELECT' || eName === 'TEXTAREA') {
 			result = 'value';
 		} else if (eName === 'IMG' || eName === 'IFRAME' || eName === 'SOURCE') {
 			result = 'src';

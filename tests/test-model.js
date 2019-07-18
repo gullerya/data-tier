@@ -5,80 +5,63 @@ const
 	suite = createSuite({ name: 'Testing model changes' }),
 	user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } };
 
-const
-	s1 = document.createElement('input'),
-	s2 = document.createElement('div'),
-	s3 = document.createElement('div'),
-	s4 = document.createElement('div');
-
-s1.dataset.tie = 'userA:name => value';
-document.body.appendChild(s1);
-s2.dataset.tie = 'userA:age => textContent';
-document.body.appendChild(s2);
-s3.dataset.tie = 'userA:address.street => textContent';
-document.body.appendChild(s3);
-s4.dataset.tie = 'userA:address.apt => textContent';
-document.body.appendChild(s4);
-
 suite.addTest({ name: 'new model bound' }, async test => {
-	DataTier.ties.create('userA', user);
+	DataTier.ties.create('modelA', user);
 
 	const
 		s1 = document.createElement('input'),
 		s2 = document.createElement('div'),
 		s3 = document.createElement('div'),
 		s4 = document.createElement('div');
-
-	s1.dataset.tie = 'userA:name => value';
+	s1.dataset.tie = 'modelA:name => value';
 	document.body.appendChild(s1);
-	s2.dataset.tie = 'userA:age => textContent';
+	s2.dataset.tie = 'modelA:age => textContent';
 	document.body.appendChild(s2);
-	s3.dataset.tie = 'userA:address.street => textContent';
+	s3.dataset.tie = 'modelA:address.street => textContent';
 	document.body.appendChild(s3);
-	s4.dataset.tie = 'userA:address.apt => textContent';
+	s4.dataset.tie = 'modelA:address.apt => textContent';
 	document.body.appendChild(s4);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
-	if (s1.value !== user.name) test.fail(new Error('expected the content to be updated'));
-	if (s2.textContent !== user.age.toString()) test.fail(new Error('expected the content to be updated'));
-	if (s3.textContent !== user.address.street) test.fail(new Error('expected the content to be updated'));
-	if (s4.textContent !== user.address.apt.toString()) test.fail(new Error('expected the content to be updated'));
+	test.assertEqual(s1.value, user.name);
+	test.assertEqual(s2.textContent, user.age.toString());
+	test.assertEqual(s3.textContent, user.address.street);
+	test.assertEqual(s4.textContent, user.address.apt.toString());
 
-	DataTier.ties.remove('userA');
 	test.pass();
 });
 
 suite.addTest({ name: 'primitive model changes' }, async test => {
-	DataTier.ties.create('userB', user);
+	DataTier.ties.create('modelB', user);
 
 	const s1 = document.createElement('input');
-
-	s1.dataset.tie = 'userB:name => value';
+	s1.dataset.tie = 'modelB:name => value';
 	document.body.appendChild(s1);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
-	if (s1.value !== user.name) test.fail(new Error('preliminary check failed'));
-	DataTier.ties.get('userB').model.name = 'other';
-	if (s1.value !== 'other') test.fail(new Error('expected the content to be "other"'));
-	DataTier.ties.remove('userB');
+	test.assertEqual(s1.value, user.name);
+	DataTier.ties.get('modelB').model.name = 'other';
+	test.assertEqual(s1.value, 'other');
+
 	test.pass();
 });
 
-suite.addTest({ name: 'deep model changes (graph replace)' }, test => {
-	DataTier.ties.create('userC', user);
+suite.addTest({ name: 'deep model changes (graph replace)' }, async test => {
+	DataTier.ties.create('modelC', user);
 
 	const s3 = document.createElement('div');
-
-	s3.dataset.tie = 'userC:address.street => textContent';
+	s3.dataset.tie = 'modelC:address.street => textContent';
 	document.body.appendChild(s3);
 
-	DataTier.ties.get('userC').model.address.street = 'Street';
+	await test.waitNextMicrotask();
+	test.assertEqual(s3.textContent, 'str');
 
-	if (s3.textContent !== DataTier.ties.get('userC').model.address.street) test.fail(new Error('expected the content to be "Street"'));
+	DataTier.ties.get('modelC').model.address.street = 'Street';
 
-	DataTier.ties.remove('userC');
+	test.assertEqual(s3.textContent, DataTier.ties.get('modelC').model.address.street);
+
 	test.pass();
 });
 
@@ -87,58 +70,82 @@ suite.addTest({ name: 'full model replace (to null)' }, test => {
 		s1 = document.createElement('input'),
 		s2 = document.createElement('div'),
 		s3 = document.createElement('div'),
-		s4 = document.createElement('div');
-
-	s1.dataset.tie = 'userD:name => value';
+		s4 = document.createElement('div')
+	s1.dataset.tie = 'modelD:name => value';
 	document.body.appendChild(s1);
-	s2.dataset.tie = 'userD:age => textContent';
+	s2.dataset.tie = 'modelD:age => textContent';
 	document.body.appendChild(s2);
-	s3.dataset.tie = 'userD:address.street => textContent';
+	s3.dataset.tie = 'modelD:address.street => textContent';
 	document.body.appendChild(s3);
-	s4.dataset.tie = 'userD:address.apt => textContent';
+	s4.dataset.tie = 'modelD:address.apt => textContent';
 	document.body.appendChild(s4);
 
-	const t = DataTier.ties.create('userD', user);
+	const t = DataTier.ties.create('modelD', user);
 	t.model = null;
-	if (s1.value !== '') test.fail(new Error('expected the content to be emptied'));
-	if (s2.textContent !== '') test.fail(new Error('expected the content to be emptied'));
-	if (s3.textContent !== '') test.fail(new Error('expected the content to be emptied'));
-	if (s4.textContent !== '') test.fail(new Error('expected the content to be emptied'));
-	DataTier.ties.remove('userD');
+	test.assertEqual(s1.value, '');
+	test.assertEqual(s2.textContent, '');
+	test.assertEqual(s3.textContent, '');
+	test.assertEqual(s4.textContent, '');
+
 	test.pass();
 });
 
 suite.addTest({ name: 'full model replace (to new data)' }, async test => {
-	const t = DataTier.ties.create('userA', user);
+	const
+		s1 = document.createElement('input'),
+		s2 = document.createElement('div'),
+		s3 = document.createElement('div'),
+		s4 = document.createElement('div')
+	s1.dataset.tie = 'modelE:name => value';
+	document.body.appendChild(s1);
+	s2.dataset.tie = 'modelE:age => textContent';
+	document.body.appendChild(s2);
+	s3.dataset.tie = 'modelE:address.street => textContent';
+	document.body.appendChild(s3);
+	s4.dataset.tie = 'modelE:address.apt => textContent';
+	document.body.appendChild(s4);
+
+	const t = DataTier.ties.create('modelE', user);
 	t.model = { name: 'something else', age: 6 };
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
-	if (s1.value !== 'something else') test.fail(new Error('expected the content to be "something else"'));
-	if (s2.textContent !== '6') test.fail(new Error('expected the content to be "6"'));
-	if (s3.textContent !== '') test.fail(new Error('expected the content to be emptied'));
-	if (s4.textContent !== '') test.fail(new Error('expected the content to be emptied'));
+	test.assertEqual(s1.value, 'something else');
+	test.assertEqual(s2.textContent, '6');
+	test.assertEqual(s3.textContent, '');
+	test.assertEqual(s4.textContent, '');
 
-	DataTier.ties.remove('userA');
 	test.pass();
 });
 
 suite.addTest({ name: 'binding view to object' }, async test => {
-	const t = DataTier.ties.create('userA', user);
+	const
+		s1 = document.createElement('input'),
+		s2 = document.createElement('div'),
+		s3 = document.createElement('div'),
+		s4 = document.createElement('div')
+	s1.dataset.tie = 'modelF:name => value';
+	document.body.appendChild(s1);
+	s2.dataset.tie = 'modelF:age => textContent';
+	document.body.appendChild(s2);
+	s3.dataset.tie = 'modelF:address.street => textContent';
+	document.body.appendChild(s3);
+	s4.dataset.tie = 'modelF:address.apt => textContent';
+	document.body.appendChild(s4);
+	const t = DataTier.ties.create('modelF', user);
 
-	s3.dataset.tie = 'userA:address => textContent';
-	if (s3.textContent !== '') test.fail(new Error('expected the content to be empty, found: ' + s3.textContent));
+	s3.dataset.tie = 'modelF:address => textContent';
+	test.assertEqual(s3.textContent, '');
 	t.model.address = { street: 'street name', apt: 17 };
 	t.model.address.toString = function () {
 		return 'Street: ' + this.street + '; Apt: ' + this.apt
 	};
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
-	if (s4.textContent !== '17') test.fail(new Error('expected the content to be 17'));
-	if (s3.textContent !== t.model.address.toString()) test.fail(new Error('expected the content to be string of object'));
+	test.assertEqual(s4.textContent, '17');
+	test.assertEqual(s3.textContent, t.model.address.toString());
 
-	DataTier.ties.remove('userA');
 	test.pass();
 });
 

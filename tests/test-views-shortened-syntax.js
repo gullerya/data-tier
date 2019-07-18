@@ -7,23 +7,11 @@ const
 
 DataTier.ties.create('userC', user);
 
-const
-	s1 = document.createElement('div'),
-	s2 = document.createElement('div'),
-	s3 = document.createElement('div'),
-	s4 = document.createElement('div');
-
-s1.dataset.tie = 'userC:name';
-document.body.appendChild(s1);
-
-s2.dataset.tie = 'userC:age';
-document.body.appendChild(s2);
-s3.dataset.tie = 'userC:address.street';
-document.body.appendChild(s3);
-s4.dataset.tie = 'userC:address.apt';
-document.body.appendChild(s4);
-
 suite.addTest({ name: 'update view when path changes (deep)' }, async test => {
+	const s1 = document.createElement('div');
+	s1.dataset.tie = 'userC:name';
+	document.body.appendChild(s1);
+
 	await new Promise(resolve => setTimeout(resolve, 0));
 
 	if (s1.textContent !== user.name) test.fail(new Error('preliminary check failed'));

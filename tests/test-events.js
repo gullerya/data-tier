@@ -122,4 +122,25 @@ suite.addTest({ name: 'binding custom event custom value property' }, async test
 	test.pass();
 });
 
+suite.addTest({ name: 'regular event multiple bindings' }, async test => {
+	const testTie = DataTier.ties.create('eventsA', { test: 'some', other: 'thing' });
+
+	const i = document.createElement('input');
+	i.dataset.tie = 'eventsA:test, eventsA:other => customProp';
+	document.body.appendChild(i);
+
+	await waitNextMicrotask();
+	test.assertEqual(i.value, testTie.model.test);
+	test.assertEqual(i.customProp, testTie.model.other);
+
+	i.value = 'text';
+	i.dispatchEvent(new Event('change'));
+
+	await waitNextMicrotask();
+	test.assertEqual(testTie.model.test, i.value);
+	test.assertEqual(testTie.model.other, 'thing');
+
+	test.pass();
+});
+
 suite.run();
