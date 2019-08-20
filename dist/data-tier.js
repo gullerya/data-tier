@@ -14,10 +14,10 @@ export const addRootDocument = rootDocument => {
 
 	initDocumentObserver(rootDocument);
 
-	console.info('DT: scanning the ' + rootDocument + ' for a views...');
+	console.debug('DT: scanning the ' + rootDocument + ' for a views...');
 	const baseDocumentScanStartTime = performance.now();
 	const collected = addTree(rootDocument);
-	console.info('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
+	console.debug('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
 		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms, collected ' +
 		collected + ' element/s)');
 	roots.add(rootDocument);
@@ -558,7 +558,7 @@ function processDomChanges(changes) {
 }
 
 function initDocumentObserver(document) {
-	console.info('DT: initializing DOM observer on ' + document);
+	console.debug('DT: initializing DOM observer on ' + document);
 	const domObserver = new MutationObserver(processDomChanges);
 	domObserver.observe(document, {
 		childList: true,

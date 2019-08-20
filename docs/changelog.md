@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.10.0__
+  * upgraded dependencies (specifically `object-observer` including some important fixes)
+
 * __1.9.0__
   * upgraded dependencies (specifically `object-observer` including some important fixes)
 
