@@ -208,8 +208,8 @@ function getPath(ref, path) {
 	let i = 0, n;
 	for (; i < l; i++) {
 		n = path[i];
-		if (ref && Object.prototype.hasOwnProperty.call(ref, n)) ref = ref[n];
-		else return null;
+		ref = ref[n];
+		if (undefined === ref) return null;
 	}
 	return ref;
 }
