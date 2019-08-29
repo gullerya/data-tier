@@ -297,7 +297,10 @@ suite.addTest({ name: 'Open ShadowDom should be propertly tied even if defined o
 		constructor() {
 			super();
 			this.attachShadow({ mode: 'open' });
-			this.shadowRoot.innerHTML = `<open-shadow-child-test data-tie="tieForShadowDomUndefinedFirst:data => customContent"></open-shadow-child-test>`;
+			this.shadowRoot.innerHTML = `
+				<open-shadow-child-test data-tie="tieForShadowDomUndefinedFirst:data => customContent">
+				</open-shadow-child-test>
+			`;
 		}
 	});
 

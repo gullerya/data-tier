@@ -26,7 +26,7 @@ suite.addTest({ name: 'iFrame added as root to DataTier' }, test => {
 
 	const iframe = document.createElement('iframe');
 	document.body.appendChild(iframe);
-	iframe.contentDocument.body.innerHTML = `<div id="test-a" data-tie="tieForIFrame:data">default content</div>`;
+	iframe.contentDocument.body.innerHTML = '<div id="test-a" data-tie="tieForIFrame:data">default content</div>';
 
 	const e = iframe.contentDocument.getElementById('test-a');
 	let c = e.textContent;
