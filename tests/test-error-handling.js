@@ -26,13 +26,13 @@ suite.addTest({ name: 'accessing in other place the observable that was replaced
 
 	document.body.appendChild(elem);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	data.model.o = inner;
 
 	document.body.removeChild(elem);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	document.body.appendChild(elem);
 

@@ -14,7 +14,7 @@ export const addRootDocument = rootDocument => {
 
 	initDocumentObserver(rootDocument);
 
-	console.debug('DT: scanning the ' + rootDocument + ' for a views...');
+	console.debug('DT: scanning the document for a views...');
 	const baseDocumentScanStartTime = performance.now();
 	addTree(rootDocument);
 	console.debug('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
@@ -39,6 +39,7 @@ const initStartTime = performance.now();
 const
 	initParams = {},
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
+	ELEMENT_PROCESSED_SYMBOL = Symbol('element-processed'),
 	roots = new WeakSet(),
 	views = {},
 	viewsParams = new WeakMap(),
@@ -153,7 +154,7 @@ function Ties() {
 		ensureObservable(model);
 		const result = new Tie(name);
 		ts[name] = result;
-		if (!Object.prototype.hasOwnProperty.call(views, name)) views[name] = {};
+		if (!(name in views)) views[name] = {};
 		result.model = model;
 		return result;
 	};
@@ -286,6 +287,8 @@ function obtainChangeEventName(element) {
 }
 
 function add(element) {
+	element[ELEMENT_PROCESSED_SYMBOL] = true;
+
 	if (element.matches(':defined')) {
 		processAddedElement(element);
 	} else {
@@ -307,13 +310,7 @@ function add(element) {
 	}
 }
 
-const vt = Symbol('visited');
 function processAddedElement(element) {
-	if (element[vt]) {
-		console.warn('visited');
-	}
-	element[vt] = 1;
-
 	const tieParams = extractTieParams(element);
 	let tieName, rawPath, tieViews, pathViews, i = 0, l;
 
@@ -413,44 +410,51 @@ function update(element, changedPath, change) {
 	let param, tie, tieData, newValue, i = 0, l, tp;
 	for (l = parsedParams.length; i < l; i++) {
 		param = parsedParams[i];
-		if (changedPath && param.rawPath.indexOf(changedPath) !== 0) {
-			continue;
-		}
 		tie = ties.get(param.tieName);
-		if (!tie) {
+
+		if (undefined === tie) {
 			continue;
 		}
 
-		tieData = tie.model;
-		if (!change || changedPath !== param.rawPath || typeof change.value === 'undefined') {
-			newValue = getPath(tieData, param.path);
-		} else {
-			newValue = change.value;
-		}
-		if (typeof newValue === 'undefined') {
-			newValue = '';
-		}
-		tp = param.targetProperty;
-		if (tp === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
-			element.checked = newValue;
-		} else if (tp === 'href') {
-			element.href.baseVal = newValue;
-		} else {
-			element[tp] = newValue;
+		if (!changedPath || param.rawPath.indexOf(changedPath) === 0) {
+			tieData = tie.model;
+			if (!change || changedPath !== param.rawPath || typeof change.value === 'undefined') {
+				newValue = getPath(tieData, param.path);
+			} else {
+				newValue = change.value;
+			}
+			if (typeof newValue === 'undefined') {
+				newValue = '';
+			}
+			tp = param.targetProperty;
+			if (tp === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
+				element.checked = newValue;
+			} else if (tp === 'href') {
+				element.href.baseVal = newValue;
+			} else {
+				element[tp] = newValue;
+			}
 		}
 	}
 }
 
 function addTree(rootElement) {
-	const list = rootElement.querySelectorAll('*');
-	let i = list.length;
-
-	if (Node.ELEMENT_NODE === rootElement.nodeType) {
-		add(rootElement);
+	let list;
+	if (rootElement.childElementCount) {
+		list = Array.from(rootElement.querySelectorAll('*'));
+		list.unshift(rootElement);
+	} else {
+		list = [rootElement];
 	}
+
+	let i = list.length, next;
+
 	while (i) {
 		try {
-			add(list[--i]);
+			next = list[--i];
+			if (Node.ELEMENT_NODE === next.nodeType && !next[ELEMENT_PROCESSED_SYMBOL]) {
+				add(next);
+			}
 		} catch (e) {
 			console.error('failed to process/add element', e);
 		}
@@ -544,7 +548,7 @@ function processDomChanges(changes) {
 				node = added[--i2];
 				nodeType = node.nodeType;
 				if (Node.ELEMENT_NODE === nodeType) {
-					add(node);
+					addTree(node);
 				}
 			}
 
@@ -563,7 +567,7 @@ function processDomChanges(changes) {
 }
 
 function initDocumentObserver(document) {
-	console.debug('DT: initializing DOM observer on ' + document);
+	console.debug('DT: initializing DOM observer on document');
 	const domObserver = new MutationObserver(processDomChanges);
 	domObserver.observe(document, {
 		childList: true,

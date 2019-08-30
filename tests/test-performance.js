@@ -18,7 +18,6 @@ customElements.define('movable-element', Movable);
 suite.addTest({ name: 'perf test - many changes in loop', timeout: 60000 }, test => {
 	const pg = document.createElement('div');
 	pg.style.cssText = 'position: relative;width: 200px;height: 200px; border: 1px solid #aaa';
-	document.body.appendChild(pg);
 
 	const movables = [];
 	for (let i = 0; i < 500; i++) {
@@ -32,6 +31,7 @@ suite.addTest({ name: 'perf test - many changes in loop', timeout: 60000 }, test
 		});
 		pg.appendChild(m);
 	}
+	document.body.appendChild(pg);
 
 	customElements.whenDefined('movable-element').then(() => {
 		let moves = 2000;

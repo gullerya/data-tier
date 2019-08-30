@@ -12,12 +12,12 @@ suite.addTest({ name: 'update view when path changes (deep)' }, async test => {
 	s1.dataset.tie = 'viewsA:name => textContent';
 	document.body.appendChild(s1);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (s1.textContent !== user.name) test.fail(new Error('preliminary check failed'));
 	s1.dataset.tie = 'viewsA:address.street => textContent';
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (s1.textContent !== user.address.street) test.fail(new Error('expected the content to be "' + user.address.street + '"; found: "' + s1.textContent + '"'));
 	test.pass();
@@ -30,7 +30,7 @@ suite.addTest({ name: 'adding new view (zero depth) with path defined' }, async 
 	newEl.dataset.tie = 'viewsB:name => textContent';
 	document.body.appendChild(newEl);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (newEl.textContent !== user.name) test.fail(new Error('expected the content to be "' + user.name + '"'));
 	test.pass();
@@ -45,7 +45,7 @@ suite.addTest({ name: 'adding few views (with depth) with paths defined' }, asyn
 	document.body.appendChild(newElA);
 	document.body.appendChild(newElB);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (newElA.textContent !== user.name) test.fail(new Error('expected the content to be "' + user.name + '"'));
 	if (newElB.textContent !== user.address.apt.toString()) test.fail(new Error('expected the content to be "' + user.address.apt + '"'));
@@ -59,7 +59,7 @@ suite.addTest({ name: 'adding checkbox view and verifying its value set correctl
 	document.body.appendChild(newEl);
 	DataTier.ties.create('cbValueTest', { test: true });
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (newEl.checked !== true) test.fail(new Error('expected the value to be "true", but found "' + newEl.checked + '"'));
 	test.pass();
@@ -71,7 +71,7 @@ suite.addTest({ name: 'verify that falsish values (0, false, \'\') are visualize
 	document.body.appendChild(newEl);
 	newEl.dataset.tie = 'falsishTest:test => textContent';
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (newEl.textContent !== '0') test.fail(new Error('expected the value to be "0", but found "' + newEl.textContent + '"'));
 
@@ -93,7 +93,7 @@ suite.addTest({ name: 'adding tie property after the element was added to the DO
 	document.body.appendChild(newEl);
 	newEl.dataset.tie = 'postAdd:test => textContent';
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (newEl.textContent !== 'text') test.fail(new Error('expected the value to be "text", but found ' + newEl.textContent));
 	test.pass();
@@ -106,10 +106,52 @@ suite.addTest({ name: 'mapping element to 2 different ties' }, async test => {
 	newEl.dataset.tie = 'multiTiesA:test => textContent, multiTiesB:else => testContent';
 	document.body.appendChild(newEl);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	if (newEl.textContent !== 'test') test.fail(new Error('expected the value to be "test", but found ' + newEl.textContent));
 	if (newEl.testContent !== 'else') test.fail(new Error('expected the value to be "else", but found ' + newEl.testContent));
+	test.pass();
+});
+
+suite.addTest({ name: 'adding nested DOM tree to see children are tied correctly' }, async test => {
+	const
+		parEl = document.createElement('div'),
+		chilEl = document.createElement('div');
+	DataTier.ties.create('nestedDomTree', { test: 'test' });
+
+	chilEl.dataset.tie = 'nestedDomTree:test';
+	parEl.appendChild(chilEl);
+	document.body.appendChild(parEl);
+
+	await test.waitNextMicrotask();
+
+	if (chilEl.textContent !== 'test') test.fail(new Error('expected the text content to be "test", but found ' + chilEl.textContent));
+	test.pass();
+});
+
+suite.addTest({ name: 'adding view and immediatelly appending to it children' }, async test => {
+	const
+		parEl = document.createElement('div'),
+		chilEl = document.createElement('div');
+	let watchedProperty,
+		chilElVisitedNumber = 0;
+	DataTier.ties.create('nestedAppended', { test: 'test' });
+	Object.defineProperty(chilEl, 'watchedProperty', {
+		set: v => {
+			watchedProperty = v;
+			chilElVisitedNumber++;
+		},
+		get: () => watchedProperty
+	});
+
+	chilEl.dataset.tie = 'nestedAppended:test => watchedProperty';
+	document.body.appendChild(parEl);
+	parEl.appendChild(chilEl);
+
+	await test.waitNextMicrotask();
+
+	if (chilEl.watchedProperty !== 'test') test.fail(new Error('expected the watchedProperty to be "test", but found ' + chilEl.watchedProperty));
+	if (chilElVisitedNumber > 1) test.fail(new Error('element expected to be visited by DataTier only once, but found ' + chilElVisitedNumber));
 	test.pass();
 });
 
