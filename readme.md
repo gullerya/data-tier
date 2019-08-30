@@ -16,15 +16,14 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.11.0__
+  * performance tuning and preventing potential double processing of child nodes
+
 * __1.10.0__
   * upgraded dependencies (specifically `object-observer` including some important fixes)
 
 * __1.9.0__
   * upgraded dependencies (specifically `object-observer` including some important fixes)
-
-* __1.7.1__
-  * fixed [issue #26](https://github.com/gullerya/data-tier/issues/26) - shadow DOM hosts were not tied properly, when collected before than defined
-  * fixed [issue #27](https://github.com/gullerya/data-tier/issues/27) - accedentaly root document DOM was observed twice, leading to annoying warning in logs and wasted CPU cycles
 
 ## Loading the Library
 
