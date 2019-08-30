@@ -60,7 +60,7 @@ customElements.define('open-shadow-child-test', class extends HTMLElement {
 	}
 
 	set customContent(childData) {
-		DataTier.ties.get('tieForShadowDom').model.childData = childData
+		DataTier.ties.get('tieForShadowDom').model.childData = childData;
 	}
 });
 
@@ -83,7 +83,7 @@ customElements.define('open-shadow-parent-test-b', class extends HTMLElement {
 	}
 });
 
-suite.addTest({ name: 'Open ShadowDom should be auto-tied (add element self)' }, async test => {
+suite.addTest({ name: 'Open ShadowDom should be auto-tied (add element self)', skip: false }, async test => {
 	const tieName = 'tieForShadowDomA';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
@@ -106,7 +106,7 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add element self)' },
 	test.pass();
 });
 
-suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, async test => {
+suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)', skip: false }, async test => {
 	const tieName = 'tieForShadowDomB';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
@@ -130,7 +130,7 @@ suite.addTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 	test.pass();
 });
 
-suite.addTest({ name: 'Open ShadowDom should observe DOM Mutations (self being child)' }, async test => {
+suite.addTest({ name: 'Open ShadowDom should observe DOM Mutations (self being child)', skip: false }, async test => {
 	const tieName = 'tieForShadowDomC';
 	DataTier.ties.create(tieName, { data: 'data' });
 
@@ -155,7 +155,7 @@ suite.addTest({ name: 'Open ShadowDom should observe DOM Mutations (self being c
 	test.pass();
 });
 
-suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (element self)' }, async test => {
+suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (element self)', skip: false }, async test => {
 	const tieName = 'tieForClosedShadowDomA';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 	let c;
@@ -190,7 +190,7 @@ suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (ele
 	test.pass();
 });
 
-suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as child of other element)' }, async test => {
+suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as child of other element)', skip: false }, async test => {
 	const tieName = 'tieForClosedShadowDomB';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 	let c;
@@ -227,7 +227,7 @@ suite.addTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as 
 	test.pass();
 });
 
-suite.addTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being child)' }, async test => {
+suite.addTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being child)', skip: false }, async test => {
 	const tieName = 'tieForClosedShadowDomC';
 	DataTier.ties.create(tieName, { data: 'data' });
 
@@ -254,7 +254,7 @@ suite.addTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being
 
 // nested tied shadow DOMs
 
-suite.addTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied)' }, async test => {
+suite.addTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied)', skip: false }, async test => {
 	const tieName = 'tieForShadowDom';
 	DataTier.ties.create(tieName, { data: 'custom content' });
 
@@ -268,7 +268,7 @@ suite.addTest({ name: 'Open ShadowDom should be able to have another custom elem
 	test.pass();
 });
 
-suite.addTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied) - self as child' }, async test => {
+suite.addTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied) - self as child', skip: false }, async test => {
 	const tieName = 'tieForOpenShadowDomParentB';
 	DataTier.ties.create(tieName, { data: 'custom content' });
 
@@ -284,7 +284,7 @@ suite.addTest({ name: 'Open ShadowDom should be able to have another custom elem
 	test.pass();
 });
 
-suite.addTest({ name: 'Open ShadowDom should be propertly tied even if defined only after the tying' }, async test => {
+suite.addTest({ name: 'Open ShadowDom should be propertly tied even if defined only after the tying', skip: false }, async test => {
 	const tieName = 'tieForShadowDomUndefinedFirst';
 	DataTier.ties.create(tieName, { data: 'custom content' });
 
@@ -307,6 +307,31 @@ suite.addTest({ name: 'Open ShadowDom should be propertly tied even if defined o
 	await test.waitNextMicrotask();
 	const it = ue.shadowRoot.firstElementChild.shadowRoot.firstElementChild.textContent;
 	test.assertEqual(it, 'custom content');
+
+	test.pass();
+});
+
+suite.addTest({ name: 'Shadow Dom already has inner element with Shadow DOM themselves', skip: false }, async test => {
+	customElements.define('shadow-in-shadow-child', class extends HTMLElement {
+		constructor() {
+			super();
+			this.attachShadow({ mode: 'open' });
+		}
+	});
+
+	customElements.define('shadow-in-shadow-parent', class extends HTMLElement {
+		constructor() {
+			super();
+			this.attachShadow({ mode: 'open' }).innerHTML = '';
+		}
+
+		connectedCallback() {
+			this.appendChild(document.createElement('shadow-in-shadow-child'));
+			this.appendChild(document.createElement('shadow-in-shadow-child'));
+		}
+	});
+
+	document.body.appendChild(document.createElement('shadow-in-shadow-parent'));
 
 	test.pass();
 });

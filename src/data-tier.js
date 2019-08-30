@@ -16,10 +16,9 @@ export const addRootDocument = rootDocument => {
 
 	console.debug('DT: scanning the ' + rootDocument + ' for a views...');
 	const baseDocumentScanStartTime = performance.now();
-	const collected = addTree(rootDocument);
+	addTree(rootDocument);
 	console.debug('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
-		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms, collected ' +
-		collected + ' element/s)');
+		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms');
 	roots.add(rootDocument);
 	return true;
 };
@@ -90,8 +89,7 @@ class Tie {
 			tieViews = views[tieName],
 			tiedPaths = Object.keys(tieViews),
 			fullUpdatesMap = {};
-		let i, l, change, changedObject, arrPath, changedPath, pl, tiedPath, pathViews, pvl,
-			arrayFullUpdate;
+		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
 
 		if (!tiedPaths.length) return;
 
@@ -108,11 +106,18 @@ class Tie {
 					continue;
 				} else {
 					fullUpdatesMap[changedPath] = changedObject;
-					arrayFullUpdate = true;
+					change = null;
 				}
 			} else {
-				changedPath = arrPath && arrPath.length ? arrPath.join('.') : '';
-				arrayFullUpdate = false;
+				const apl = arrPath.length;
+				if (apl > 1) {
+					for (let k = 0; k < apl - 1; k++) {
+						changedPath += arrPath[k] + '.';
+					}
+					changedPath += arrPath[apl - 1];
+				} else if (apl === 1) {
+					changedPath = arrPath[0];
+				}
 			}
 
 			pl = tiedPaths.length;
@@ -122,7 +127,7 @@ class Tie {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
 					while (pvl) {
-						update(pathViews[--pvl], changedPath, !arrayFullUpdate ? change : null);
+						update(pathViews[--pvl], changedPath, change);
 					}
 				}
 			}
@@ -302,7 +307,13 @@ function add(element) {
 	}
 }
 
+const vt = Symbol('visited');
 function processAddedElement(element) {
+	if (element[vt]) {
+		console.warn('visited');
+	}
+	element[vt] = 1;
+
 	const tieParams = extractTieParams(element);
 	let tieName, rawPath, tieViews, pathViews, i = 0, l;
 
@@ -432,12 +443,10 @@ function update(element, changedPath, change) {
 
 function addTree(rootElement) {
 	const list = rootElement.querySelectorAll('*');
-	let i = list.length,
-		result = list.length;
+	let i = list.length;
 
 	if (Node.ELEMENT_NODE === rootElement.nodeType) {
 		add(rootElement);
-		result++;
 	}
 	while (i) {
 		try {
@@ -446,8 +455,6 @@ function addTree(rootElement) {
 			console.error('failed to process/add element', e);
 		}
 	}
-
-	return result;
 }
 
 function discard(rootElement) {
@@ -484,7 +491,7 @@ function discard(rootElement) {
 	}
 }
 
-function move(element, attributeName, oldParam, newParam) {
+function move(element, oldParam, newParam) {
 	let tieParams, i, l, tieParam, tieViews, pathViews, index;
 	if (oldParam) {
 		tieParams = viewsParams.get(element);
@@ -527,10 +534,8 @@ function processDomChanges(changes) {
 		changeType = change.type;
 		if (changeType === 'attributes') {
 			attributeName = change.attributeName;
-			if (attributeName === 'data-tie') {
-				node = change.target;
-				move(node, attributeName, change.oldValue, node.getAttribute(attributeName));
-			}
+			node = change.target;
+			move(node, change.oldValue, node.getAttribute(attributeName));
 		} else if (changeType === 'childList') {
 			//	process added nodes
 			added = change.addedNodes;
@@ -539,7 +544,7 @@ function processDomChanges(changes) {
 				node = added[--i2];
 				nodeType = node.nodeType;
 				if (Node.ELEMENT_NODE === nodeType) {
-					addTree(node);
+					add(node);
 				}
 			}
 
