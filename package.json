@@ -40,15 +40,15 @@
     "build": "node ./build/tools/build-dist.js"
   },
   "dependencies": {
-    "@gullerya/observable": "^2.3.0",
-    "object-observer": "^2.3.0"
+    "@gullerya/observable": "^2.4.1",
+    "object-observer": "^2.4.1"
   },
   "devDependencies": {
-    "eslint": "^6.2.1",
-    "babel-eslint": "^10.0.2",
-    "eslint-config-standard": "^14.0.0",
+    "eslint": "^6.5.1",
+    "babel-eslint": "^10.0.3",
+    "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "fs-extra": "^8.1.0",
