@@ -16,13 +16,13 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __1.12.0__
+  * upgraded dependencies (specifically `object-observer` including some important fixes)
+
 * __1.11.0__
   * performance tuning and preventing potential double processing of child nodes
 
 * __1.10.0__
-  * upgraded dependencies (specifically `object-observer` including some important fixes)
-
-* __1.9.0__
   * upgraded dependencies (specifically `object-observer` including some important fixes)
 
 ## Loading the Library

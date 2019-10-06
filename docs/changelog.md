@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.12.0__
+  * upgraded dependencies (specifically `object-observer` including some important fixes)
+
 * __1.11.0__
   * performance tuning and preventing potential double processing of child nodes
 
