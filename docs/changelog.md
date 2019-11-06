@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.12.1__
+  * moved to newer version of `just-test`, providing real tests in CI and coverage now
+
 * __1.12.0__
   * upgraded dependencies (specifically `object-observer` including some important fixes)
 
