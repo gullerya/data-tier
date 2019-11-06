@@ -37,7 +37,8 @@
   },
   "scripts": {
     "eslint": "eslint -c ./build/.eslintrc.json --ignore-path ./build/.eslintignore ./src/**/*.js",
-    "build": "node ./build/tools/build-dist.js"
+    "build": "node ./build/tools/build-dist.js",
+    "test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
   },
   "dependencies": {
     "@gullerya/observable": "^2.4.2",
@@ -51,7 +52,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "fs-extra": "^8.1.0",
-    "just-test": "^1.4.0",
+    "just-test": "^1.6.0",
     "uglify-es": "^3.3.9"
   }
 }

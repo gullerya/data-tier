@@ -3,16 +3,15 @@ import * as DataTier from '../dist/data-tier.js';
 
 const suite = createSuite({ name: 'Testing erroneous cases' });
 
-suite.addTest({ name: 'adding view with empty tie definition' }, test => {
+suite.runTest({ name: 'adding view with empty tie definition' }, () => {
 	const elem = document.createElement('div');
 
 	elem.dataset.tie = '';
 
 	document.body.appendChild(elem);
-	test.pass();
 });
 
-suite.addTest({ name: 'accessing in other place the observable that was replaced' }, async test => {
+suite.runTest({ name: 'accessing in other place the observable that was replaced' }, async test => {
 	const
 		inner = {},
 		raw = { o: inner },
@@ -35,8 +34,4 @@ suite.addTest({ name: 'accessing in other place the observable that was replaced
 	await test.waitNextMicrotask();
 
 	document.body.appendChild(elem);
-
-	test.pass();
 });
-
-suite.run();

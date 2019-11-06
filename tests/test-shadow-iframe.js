@@ -3,7 +3,7 @@ import * as DataTier from '../dist/data-tier.js';
 
 const suite = createSuite({ name: 'Testing Shadowing in iFrame' });
 
-suite.addTest({ name: 'iframe as such should not be influenced by the DataTier' }, test => {
+suite.runTest({ name: 'iframe as such should not be influenced by the DataTier' }, test => {
 	const tieName = 'tieForIFrame';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
@@ -16,11 +16,9 @@ suite.addTest({ name: 'iframe as such should not be influenced by the DataTier' 
 	if (c !== 'default content') test.fail('expected textContent to be "default content" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
-
-	test.pass();
 });
 
-suite.addTest({ name: 'iFrame added as root to DataTier' }, test => {
+suite.runTest({ name: 'iFrame added as root to DataTier' }, test => {
 	const tieName = 'tieForIFrame';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
@@ -50,8 +48,4 @@ suite.addTest({ name: 'iFrame added as root to DataTier' }, test => {
 	if (c !== 'change') test.fail('expected textContent to be "change" but found "' + c + '"');
 
 	DataTier.ties.remove(tie);
-
-	test.pass();
 });
-
-suite.run();

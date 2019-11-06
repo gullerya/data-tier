@@ -15,7 +15,7 @@ class Movable extends HTMLElement {
 
 customElements.define('movable-element', Movable);
 
-suite.addTest({ name: 'perf test - many changes in loop', timeout: 60000 }, test => {
+suite.runTest({ name: 'perf test - many changes in loop', timeout: 60000 }, async test => {
 	const pg = document.createElement('div');
 	pg.style.cssText = 'position: relative;width: 200px;height: 200px; border: 1px solid #aaa';
 
@@ -33,30 +33,30 @@ suite.addTest({ name: 'perf test - many changes in loop', timeout: 60000 }, test
 	}
 	document.body.appendChild(pg);
 
-	customElements.whenDefined('movable-element').then(() => {
-		let moves = 2000;
+	return new Promise(resolve => {
+		customElements.whenDefined('movable-element').then(() => {
+			let moves = 2000;
 
-		function render() {
-			movables.forEach(movable => {
-				const
-					m = movable.t.model,
-					top = m.top,
-					left = m.left;
-				if (top + 10 > 200 || top < 0) movable.xi *= -1;
-				if (left + 10 > 200 || left < 0) movable.yi *= -1;
-				m.top += movable.xi;
-				m.left += movable.yi;
-			});
+			function render() {
+				movables.forEach(movable => {
+					const
+						m = movable.t.model,
+						top = m.top,
+						left = m.left;
+					if (top + 10 > 200 || top < 0) movable.xi *= -1;
+					if (left + 10 > 200 || left < 0) movable.yi *= -1;
+					m.top += movable.xi;
+					m.left += movable.yi;
+				});
 
-			if (--moves > 0) {
-				requestAnimationFrame(render);
-			} else {
-				test.pass();
+				if (--moves > 0) {
+					requestAnimationFrame(render);
+				} else {
+					resolve();
+				}
 			}
-		}
 
-		requestAnimationFrame(render);
+			requestAnimationFrame(render);
+		});
 	});
 });
-
-suite.run();

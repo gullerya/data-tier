@@ -3,7 +3,7 @@ import * as DataTier from '../dist/data-tier.js';
 
 const suite = createSuite({ name: 'Testing Tie APIs' });
 
-suite.addTest({ name: 'add/remove Tie - positive simple flow' }, test => {
+suite.runTest({ name: 'add/remove Tie - positive simple flow' }, test => {
 	const tieName = 'tieApiPosTest';
 	let tie = DataTier.ties.get(tieName);
 
@@ -20,11 +20,9 @@ suite.addTest({ name: 'add/remove Tie - positive simple flow' }, test => {
 	if (DataTier.ties.get(tieName)) test.fail('expected the tie to be removed');
 
 	DataTier.ties.remove('someNonExistingTieNameShouldNotFailTheFlow');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'create Tie - negative tests' }, test => {
+suite.runTest({ name: 'create Tie - negative tests' }, test => {
 	try {
 		DataTier.ties.create();
 		test.fail('should not be able to create tie without name');
@@ -72,11 +70,9 @@ suite.addTest({ name: 'create Tie - negative tests' }, test => {
 	} finally {
 		DataTier.ties.remove('validTieA');
 	}
-
-	test.pass();
 });
 
-suite.addTest({ name: 'get Tie - negative tests' }, test => {
+suite.runTest({ name: 'get Tie - negative tests' }, test => {
 	try {
 		DataTier.ties.get();
 		test.fail('should not be able to get tie without name');
@@ -100,11 +96,9 @@ suite.addTest({ name: 'get Tie - negative tests' }, test => {
 		test.fail('should not be able to get tie with improper name');
 	} catch (e) {
 	}
-
-	test.pass();
 });
 
-suite.addTest({ name: 'remove Tie - negative tests' }, test => {
+suite.runTest({ name: 'remove Tie - negative tests' }, test => {
 	try {
 		DataTier.ties.remove();
 		test.fail('should not be able to remove tie without name');
@@ -128,11 +122,9 @@ suite.addTest({ name: 'remove Tie - negative tests' }, test => {
 		test.fail('should not be able to remove tie with improper name');
 	} catch (e) {
 	}
-
-	test.pass();
 });
 
-suite.addTest({ name: 'root APIs - negative tests' }, test => {
+suite.runTest({ name: 'root APIs - negative tests' }, test => {
 	try {
 		DataTier.addRootDocument();
 		test.fail('should not be able to add undefined root document');
@@ -161,8 +153,4 @@ suite.addTest({ name: 'root APIs - negative tests' }, test => {
 	test.assertTrue(removeResult);
 	removeResult = DataTier.removeRootDocument(rootDocument);
 	test.assertFalse(removeResult);
-
-	test.pass();
 });
-
-suite.run();

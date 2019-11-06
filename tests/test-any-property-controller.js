@@ -9,14 +9,12 @@ const suite = createSuite({ name: 'Testing AnyProperty Controller' }),
 
 DataTier.ties.create('testAnyPropA', model);
 
-suite.addTest({ name: 'testing any-property controller: binding test A' }, test => {
+suite.runTest({ name: 'testing any-property controller: binding test A' }, async test => {
 	const e = document.createElement('div');
 	e.dataset.tie = 'testAnyPropA:text => textContent';
 	document.body.appendChild(e);
-	setTimeout(function () {
-		if (e.textContent !== model.text) test.fail('textContent of the element expected to be "' + model.text + '", found: ' + e.textContent);
-		test.pass();
-	}, 0)
-});
 
-suite.run();
+	await test.waitNextMicrotask();
+
+	if (e.textContent !== model.text) throw new Error('textContent of the element expected to be "' + model.text + '", found: ' + e.textContent);
+});

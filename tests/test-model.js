@@ -5,7 +5,7 @@ const
 	suite = createSuite({ name: 'Testing model changes' }),
 	user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } };
 
-suite.addTest({ name: 'new model bound' }, async test => {
+suite.runTest({ name: 'new model bound' }, async test => {
 	DataTier.ties.create('modelA', user);
 
 	const
@@ -28,11 +28,9 @@ suite.addTest({ name: 'new model bound' }, async test => {
 	test.assertEqual(s2.textContent, user.age.toString());
 	test.assertEqual(s3.textContent, user.address.street);
 	test.assertEqual(s4.textContent, user.address.apt.toString());
-
-	test.pass();
 });
 
-suite.addTest({ name: 'primitive model changes' }, async test => {
+suite.runTest({ name: 'primitive model changes' }, async test => {
 	DataTier.ties.create('modelB', user);
 
 	const s1 = document.createElement('input');
@@ -44,11 +42,9 @@ suite.addTest({ name: 'primitive model changes' }, async test => {
 	test.assertEqual(s1.value, user.name);
 	DataTier.ties.get('modelB').model.name = 'other';
 	test.assertEqual(s1.value, 'other');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'deep model changes (graph replace)' }, async test => {
+suite.runTest({ name: 'deep model changes (graph replace)' }, async test => {
 	DataTier.ties.create('modelC', user);
 
 	const s3 = document.createElement('div');
@@ -61,11 +57,9 @@ suite.addTest({ name: 'deep model changes (graph replace)' }, async test => {
 	DataTier.ties.get('modelC').model.address.street = 'Street';
 
 	test.assertEqual(s3.textContent, DataTier.ties.get('modelC').model.address.street);
-
-	test.pass();
 });
 
-suite.addTest({ name: 'full model replace (to null)' }, test => {
+suite.runTest({ name: 'full model replace (to null)' }, test => {
 	const
 		s1 = document.createElement('input'),
 		s2 = document.createElement('div'),
@@ -86,11 +80,9 @@ suite.addTest({ name: 'full model replace (to null)' }, test => {
 	test.assertEqual(s2.textContent, '');
 	test.assertEqual(s3.textContent, '');
 	test.assertEqual(s4.textContent, '');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'full model replace (to new data)' }, async test => {
+suite.runTest({ name: 'full model replace (to new data)' }, async test => {
 	const
 		s1 = document.createElement('input'),
 		s2 = document.createElement('div'),
@@ -114,11 +106,9 @@ suite.addTest({ name: 'full model replace (to new data)' }, async test => {
 	test.assertEqual(s2.textContent, '6');
 	test.assertEqual(s3.textContent, '');
 	test.assertEqual(s4.textContent, '');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'binding view to object' }, async test => {
+suite.runTest({ name: 'binding view to object' }, async test => {
 	const
 		s1 = document.createElement('input'),
 		s2 = document.createElement('div'),
@@ -145,8 +135,4 @@ suite.addTest({ name: 'binding view to object' }, async test => {
 
 	test.assertEqual(s4.textContent, '17');
 	test.assertEqual(s3.textContent, t.model.address.toString());
-
-	test.pass();
 });
-
-suite.run();

@@ -16,20 +16,16 @@ const suite = createSuite({ name: 'Testing functions dynamic binding' }),
 
 DataTier.ties.create('functionalTest', user);
 
-suite.addTest({ name: 'bind onclick logic' }, async test => {
+suite.runTest({ name: 'bind onclick logic' }, async test => {
 	const d = document.createElement('div');
 	d.dataset.tie = 'functionalTest:clickHandler => onclick, functionalTest:name => textContent';
 	document.body.appendChild(d);
 
-	await new Promise(resolve => setTimeout(resolve, 0));
+	await test.waitNextMicrotask();
 
 	d.click();
 	if (d.textContent !== 'click again' || clickCounter !== 1) test.fail('expected to register result of a first click');
 
 	d.click();
 	if (clickCounter !== 3) test.fail('expected to register result of a second click');
-
-	test.pass();
 });
-
-suite.run();

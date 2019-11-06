@@ -11,7 +11,7 @@ function waitNextMicrotask() {
 	});
 }
 
-suite.addTest({ name: 'binding/unbinding default event' }, async test => {
+suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 	const i = document.createElement('input');
 	let event;
 	i.dataset.tie = 'eventsTest:someA';
@@ -36,11 +36,9 @@ suite.addTest({ name: 'binding/unbinding default event' }, async test => {
 	i.dispatchEvent(event);
 
 	if (testTie.model.someA !== 'text') test.fail('expected the value to stay "text" in tied model, found "' + testTie.model.someA + '"');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'binding/unbinding default event (checkbox)' }, async test => {
+suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test => {
 	const i = document.createElement('input');
 	let event;
 	i.type = 'checkbox';
@@ -66,11 +64,9 @@ suite.addTest({ name: 'binding/unbinding default event (checkbox)' }, async test
 	i.dispatchEvent(event);
 
 	if (testTie.model.bool !== true) test.fail('expected the value to stay "true" in tied model, found "' + testTie.model.bool + '"');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'binding/unbinding custom event default value property' }, async test => {
+suite.runTest({ name: 'binding/unbinding custom event default value property' }, async test => {
 	const i = document.createElement('input');
 	i[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
 	i.dataset.tie = 'eventsTest:someB';
@@ -95,11 +91,9 @@ suite.addTest({ name: 'binding/unbinding custom event default value property' },
 	i.dispatchEvent(event);
 
 	if (testTie.model.someB !== 'text') test.fail('expected the value to stay "text" in tied model, found "' + testTie.model.someB + '"');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'binding custom event custom value property' }, async test => {
+suite.runTest({ name: 'binding custom event custom value property' }, async test => {
 	testTie.model.someC = 'new value';
 
 	const d = document.createElement('div');
@@ -117,11 +111,9 @@ suite.addTest({ name: 'binding custom event custom value property' }, async test
 	d.dispatchEvent(new Event('customChange'));
 
 	if (testTie.model.someC !== 'text') test.fail('expected to have value "text" in tied model, found "' + testTie.model.someC + '"');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'regular event/value multiple bindings' }, async test => {
+suite.runTest({ name: 'regular event/value multiple bindings' }, async test => {
 	const testTie = DataTier.ties.create('eventsA', { test: 'some', other: 'thing' });
 
 	const i = document.createElement('input');
@@ -138,11 +130,9 @@ suite.addTest({ name: 'regular event/value multiple bindings' }, async test => {
 	await waitNextMicrotask();
 	test.assertEqual(testTie.model.test, i.value);
 	test.assertEqual(testTie.model.other, 'thing');
-
-	test.pass();
 });
 
-suite.addTest({ name: 'custom event/value multiple bindings' }, async test => {
+suite.runTest({ name: 'custom event/value multiple bindings' }, async test => {
 	const testTie = DataTier.ties.create('eventsB', { test: 'some', other: 'thing' });
 
 	const d = document.createElement('input');
@@ -161,8 +151,4 @@ suite.addTest({ name: 'custom event/value multiple bindings' }, async test => {
 	await waitNextMicrotask();
 	test.assertEqual(testTie.model.test, d.customValue);
 	test.assertEqual(testTie.model.other, 'thing');
-
-	test.pass();
 });
-
-suite.run();
