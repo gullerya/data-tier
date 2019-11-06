@@ -1,10 +1,9 @@
 import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
-import { Observable } from '../dist/object-observer.js';
 
 const
 	suite = createSuite({ name: 'Testing events' }),
-	testTie = DataTier.ties.create('eventsTest', Observable.from({}));
+	testTie = DataTier.ties.create('eventsTest', {});
 
 function waitNextMicrotask() {
 	return new Promise(resolve => {
