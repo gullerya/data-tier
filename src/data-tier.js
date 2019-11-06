@@ -37,7 +37,6 @@ console.info('DT: starting initialization...');
 const initStartTime = performance.now();
 
 const
-	initParams = {},
 	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
 	ELEMENT_PROCESSED_SYMBOL = Symbol('element-processed'),
 	roots = new WeakSet(),
@@ -45,20 +44,6 @@ const
 	viewsParams = new WeakMap(),
 	PARAM_SPLITTER = /\s*=>\s*/,
 	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/;
-
-//  read init params
-Array
-	.from(new URL(import.meta.url).searchParams)
-	.forEach(entryPair => {
-		initParams[entryPair[0]] = entryPair[1]
-	});
-
-if (Object.keys(initParams).length) {
-	console.info('DT: init params are as following');
-	console.dir(initParams);
-} else {
-	console.info('DT: no init params found');
-}
 
 class Tie {
 	constructor(name) {
