@@ -5,37 +5,31 @@ const
 	suite = createSuite({ name: 'Testing events' }),
 	testTie = DataTier.ties.create('eventsTest', {});
 
-function waitNextMicrotask() {
-	return new Promise(resolve => {
-		resolve();
-	});
-}
-
 suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 	const i = document.createElement('input');
 	let event;
 	i.dataset.tie = 'eventsTest:someA';
 	document.body.appendChild(i);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 
-	if (i.value !== '') test.fail('expected to have empty value, found "' + i.value + '"');
+	test.assertEqual(i.value, '');
 	i.value = 'text';
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	if (testTie.model.someA !== 'text') test.fail('expected to have value "text" in tied model, found "' + testTie.model.someA + '"');
+	test.assertEqual(testTie.model.someA, 'text');
 
 	//  removal of element should untie
 	document.body.removeChild(i);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 
 	i.value = 'changed text';
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	if (testTie.model.someA !== 'text') test.fail('expected the value to stay "text" in tied model, found "' + testTie.model.someA + '"');
+	test.assertEqual(testTie.model.someA, 'text');
 });
 
 suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test => {
@@ -45,25 +39,25 @@ suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test
 	i.dataset.tie = 'eventsTest:bool';
 	document.body.appendChild(i);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 
-	if (i.value !== 'on') test.fail('expected to have value "on" (checkbox special), found "' + i.value + '"');
+	test.assertEqual(i.value, 'on');
 	i.checked = true;
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	if (testTie.model.bool !== true) test.fail('expected to have value "true" in tied model, found "' + testTie.model.bool + '"');
+	test.assertTrue(testTie.model.bool);
 
 	//  removal of element should untie
 	document.body.removeChild(i);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 
 	i.checked = false;
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	if (testTie.model.bool !== true) test.fail('expected the value to stay "true" in tied model, found "' + testTie.model.bool + '"');
+	test.assertTrue(testTie.model.bool);
 });
 
 suite.runTest({ name: 'binding/unbinding custom event default value property' }, async test => {
@@ -72,25 +66,25 @@ suite.runTest({ name: 'binding/unbinding custom event default value property' },
 	i.dataset.tie = 'eventsTest:someB';
 	document.body.appendChild(i);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 
-	if (i.value !== '') test.fail('expected to have empty value, found "' + i.value + '"');
+	test.assertEqual(i.value, '');
 	i.value = 'text';
 	let event = new Event('customChange');
 	i.dispatchEvent(event);
 
-	if (testTie.model.someB !== 'text') test.fail('expected to have value "text" in tied model, found "' + testTie.model.someB + '"');
+	test.assertEqual(testTie.model.someB, 'text');
 
 	//  removal of element should untie
 	document.body.removeChild(i);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 
 	i.value = 'changed text';
 	event = new Event('customChange');
 	i.dispatchEvent(event);
 
-	if (testTie.model.someB !== 'text') test.fail('expected the value to stay "text" in tied model, found "' + testTie.model.someB + '"');
+	test.assertEqual(testTie.model.someB, 'text');
 });
 
 suite.runTest({ name: 'binding custom event custom value property' }, async test => {
@@ -104,13 +98,13 @@ suite.runTest({ name: 'binding custom event custom value property' }, async test
 	d.dataset.tie = 'eventsTest:someC';
 	document.body.appendChild(d);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 
-	if (d.customValue !== testTie.model.someC) test.fail('expected to have "' + testTie.model.someC + '", found "' + d.customValue + '"');
+	test.assertEqual(d.customValue, testTie.model.someC);
 	d.customValue = 'text';
 	d.dispatchEvent(new Event('customChange'));
 
-	if (testTie.model.someC !== 'text') test.fail('expected to have value "text" in tied model, found "' + testTie.model.someC + '"');
+	test.assertEqual(testTie.model.someC, 'text');
 });
 
 suite.runTest({ name: 'regular event/value multiple bindings' }, async test => {
@@ -120,14 +114,14 @@ suite.runTest({ name: 'regular event/value multiple bindings' }, async test => {
 	i.dataset.tie = 'eventsA:test, eventsA:other => customProp';
 	document.body.appendChild(i);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 	test.assertEqual(i.value, testTie.model.test);
 	test.assertEqual(i.customProp, testTie.model.other);
 
 	i.value = 'text';
 	i.dispatchEvent(new Event('change'));
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 	test.assertEqual(testTie.model.test, i.value);
 	test.assertEqual(testTie.model.other, 'thing');
 });
@@ -141,14 +135,61 @@ suite.runTest({ name: 'custom event/value multiple bindings' }, async test => {
 	d.dataset.tie = 'eventsB:test, eventsB:other => customProp';
 	document.body.appendChild(d);
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 	test.assertEqual(d.customValue, testTie.model.test);
 	test.assertEqual(d.customProp, testTie.model.other);
 
 	d.customValue = 'text';
 	d.dispatchEvent(new Event('customChange'));
 
-	await waitNextMicrotask();
+	await test.waitNextMicrotask();
 	test.assertEqual(testTie.model.test, d.customValue);
 	test.assertEqual(testTie.model.other, 'thing');
+});
+
+suite.runTest('deeply nested model update', async test => {
+	const testModel = DataTier.ties.create('deepNestModelUpdate', {}).model;
+
+	const i = document.createElement('input');
+	i.dataset.tie = 'deepNestModelUpdate:one.two.three';
+	document.body.appendChild(i);
+
+	await test.waitNextMicrotask();
+
+	i.value = 'new value';
+	i.dispatchEvent(new Event('change'));
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(testModel.one && testModel.one.two && testModel.one.two.three, 'new value');
+});
+
+suite.runTest('removed view is untied', async test => {
+	const testModel = DataTier.ties.create('untieRemoved', { test: 'test' }).model;
+
+	const i = document.createElement('input');
+	i.dataset.tie = 'untieRemoved:test';
+	document.body.appendChild(i);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(i.value, 'test');
+
+	i.value = 'else';
+	i.dispatchEvent(new Event('change'));
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(i.value, 'else');
+
+	document.body.removeChild(i);
+
+	await test.waitNextMicrotask();
+
+	i.value = 'next';
+	i.dispatchEvent(new Event('change'));
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(testModel.test, 'else');
 });

@@ -144,3 +144,17 @@ suite.runTest({ name: 'adding view and immediatelly appending to it children' },
 	if (chilEl.watchedProperty !== 'test') test.fail(new Error('expected the watchedProperty to be "test", but found ' + chilEl.watchedProperty));
 	if (chilElVisitedNumber > 1) test.fail(new Error('element expected to be visited by DataTier only once, but found ' + chilElVisitedNumber));
 });
+
+suite.runTest('multiparam (with occasional comma duplicate)', async test => {
+	const d = document.createElement('div');
+	document.body.appendChild(d);
+
+	DataTier.ties.create('multiParamWithCommas', { test: 'test' });
+
+	d.dataset.tie = 'multiParamWithCommas:test,, multiParamWithCommas:test => data';
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(d.textContent, 'test');
+	test.assertEqual(d.data, 'test');
+});

@@ -197,12 +197,12 @@ function getPath(ref, path) {
 	if (!ref) return null;
 	const l = path.length;
 	let i = 0, n;
-	for (; i < l; i++) {
+	for (; i < l - 1; i++) {
 		n = path[i];
 		ref = ref[n];
-		if (undefined === ref) return null;
+		if (ref === null || ref === undefined) return null;
 	}
-	return ref;
+	return ref[path[i]];
 }
 
 function setPath(ref, path, value) {
@@ -211,12 +211,10 @@ function setPath(ref, path, value) {
 	let i = 0, n;
 	for (; i < l - 1; i++) {
 		n = path[i];
-		if (ref[n] && typeof ref[n] === 'object') {
-			ref = ref[n];
-		} else {
-			ref = {};
-			ref[n] = ref;
+		if (!ref[n] || typeof ref[n] !== 'object') {
+			ref[n] = {};
 		}
+		ref = ref[n]
 	}
 	ref[path[i]] = value;
 }
@@ -337,7 +335,7 @@ function parseTiePropertyParam(rawParam, element) {
 	//  process 'from' part
 	const origin = parts[0].split(':');
 	if (!origin.length || origin.length > 2 || !origin[0]) {
-		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example): "orders:0.address.street => textContent"');
+		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example of multi param, one with default target): "orders:0.address.street, orders:0.address.apt => title"');
 	}
 
 	const rawPath = origin.length > 1 ? origin[1] : '';
@@ -349,25 +347,29 @@ function parseTiePropertyParam(rawParam, element) {
 	};
 }
 
-//	syntax example: data-tie="orders:0.address.street => textContent, orders:0.address.apt => title"
+//	syntax example (first param is a shortcut to default): data-tie="orders:0.address.street, orders:0.address.apt => title"
 function parseTiePropertiesParam(multiParam, element) {
-	if (!multiParam || typeof multiParam !== 'string') {
-		throw new Error('invalid tie value; found: "' + multiParam +
-			'"; expected (example): "orders:0.address.street => textContent, orders:0.address.apt => title"');
-	}
 	const
 		result = [],
+		keysTest = {},
 		rawParams = multiParam.split(MULTI_PARAMS_SPLITTER),
 		l = rawParams.length;
-	let i = 0;
+	let i = 0, next, parsedParam;
 	for (; i < l; i++) {
-		if (!rawParams[i]) {
+		next = rawParams[i];
+		if (!next) {
 			continue;
 		}
 		try {
-			result.push(parseTiePropertyParam(rawParams[i], element));
+			parsedParam = parseTiePropertyParam(next, element);
+			if (parsedParam.targetProperty in keysTest) {
+				console.error('elements\'s property "' + parsedParam.targetProperty + '" tied more than once; all but first ties dismissed');
+			} else {
+				result.push(parsedParam);
+				keysTest[parsedParam.targetProperty] = true;
+			}
 		} catch (e) {
-			console.error('failed to parse one of a multi param parts', e)
+			console.error('failed to parse one of a multi param parts (' + next + '), skipping it', e)
 		}
 	}
 	return result;

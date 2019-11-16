@@ -136,3 +136,49 @@ suite.runTest({ name: 'binding view to object' }, async test => {
 	test.assertEqual(s4.textContent, '17');
 	test.assertEqual(s3.textContent, t.model.address.toString());
 });
+
+suite.runTest('deep model, NULL base', async test => {
+	DataTier.ties.create('testNullBase', {
+		address: null
+	});
+	const
+		d1 = document.createElement('div'),
+		d2 = document.createElement('div'),
+		d3 = document.createElement('div');
+	d1.dataset.tie = 'testNullBase';
+	d2.dataset.tie = 'testNullBase:address';
+	d3.dataset.tie = 'testNullBase:address.city';
+	document.body.appendChild(d1);
+	document.body.appendChild(d2);
+	document.body.appendChild(d3);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(d1.textContent, '');
+	test.assertEqual(d2.textContent, '');
+	test.assertEqual(d3.textContent, '');
+});
+
+suite.runTest('deep model, NULL IN path', async test => {
+	DataTier.ties.create('testNullIn', {
+		user: {
+			address: null
+		}
+	});
+	const
+		d1 = document.createElement('div'),
+		d2 = document.createElement('div'),
+		d3 = document.createElement('div');
+	d1.dataset.tie = 'testNullIn';
+	d2.dataset.tie = 'testNullIn:user.address';
+	d3.dataset.tie = 'testNullIn:user.address.city';
+	document.body.appendChild(d1);
+	document.body.appendChild(d2);
+	document.body.appendChild(d3);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(d1.textContent, '');
+	test.assertEqual(d2.textContent, '');
+	test.assertEqual(d3.textContent, '');
+});
