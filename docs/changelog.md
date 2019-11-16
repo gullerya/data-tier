@@ -3,6 +3,11 @@
 Modern
 ------
 
+* __1.13.1__
+  * fixed [issue #32](https://github.com/gullerya/data-tier/issues/32) - when mistakenly same property tied more than once - error is shown, the first one is effective
+  * fixed [issue #33](https://github.com/gullerya/data-tier/issues/33) - fixes a defect with NULL value in the deep object's tied path
+  * fixed issue (non-reported) with creation of non existing path by change event
+
 * __1.12.1__
   * moved to newer version of `just-test`, providing real tests in CI and coverage now
 
