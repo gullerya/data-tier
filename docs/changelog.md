@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __1.14.0__
+  * upgrading `object-observer` dependency, which has a fix for a proper handling of an Error objects
+
 * __1.13.1__
   * fixed [issue #32](https://github.com/gullerya/data-tier/issues/32) - when mistakenly same property tied more than once - error is shown, the first one is effective
   * fixed [issue #33](https://github.com/gullerya/data-tier/issues/33) - fixes a defect with NULL value in the deep object's tied path
