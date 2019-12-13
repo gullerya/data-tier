@@ -18,7 +18,7 @@ suite.runTest({ name: 'accessing in other place the observable that was replaced
 		data = DataTier.ties.create('errorA', raw),
 		elem = document.createElement('div');
 
-	data.model.observe(changes =>
+	data.observe(changes =>
 		changes.forEach(change =>
 			console.dir(change)));
 	elem.dataset.tie = 'errorA => textContent';
@@ -27,7 +27,7 @@ suite.runTest({ name: 'accessing in other place the observable that was replaced
 
 	await test.waitNextMicrotask();
 
-	data.model.o = inner;
+	data.o = inner;
 
 	document.body.removeChild(elem);
 

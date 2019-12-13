@@ -64,7 +64,7 @@ suite.runTest({ name: 'multiple bindings to the same property - explicit', sync:
 	test.assertTrue(errors.length &&
 		typeof errors[0] === 'string' &&
 		errors[0].includes('elements\'s property "data" tied more than once'));
-	test.assertEqual(d.data, 'txt');
+	test.assertEqual('txt', d.data);
 
 	console.error = originalConsoleError;
 });

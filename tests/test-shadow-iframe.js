@@ -36,14 +36,14 @@ suite.runTest({ name: 'iFrame added as root to DataTier' }, test => {
 	if (c !== 'data') test.fail('expected textContent to be "data" but found "' + c + '"');
 
 	//  ongoing change test
-	tie.model.data = 'change';
+	tie.data = 'change';
 	c = e.textContent;
 	if (c !== 'change') test.fail('expected textContent to be "change" but found "' + c + '"');
 
 	//  removing the iframe should cleanup things
 	DataTier.removeRootDocument(iframe.contentDocument);
 	document.body.removeChild(iframe);
-	tie.model.data = 'one more time';
+	tie.data = 'one more time';
 	c = e.textContent;
 	if (c !== 'change') test.fail('expected textContent to be "change" but found "' + c + '"');
 

@@ -5,7 +5,7 @@ const suite = createSuite({ name: 'Testing array changes (static binding)' });
 
 suite.runTest({ name: 'array manipulation flow' }, async test => {
 	const
-		ordersTie = DataTier.ties.create('ordersASB'),
+		ordersTie = DataTier.ties.create('ordersASB', []),
 		element = document.createElement('div');
 
 	//	add element with static binding on element 2
@@ -15,27 +15,27 @@ suite.runTest({ name: 'array manipulation flow' }, async test => {
 	if (element.textContent !== '') test.fail('expected textContent to be [], found ' + element.textContent);
 
 	//	add array having element 2
-	ordersTie.model = ['0', '1', '2', '3'];
+	ordersTie.push('0', '1', '2', '3');
 	if (element.textContent !== '2') test.fail('expected textContent to be [2], found ' + element.textContent);
 
 	//	unshift
-	ordersTie.model.unshift('primordial');
+	ordersTie.unshift('primordial');
 	if (element.textContent !== '1') test.fail('expected textContent to be [1], found ' + element.textContent);
 
 	//	shift
-	ordersTie.model.shift();
+	ordersTie.shift();
 	if (element.textContent !== '2') test.fail('expected textContent to be [2], found ' + element.textContent);
-	ordersTie.model.shift();
+	ordersTie.shift();
 	if (element.textContent !== '3') test.fail('expected textContent to be [3], found ' + element.textContent);
-	ordersTie.model.shift();
+	ordersTie.shift();
 	if (element.textContent !== '') test.fail('expected textContent to be [], found ' + element.textContent);
 
 	//	push
-	ordersTie.model.push('_');
+	ordersTie.push('_');
 	if (element.textContent !== '_') test.fail('expected textContent to be [_], found ' + element.textContent);
 
 	//	pop
-	ordersTie.model.pop();
+	ordersTie.pop();
 	if (element.textContent !== '') test.fail('expected textContent to be [], found ' + element.textContent);
 });
 
@@ -49,6 +49,6 @@ suite.runTest({ name: 'array multi-manipulation flow' }, async test => {
 	await test.waitNextMicrotask();
 	if (element.textContent !== '') test.fail('[multi] expected textContent to be [], found ' + element.textContent);
 
-	testTie.model.push('one', 'two', 'tree');
+	testTie.push('one', 'two', 'tree');
 	if (element.textContent !== 'one') test.fail('expected textContent to be [one], found ' + element.textContent);
 });

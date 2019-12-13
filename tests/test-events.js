@@ -18,7 +18,7 @@ suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	test.assertEqual(testTie.model.someA, 'text');
+	test.assertEqual(testTie.someA, 'text');
 
 	//  removal of element should untie
 	document.body.removeChild(i);
@@ -29,7 +29,7 @@ suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	test.assertEqual(testTie.model.someA, 'text');
+	test.assertEqual(testTie.someA, 'text');
 });
 
 suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test => {
@@ -46,7 +46,7 @@ suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	test.assertTrue(testTie.model.bool);
+	test.assertTrue(testTie.bool);
 
 	//  removal of element should untie
 	document.body.removeChild(i);
@@ -57,7 +57,7 @@ suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test
 	event = new Event('change');
 	i.dispatchEvent(event);
 
-	test.assertTrue(testTie.model.bool);
+	test.assertTrue(testTie.bool);
 });
 
 suite.runTest({ name: 'binding/unbinding custom event default value property' }, async test => {
@@ -73,7 +73,7 @@ suite.runTest({ name: 'binding/unbinding custom event default value property' },
 	let event = new Event('customChange');
 	i.dispatchEvent(event);
 
-	test.assertEqual(testTie.model.someB, 'text');
+	test.assertEqual(testTie.someB, 'text');
 
 	//  removal of element should untie
 	document.body.removeChild(i);
@@ -84,14 +84,14 @@ suite.runTest({ name: 'binding/unbinding custom event default value property' },
 	event = new Event('customChange');
 	i.dispatchEvent(event);
 
-	test.assertEqual(testTie.model.someB, 'text');
+	test.assertEqual(testTie.someB, 'text');
 });
 
 suite.runTest({ name: 'binding custom event custom value property' }, async test => {
-	testTie.model.someC = 'new value';
+	testTie.someC = 'new value';
 
 	const d = document.createElement('div');
-	testTie.model.someC = 'new value';
+	testTie.someC = 'new value';
 	d[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
 	d[DataTier.DEFAULT_TIE_TARGET_PROVIDER] = 'customValue';
 	d.customValue = '';
@@ -100,11 +100,11 @@ suite.runTest({ name: 'binding custom event custom value property' }, async test
 
 	await test.waitNextMicrotask();
 
-	test.assertEqual(d.customValue, testTie.model.someC);
+	test.assertEqual(d.customValue, testTie.someC);
 	d.customValue = 'text';
 	d.dispatchEvent(new Event('customChange'));
 
-	test.assertEqual(testTie.model.someC, 'text');
+	test.assertEqual(testTie.someC, 'text');
 });
 
 suite.runTest({ name: 'regular event/value multiple bindings' }, async test => {
@@ -115,15 +115,15 @@ suite.runTest({ name: 'regular event/value multiple bindings' }, async test => {
 	document.body.appendChild(i);
 
 	await test.waitNextMicrotask();
-	test.assertEqual(i.value, testTie.model.test);
-	test.assertEqual(i.customProp, testTie.model.other);
+	test.assertEqual(i.value, testTie.test);
+	test.assertEqual(i.customProp, testTie.other);
 
 	i.value = 'text';
 	i.dispatchEvent(new Event('change'));
 
 	await test.waitNextMicrotask();
-	test.assertEqual(testTie.model.test, i.value);
-	test.assertEqual(testTie.model.other, 'thing');
+	test.assertEqual(testTie.test, i.value);
+	test.assertEqual(testTie.other, 'thing');
 });
 
 suite.runTest({ name: 'custom event/value multiple bindings' }, async test => {
@@ -136,19 +136,19 @@ suite.runTest({ name: 'custom event/value multiple bindings' }, async test => {
 	document.body.appendChild(d);
 
 	await test.waitNextMicrotask();
-	test.assertEqual(d.customValue, testTie.model.test);
-	test.assertEqual(d.customProp, testTie.model.other);
+	test.assertEqual(d.customValue, testTie.test);
+	test.assertEqual(d.customProp, testTie.other);
 
 	d.customValue = 'text';
 	d.dispatchEvent(new Event('customChange'));
 
 	await test.waitNextMicrotask();
-	test.assertEqual(testTie.model.test, d.customValue);
-	test.assertEqual(testTie.model.other, 'thing');
+	test.assertEqual(testTie.test, d.customValue);
+	test.assertEqual(testTie.other, 'thing');
 });
 
-suite.runTest('deeply nested model update', async test => {
-	const testModel = DataTier.ties.create('deepNestModelUpdate', {}).model;
+suite.runTest({ name: 'deeply nested model update' }, async test => {
+	const testModel = DataTier.ties.create('deepNestModelUpdate', {});
 
 	const i = document.createElement('input');
 	i.dataset.tie = 'deepNestModelUpdate:one.two.three';
@@ -164,8 +164,8 @@ suite.runTest('deeply nested model update', async test => {
 	test.assertEqual(testModel.one && testModel.one.two && testModel.one.two.three, 'new value');
 });
 
-suite.runTest('removed view is untied', async test => {
-	const testModel = DataTier.ties.create('untieRemoved', { test: 'test' }).model;
+suite.runTest({ name: 'removed view is untied' }, async test => {
+	const testModel = DataTier.ties.create('untieRemoved', { test: 'test' });
 
 	const i = document.createElement('input');
 	i.dataset.tie = 'untieRemoved:test';

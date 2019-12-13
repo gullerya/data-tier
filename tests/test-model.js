@@ -40,7 +40,7 @@ suite.runTest({ name: 'primitive model changes' }, async test => {
 	await test.waitNextMicrotask();
 
 	test.assertEqual(s1.value, user.name);
-	DataTier.ties.get('modelB').model.name = 'other';
+	DataTier.ties.get('modelB').name = 'other';
 	test.assertEqual(s1.value, 'other');
 });
 
@@ -54,58 +54,9 @@ suite.runTest({ name: 'deep model changes (graph replace)' }, async test => {
 	await test.waitNextMicrotask();
 	test.assertEqual(s3.textContent, 'str');
 
-	DataTier.ties.get('modelC').model.address.street = 'Street';
+	DataTier.ties.get('modelC').address.street = 'Street';
 
-	test.assertEqual(s3.textContent, DataTier.ties.get('modelC').model.address.street);
-});
-
-suite.runTest({ name: 'full model replace (to null)' }, test => {
-	const
-		s1 = document.createElement('input'),
-		s2 = document.createElement('div'),
-		s3 = document.createElement('div'),
-		s4 = document.createElement('div')
-	s1.dataset.tie = 'modelD:name => value';
-	document.body.appendChild(s1);
-	s2.dataset.tie = 'modelD:age => textContent';
-	document.body.appendChild(s2);
-	s3.dataset.tie = 'modelD:address.street => textContent';
-	document.body.appendChild(s3);
-	s4.dataset.tie = 'modelD:address.apt => textContent';
-	document.body.appendChild(s4);
-
-	const t = DataTier.ties.create('modelD', user);
-	t.model = null;
-	test.assertEqual(s1.value, '');
-	test.assertEqual(s2.textContent, '');
-	test.assertEqual(s3.textContent, '');
-	test.assertEqual(s4.textContent, '');
-});
-
-suite.runTest({ name: 'full model replace (to new data)' }, async test => {
-	const
-		s1 = document.createElement('input'),
-		s2 = document.createElement('div'),
-		s3 = document.createElement('div'),
-		s4 = document.createElement('div')
-	s1.dataset.tie = 'modelE:name => value';
-	document.body.appendChild(s1);
-	s2.dataset.tie = 'modelE:age => textContent';
-	document.body.appendChild(s2);
-	s3.dataset.tie = 'modelE:address.street => textContent';
-	document.body.appendChild(s3);
-	s4.dataset.tie = 'modelE:address.apt => textContent';
-	document.body.appendChild(s4);
-
-	const t = DataTier.ties.create('modelE', user);
-	t.model = { name: 'something else', age: 6 };
-
-	await test.waitNextMicrotask();
-
-	test.assertEqual(s1.value, 'something else');
-	test.assertEqual(s2.textContent, '6');
-	test.assertEqual(s3.textContent, '');
-	test.assertEqual(s4.textContent, '');
+	test.assertEqual(s3.textContent, DataTier.ties.get('modelC').address.street);
 });
 
 suite.runTest({ name: 'binding view to object' }, async test => {
@@ -126,18 +77,18 @@ suite.runTest({ name: 'binding view to object' }, async test => {
 
 	s3.dataset.tie = 'modelF:address => textContent';
 	test.assertEqual(s3.textContent, '');
-	t.model.address = { street: 'street name', apt: 17 };
-	t.model.address.toString = function () {
+	t.address = { street: 'street name', apt: 17 };
+	t.address.toString = function () {
 		return 'Street: ' + this.street + '; Apt: ' + this.apt
 	};
 
 	await test.waitNextMicrotask();
 
 	test.assertEqual(s4.textContent, '17');
-	test.assertEqual(s3.textContent, t.model.address.toString());
+	test.assertEqual(s3.textContent, t.address.toString());
 });
 
-suite.runTest('deep model, NULL base', async test => {
+suite.runTest({ name: 'deep model, NULL base' }, async test => {
 	DataTier.ties.create('testNullBase', {
 		address: null
 	});
@@ -159,7 +110,7 @@ suite.runTest('deep model, NULL base', async test => {
 	test.assertEqual(d3.textContent, '');
 });
 
-suite.runTest('deep model, NULL IN path', async test => {
+suite.runTest({ name: 'deep model, NULL IN path' }, async test => {
 	DataTier.ties.create('testNullIn', {
 		user: {
 			address: null

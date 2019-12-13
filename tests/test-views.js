@@ -71,13 +71,13 @@ suite.runTest({ name: 'verify that falsish values (0, false, \'\') are visualize
 
 	if (newEl.textContent !== '0') test.fail(new Error('expected the value to be "0", but found "' + newEl.textContent + '"'));
 
-	DataTier.ties.get('falsishTest').model.test = false;
+	DataTier.ties.get('falsishTest').test = false;
 	if (newEl.textContent !== 'false') test.fail(new Error('expected the value to be "false", but found "' + newEl.textContent + '"'));
 
-	DataTier.ties.get('falsishTest').model.test = '';
+	DataTier.ties.get('falsishTest').test = '';
 	if (newEl.textContent !== '') test.fail(new Error('expected the value to be "", but found "' + newEl.textContent + '"'));
 
-	DataTier.ties.get('falsishTest').model.test = null;
+	DataTier.ties.get('falsishTest').test = null;
 	if (newEl.textContent !== '') test.fail(new Error('expected the value to be "", but found "' + newEl.textContent + '"'));
 });
 
@@ -145,7 +145,7 @@ suite.runTest({ name: 'adding view and immediatelly appending to it children' },
 	if (chilElVisitedNumber > 1) test.fail(new Error('element expected to be visited by DataTier only once, but found ' + chilElVisitedNumber));
 });
 
-suite.runTest('multiparam (with occasional comma duplicate)', async test => {
+suite.runTest({ name: 'multiparam (with occasional comma duplicate)' }, async test => {
 	const d = document.createElement('div');
 	document.body.appendChild(d);
 

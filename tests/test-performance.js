@@ -40,7 +40,7 @@ suite.runTest({ name: 'perf test - many changes in loop', timeout: 60000 }, asyn
 			function render() {
 				movables.forEach(movable => {
 					const
-						m = movable.t.model,
+						m = movable.t,
 						top = m.top,
 						left = m.left;
 					if (top + 10 > 200 || top < 0) movable.xi *= -1;

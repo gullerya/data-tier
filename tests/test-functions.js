@@ -7,8 +7,8 @@ const suite = createSuite({ name: 'Testing functions dynamic binding' }),
 		name: 'click me',
 		clickHandler: function (e) {
 			clickCounter++;
-			DataTier.ties.get('functionalTest').model.name = 'click again';
-			DataTier.ties.get('functionalTest').model.clickHandler = function () {
+			DataTier.ties.get('functionalTest').name = 'click again';
+			DataTier.ties.get('functionalTest').clickHandler = function () {
 				clickCounter += 2;
 			}
 		}

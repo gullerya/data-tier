@@ -9,7 +9,7 @@ const
 		bool: false,
 		number: 3,
 		obj: { innerProp: 'toValidate' }
-	}).model;
+	});
 
 suite.runTest({ name: 'testing any-property - text' }, async test => {
 	const e = document.createElement('div');

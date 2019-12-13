@@ -67,13 +67,13 @@ suite.runTest({ name: 'verify that falsish values (0, false, \'\') are visualize
 
 	if (newEl.textContent !== '0') test.fail(new Error('expected the value to be "0", but found "' + newEl.textContent + '"'));
 
-	DataTier.ties.get('falsishTestShort').model.test = false;
+	DataTier.ties.get('falsishTestShort').test = false;
 	if (newEl.textContent !== 'false') test.fail(new Error('expected the value to be "false", but found "' + newEl.textContent + '"'));
 
-	DataTier.ties.get('falsishTestShort').model.test = '';
+	DataTier.ties.get('falsishTestShort').test = '';
 	if (newEl.textContent !== '') test.fail(new Error('expected the value to be "", but found "' + newEl.textContent + '"'));
 
-	DataTier.ties.get('falsishTestShort').model.test = null;
+	DataTier.ties.get('falsishTestShort').test = null;
 	if (newEl.textContent !== '') test.fail(new Error('expected the value to be "", but found "' + newEl.textContent + '"'));
 });
 

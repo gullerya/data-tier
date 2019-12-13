@@ -41,7 +41,7 @@ suite.runTest({ name: 'testing custom elements - autonomous: undefined first and
 
 	await test.waitNextMicrotask();
 
-	if (e.value !== tie.model.text.toUpperCase()) test.fail('textContent of the element expected to be ' + tie.model.text.toUpperCase() + ', found: ' + e.value);
+	if (e.value !== tie.text.toUpperCase()) test.fail('textContent of the element expected to be ' + tie.text.toUpperCase() + ', found: ' + e.value);
 });
 
 suite.runTest({ name: 'testing custom elements - extended: undefined first and adding to DOM' }, async test => {
@@ -59,5 +59,5 @@ suite.runTest({ name: 'testing custom elements - extended: undefined first and a
 
 	await test.waitNextMicrotask();
 
-	if (e.value !== tie.model.text.toUpperCase()) test.fail('value of the element expected to be ' + tie.model.text.toUpperCase() + ', found: ' + e.value);
+	if (e.value !== tie.text.toUpperCase()) test.fail('value of the element expected to be ' + tie.text.toUpperCase() + ', found: ' + e.value);
 });

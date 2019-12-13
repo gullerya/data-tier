@@ -62,7 +62,7 @@ customElements.define('open-shadow-child-test', class extends HTMLElement {
 	}
 
 	set customContent(childData) {
-		DataTier.ties.get('tieForShadowDom').model.childData = childData;
+		DataTier.ties.get('tieForShadowDom').childData = childData;
 	}
 });
 
@@ -102,7 +102,7 @@ suite.runTest({ name: 'Open ShadowDom should be auto-tied (add element self)', s
 	//	test remove element with shadow DOM
 	document.body.removeChild(ce);
 	await test.waitNextMicrotask();
-	tie.model.data = 'not to be found';
+	tie.data = 'not to be found';
 	c = ce.shadowRoot.firstElementChild.textContent;
 	test.assertEqual(c, 'data');
 });
@@ -124,7 +124,7 @@ suite.runTest({ name: 'Open ShadowDom should be auto-tied (add as child)', skip:
 	//	test removnig element with shadow HOST as its child
 	document.body.removeChild(parent);
 	await test.waitNextMicrotask();
-	tie.model.data = 'not to be found';
+	tie.data = 'not to be found';
 	c = ce.shadowRoot.firstElementChild.textContent;
 	test.assertEqual(c, 'data');
 });
@@ -167,20 +167,20 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (ele
 
 	//	add it explicitly to the DataTier
 	DataTier.addRootDocument(ce.ownShadowRootProp);
-	tie.model.data = 'other content';
+	tie.data = 'other content';
 	c = e.textContent;
 	test.assertEqual(c, 'other content');
 
 	//  removing closed shadow HOST
 	document.body.removeChild(ce);
 	await test.waitNextMicrotask();
-	tie.model.data = 'one more time';
+	tie.data = 'one more time';
 	c = e.textContent;
 	test.assertEqual(c, 'one more time');
 
 	//	remove explicitly from DataTier
 	DataTier.removeRootDocument(ce.ownShadowRootProp);
-	tie.model.data = 'now should not change';
+	tie.data = 'now should not change';
 	c = e.textContent;
 	test.assertEqual(c, 'one more time');
 });
@@ -202,20 +202,20 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as 
 
 	//	add it explicitly to the DataTier
 	DataTier.addRootDocument(ce.ownShadowRootProp);
-	tie.model.data = 'other content';
+	tie.data = 'other content';
 	c = e.textContent;
 	test.assertEqual(c, 'other content');
 
 	//  removing closed shadow HOST
 	document.body.removeChild(parent);
 	await test.waitNextMicrotask();
-	tie.model.data = 'one more time';
+	tie.data = 'one more time';
 	c = e.textContent;
 	test.assertEqual(c, 'one more time');
 
 	//	remove explicitly from DataTier
 	DataTier.removeRootDocument(ce.ownShadowRootProp);
-	tie.model.data = 'now should not change';
+	tie.data = 'now should not change';
 	c = e.textContent;
 	test.assertEqual(c, 'one more time');
 });

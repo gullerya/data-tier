@@ -43,7 +43,7 @@ suite.runTest({ name: 'creating a tie with an undefined data' }, async test => {
 	await test.waitNextMicrotask();
 
 	if (newEl.textContent) test.fail(new Error('preliminary expectation failed: expected the content to be empty'));
-	t.model = o;
+	Object.assign(t, o);
 	if (newEl.textContent !== o.text) test.fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 });
 
@@ -58,7 +58,7 @@ suite.runTest({ name: 'creating a tie with a NULL data' }, async test => {
 	await test.waitNextMicrotask();
 
 	if (newEl.textContent) test.fail(new Error('preliminary expectation failed: expected the content to be empty'));
-	t.model = o;
+	Object.assign(t, o);
 	if (newEl.textContent !== o.text) test.fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 });
 
@@ -75,7 +75,7 @@ suite.runTest({ name: 'setting a tie with a non Observable object' }, async test
 	if (newEl.textContent !== o.text) test.fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 
 	const newO = { text: 'text test E new' };
-	t.model = newO;
+	Object.assign(t, newO);
 
 	await test.waitNextMicrotask();
 

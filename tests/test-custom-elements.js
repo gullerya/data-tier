@@ -52,7 +52,7 @@ suite.runTest({ name: 'testing basic controllers: custom input' }, async test =>
 
 	await test.waitNextMicrotask();
 
-	if (e.value !== tie.model[0].text) test.fail('value of the element expected to be ' + tie.model[0].text.toUpperCase() + ', found: ' + e.value);
+	if (e.value !== tie[0].text) test.fail('value of the element expected to be ' + tie[0].text.toUpperCase() + ', found: ' + e.value);
 
 	e.value = 'lowercase';
 	const ev = new Event('change');
@@ -60,5 +60,5 @@ suite.runTest({ name: 'testing basic controllers: custom input' }, async test =>
 
 	await test.waitNextMicrotask();
 
-	if (tie.model[0].text !== 'lowercase') test.fail('value of the model expected to be ' + e.value + ' but found ' + tie.model[0].text);
+	if (tie[0].text !== 'lowercase') test.fail('value of the model expected to be ' + e.value + ' but found ' + tie[0].text);
 });

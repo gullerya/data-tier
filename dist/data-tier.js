@@ -37,7 +37,6 @@ console.info('DT: starting initialization...');
 const initStartTime = performance.now();
 
 const
-	PRIVATE_MODEL_SYMBOL = Symbol('private-tie-model-key'),
 	ELEMENT_PROCESSED_SYMBOL = Symbol('element-processed'),
 	roots = new WeakSet(),
 	views = {},
@@ -46,30 +45,15 @@ const
 	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/;
 
 class Tie {
-	constructor(name) {
-		this[PRIVATE_MODEL_SYMBOL] = null;
-		Object.defineProperty(this, 'name', { value: name });
-		Object.seal(this);
+	constructor(key, model) {
+		this.name = key;
+		this.model = model;
+		this.observer = Tie.processDataChanges.bind(this);
+		this.model.observe(this.observer);
+		Object.freeze(this);
 	}
 
-	get model() {
-		return this[PRIVATE_MODEL_SYMBOL];
-	}
-
-	set model(input) {
-		const oldModel = this[PRIVATE_MODEL_SYMBOL];
-		if (input !== oldModel) {
-			const newModel = ensureObservable(input);
-			if (newModel) {
-				newModel.observe(this.processDataChanges.bind(this));
-			}
-			this[PRIVATE_MODEL_SYMBOL] = newModel;
-			this.processDataChanges([{ path: [] }]);
-			if (oldModel) oldModel.revoke();
-		}
-	}
-
-	processDataChanges(changes) {
+	static processDataChanges(changes) {
 		const
 			tieName = this.name,
 			tieViews = views[tieName],
@@ -127,28 +111,29 @@ function Ties() {
 		vp = /^[a-zA-Z0-9]+$/;
 
 	this.get = function get(name) {
-		validateTieName(name);
-		return ts[name];
+		return ts[name] ? ts[name].model : undefined;
 	};
 
-	this.create = function create(name, model) {
-		if (ts[name]) {
-			throw new Error('tie (' + name + ') is already present and MAY NOT be re-created');
+	this.create = function create(key, model) {
+		if (ts[key]) {
+			throw new Error('tie "' + key + '" already exists');
 		}
-		validateTieName(name);
-		ensureObservable(model);
-		const result = new Tie(name);
-		ts[name] = result;
-		if (!(name in views)) views[name] = {};
-		result.model = model;
-		return result;
+		validateTieKey(key);
+
+		if (!(key in views)) views[key] = {};
+
+		const m = ensureObservable(model);
+		ts[key] = new Tie(key, m);
+		ts[key].observer([{ path: [] }]);
+
+		return m;
 	};
 
 	this.remove = function remove(tieToRemove) {
 		let tieNameToRemove;
-		if (typeof tieToRemove === 'object' && tieToRemove.name) {
-			tieNameToRemove = tieToRemove.name;
-		} else if (typeof tieToRemove === 'string' && validateTieName(tieToRemove)) {
+		if (typeof tieToRemove === 'object') {
+			tieNameToRemove = Object.keys(ts).find(key => ts[key].model === tieToRemove);
+		} else if (typeof tieToRemove === 'string') {
 			tieNameToRemove = tieToRemove;
 		} else {
 			throw new Error('tie to remove MUST either be a valid tie name or tie self');
@@ -157,40 +142,33 @@ function Ties() {
 		delete views[tieNameToRemove];
 		const tie = ts[tieNameToRemove];
 		if (tie) {
-			if (tie[PRIVATE_MODEL_SYMBOL]) {
-				tie[PRIVATE_MODEL_SYMBOL].revoke();
+			if (tie.model) {
+				tie.model.revoke();
 			}
 			delete ts[tieNameToRemove];
 		}
 	};
 
-	function validateTieName(name) {
+	function validateTieKey(name) {
 		if (!name || typeof name !== 'string') {
 			throw new Error('tie name MUST be a non empty string');
 		}
 		if (!vp.test(name)) {
-			throw new Error('tie name MUST contain alphanumeric characters ONLY (use ' + vp + ' to check yourself); "' + name + '" not fits');
+			throw new Error('tie name MUST match ' + vp + '; "' + name + '" is not');
 		}
-		return true;
 	}
 
 	Object.freeze(this);
 }
 
 function ensureObservable(o) {
-	if (typeof o === 'undefined' || o === null) {
-		return o;
-	} else if (typeof o !== 'object') {
-		throw new Error(o + ' is not an object');
-	} else if (Observable.isObservable(o)) {
-		return o;
-	} else if (!Observable) {
-		throw new Error(o + ' is not of type Observable and no embedded Observable implementation found');
-	} else if (o.observe || o.unobserve || o.revoke) {
-		throw new Error(o + ' is not of type Observable and can not be transformed into Observable (some of the properties already occupied?)');
-	} else {
-		return Observable.from(o);
+	let result;
+	if (!o) {
+		result = Observable.from({});
+	} else if (!Observable.isObservable(o)) {
+		result = Observable.from(o);
 	}
+	return result;
 }
 
 function getPath(ref, path) {
@@ -224,9 +202,9 @@ function changeListener(event) {
 		element = event.currentTarget,
 		defaultTargetProperty = getDefaultTargetProperty(element),
 		tieParams = viewsParams.get(element);
-	let tieParam, tie, i, newValue;
+	let tieParam, tie, newValue;
 
-	i = tieParams.length;
+	let i = tieParams.length;
 	while (i) {
 		tieParam = tieParams[--i];
 		if (tieParam.targetProperty !== defaultTargetProperty) {
@@ -236,9 +214,9 @@ function changeListener(event) {
 		tie = ties.get(tieParam.tieName);
 		if (tie) {
 			newValue = element[defaultTargetProperty];
-			setPath(tie[PRIVATE_MODEL_SYMBOL], tieParam.path, newValue);
+			setPath(tie, tieParam.path, newValue);
 		} else {
-			console.warn('no Tie identified by "' + tieParam.tieName + '" found');
+			console.warn('no Tie found by "' + tieParam.tieName + '"');
 		}
 	}
 }
@@ -295,11 +273,12 @@ function add(element) {
 
 function processAddedElement(element) {
 	const tieParams = extractTieParams(element);
-	let tieName, rawPath, tieViews, pathViews, i = 0, l;
-
-	for (l = tieParams.length; i < l; i++) {
-		tieName = tieParams[i].tieName;
-		rawPath = tieParams[i].rawPath;
+	let tieName, rawPath, tieViews, pathViews;
+	let i = tieParams.length;
+	while (i) {
+		const next = tieParams[--i];
+		tieName = next.tieName;
+		rawPath = next.rawPath;
 		tieViews = views[tieName] || (views[tieName] = {});
 		pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
 		if (pathViews.indexOf(element) < 0) {
@@ -394,9 +373,10 @@ function getDefaultTargetProperty(element) {
 
 function update(element, changedPath, change) {
 	const parsedParams = viewsParams.get(element);
-	let param, tie, tieData, newValue, i = 0, l, tp;
-	for (l = parsedParams.length; i < l; i++) {
-		param = parsedParams[i];
+	let param, tie, newValue, tp;
+	let i = parsedParams.length;
+	while (i) {
+		param = parsedParams[--i];
 		tie = ties.get(param.tieName);
 
 		if (undefined === tie) {
@@ -404,9 +384,8 @@ function update(element, changedPath, change) {
 		}
 
 		if (!changedPath || param.rawPath.indexOf(changedPath) === 0) {
-			tieData = tie.model;
 			if (!change || changedPath !== param.rawPath || typeof change.value === 'undefined') {
-				newValue = getPath(tieData, param.path);
+				newValue = getPath(tie, param.path);
 			} else {
 				newValue = change.value;
 			}
