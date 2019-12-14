@@ -1,5 +1,5 @@
-import { Observable } from './object-observer.min.js';
 import {
+	ensureObservable,
 	DEFAULT_TIE_TARGET_PROVIDER,
 	getTargetProperty,
 	extractViewParams,
@@ -174,16 +174,6 @@ function Ties() {
 	Object.freeze(this);
 }
 
-function ensureObservable(o) {
-	let result;
-	if (!o) {
-		result = Observable.from({});
-	} else if (!Observable.isObservable(o)) {
-		result = Observable.from(o);
-	}
-	return result;
-}
-
 function changeListener(event) {
 	const
 		element = event.currentTarget,
@@ -202,8 +192,6 @@ function changeListener(event) {
 		if (tie) {
 			newValue = element[targetProperty];
 			setPath(tie, tieParam.path, newValue);
-		} else {
-			console.warn('no Tie found by "' + tieParam.tieKey + '"');
 		}
 	}
 }
@@ -212,45 +200,44 @@ function add(element) {
 	element[ELEMENT_PROCESSED_SYMBOL] = true;
 
 	if (element.matches(':defined')) {
-		processAddedElement(element);
-	} else {
-		let customElementToWait = '';
-		if (element.localName.indexOf('-') > 0) {
-			customElementToWait = element.localName;
-		} else {
-			const matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
-			if (matches && matches.length > 1) {
-				customElementToWait = matches[1];
+		const viewParams = extractViewParams(element);
+		let i = viewParams.length;
+		while (i) {
+			const next = viewParams[--i];
+			const tieKey = next.tieKey;
+			const rawPath = next.rawPath;
+			const tieViews = views[tieKey] || (views[tieKey] = {});
+			const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
+			if (pathViews.indexOf(element) < 0) {
+				pathViews.push(element);
+				element[VIEW_PARAMS_KEY] = viewParams;
+				updateFromView(element);
+				addChangeListener(element, changeListener);
 			}
 		}
-		if (customElementToWait) {
-			customElements.whenDefined(customElementToWait).then(() => processAddedElement(element));
-		} else {
-			console.warn('failed to determine yet undefined custom element name of ' + element + ' to wait for definition; processing as usual');
-			processAddedElement(element);
+
+		if (element.shadowRoot) {
+			addRootDocument(element.shadowRoot);
 		}
+	} else {
+		waitUndefined(element);
 	}
 }
 
-function processAddedElement(element) {
-	const viewParams = extractViewParams(element);
-	let i = viewParams.length;
-	while (i) {
-		const next = viewParams[--i];
-		const tieKey = next.tieKey;
-		const rawPath = next.rawPath;
-		const tieViews = views[tieKey] || (views[tieKey] = {});
-		const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
-		if (pathViews.indexOf(element) < 0) {
-			pathViews.push(element);
-			element[VIEW_PARAMS_KEY] = viewParams;
-			updateFromView(element);
-			addChangeListener(element, changeListener);
+function waitUndefined(element) {
+	let tag = '';
+	if (element.localName.indexOf('-') > 0) {
+		tag = element.localName;
+	} else {
+		const matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
+		if (matches && matches.length > 1) {
+			tag = matches[1];
 		}
 	}
-
-	if (element.shadowRoot) {
-		addRootDocument(element.shadowRoot);
+	if (tag) {
+		customElements.whenDefined(tag).then(() => add(element));
+	} else {
+		console.warn('failed to determine tag of yet undefined custom element ' + element + ', abandoning');
 	}
 }
 

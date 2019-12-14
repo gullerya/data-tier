@@ -1,3 +1,5 @@
+import { Observable } from './object-observer.min.js';
+
 const
 	DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget',
 	CHANGE_EVENT_NAME_PROVIDER = 'changeEventName',
@@ -5,6 +7,7 @@ const
 	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/;
 
 export {
+	ensureObservable,
 	DEFAULT_TIE_TARGET_PROVIDER,
 	getTargetProperty,
 	extractViewParams,
@@ -13,6 +16,16 @@ export {
 	delChangeListener,
 	getPath,
 	setPath
+}
+
+function ensureObservable(o) {
+	let result;
+	if (!o) {
+		result = Observable.from({});
+	} else if (!Observable.isObservable(o)) {
+		result = Observable.from(o);
+	}
+	return result;
 }
 
 function getTargetProperty(element) {
