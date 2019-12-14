@@ -16,7 +16,12 @@ process.stdout.write('building "dist"' + os.EOL);
 fsExtra.copySync('src/', 'dist/');
 
 process.stdout.write('minifying...' + os.EOL);
-const dataTierSource = fs.readFileSync('dist/data-tier.js', { encoding: 'utf8' });
-fs.writeFileSync('dist/data-tier.min.js', uglifyES.minify({ 'dist/data-tier.min.js': dataTierSource }).code);
+const dataTierUtilsSource = fs
+	.readFileSync('dist/dt-utils.js', { encoding: 'utf8' });
+fs.writeFileSync('dist/dt-utils.min.js', uglifyES.minify({ dataTierUtils: dataTierUtilsSource }).code);
+const dataTierSource = fs
+	.readFileSync('dist/data-tier.js', { encoding: 'utf8' })
+	.replace('dt-utils.js', 'dt-utils.min.js');
+fs.writeFileSync('dist/data-tier.min.js', uglifyES.minify({ dataTier: dataTierSource }).code);
 
 process.stdout.write('DONE' + os.EOL);

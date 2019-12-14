@@ -8,7 +8,7 @@ import {
 	delChangeListener,
 	getPath,
 	setPath
-} from './utils.js';
+} from './dt-utils.js';
 
 export {
 	DEFAULT_TIE_TARGET_PROVIDER,
