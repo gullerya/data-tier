@@ -9,14 +9,17 @@ Any JS related functionality will be available through the properties of this ob
 
 ## `ties` namespace
 Ties (more about `Tie` [below](#tie)) management namespace having the following APIs:
-### `create(name, [model])`
-Creates a new tie with the specified (unique) name.
-Updates any elements already found in DOM and tied to it (by name, see HTML syntax [below](#html-tying-declaration)).
-Sets up model's observer, which will immediately reflect any changes in the tied views.
+### `const tie = create(key[, model])`
+Internally creates a new tie management with the specified (unique) key.
+__`Observable`__ model is returned being created (via cloning) from the initially provided one, or an empty object if none provided.
+> See more about `Observable`, observation and cloning [here](https://www.npmjs.com/package/object-observer).
 
-* `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`, unique
-* `model` - optional parameter, which, if provided, MUST be an object
-* result is a `Tie` object or Error if any of the above requirements is not fulfilled
+Any elements already found in DOM and declared to be tied to it (by key, see HTML syntax [below](#html-tying-declaration)), will be updated immediatelly (synchronously).
+
+* `key` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`, unique
+* `model` - optional parameter, which, if provided, MUST be an object/array
+* result is an `Observable` object (clone of provided modes or an empty object)
+> Attention! If the tie intended to be an `Array`, provide an array (may be empty) as the model upon creation.
 
 ```javascript
 let user = {
@@ -39,68 +42,22 @@ If `Observable` was provided by hosting application, it remains intact.
 If no tie found by the given `tieToRemove`, nothing will happen.
 
 * `tieToRemove` - MUST parameter, may be one of:
-  * valid tie name (string matching the pattern `/^[a-zA-Z0-9]+$/`)
+  * valid tie key (string matching the pattern `/^[a-zA-Z0-9]+$/`)
   * tie object itself 
 
 ```javascript
 DataTier.ties.remove('settings');
 ```
 
-### `get(name)`
-Retrieves tie by name.
+### `get(key)`
+Retrieves tie by key.
 
-If no tie found by the given `name`, will return `undefined`.
+If no tie found by the given `key`, will return `undefined`.
 
-* `name` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`
+* `key` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`
 
 ```javascript
 let settingsTie = DataTier.ties.get('settings');
-```
-
-## `Tie`
-Tie is a binding unit between the model and the views tied to it (by name, see HTML syntax [below](#html-tying-declaration)).
-
-Tie holds an observable model, which will be a clone of the originally supplied data if it was not `Observable` and will stay as is, if it was (see [`object-observer`](https://github.com/gullerya/object-observer) for more info).
-
-Tie is also responsible to set up an observer of this model, react on any change and reflect it in the tied views.
-
-`Tie` object exposes the following properties:
-
-### `name`
-Uniquely identifying string, that was provided at the moment of creation. READ ONLY.
-
-```javascript
-userTie.name === 'user';        //  true
-```
-
-### `model`
-Observable model, clone of an initially or lately supplied data.
-
-IMPORTANT! Any changes that are meant to be part of the tied state and reflected in views must be done on the **tie's model** and NOT on the original object!
-
-`getter` of this property returns the model.
-`setter` performs the following: set old model aside, ensure/make new model `Observable` if not null and store, revoke old model if not null and made observable by `data-tier` in first place, update all views to the new model.
-
-```javascript
-let tiedUser = userTie.model;
-
-tiedUser === user;                      //  false, remember, model is cloned for observation
-
-user.firstName = 'Newbie';              //  all views tied to this property are getting updated
-
-let tiedSettings = settingsTie.model;
-
-tiedSettings === null;                  //  true
-
-settingsTie.model = {                   //  this POJO is cloned and made into Observable
-    siteTheme: 'dark'                   //  and set to be a model of the settingsTie
-};                                      //  and any view tied to 'siteTheme' is getting updated
-
-tiedSettings = settingsTie.model;
-
-tiedSettings === null;                  //  false, obviously
-
-tiedSettings.siteTheme === 'dark';      //  true
 ```
 
 ## `HTML` tying declaration
@@ -117,7 +74,7 @@ This declaration is done via element's attribute `data-tie`:
 
 This declaration ties between span's `textContent` and the property `firstName` of the `userTie`'s model.
 * `data-tie` - attribute name, that `data-tier` is looking for when processing the DOM
-* `user:` - first part of tied view's parameter is the **tie name** (see above) followed by **colon**
+* `user:` - first part of tied view's parameter is the **tie key** (see above) followed by **colon**
 * `firstName` - **path** to the tied property within the tied model; the path can have any depth
 * `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** 'addresses'
 * `textContent` - view's **target property** tied to the given model

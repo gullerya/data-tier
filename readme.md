@@ -17,6 +17,10 @@
 
 #### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
 
+* __2.0.0__
+  * implemented [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
+> !!! This is API breaking change!. While migration from an old API to the new one is easy - take care to go over the docs here.
+
 * __1.14.0__
   * upgrading `object-observer` dependency, which has a fix for a proper handling of an Error objects
 
@@ -24,9 +28,6 @@
   * fixed [issue #32](https://github.com/gullerya/data-tier/issues/32) - when mistakenly same property tied more than once - error is shown, the first one is effective
   * fixed [issue #33](https://github.com/gullerya/data-tier/issues/33) - fixes a defect with NULL value in the deep object's tied path
   * fixed issue (non-reported) with creation of non existing path by change event
-
-* __1.12.1__
-  * moved to newer version of `just-test`, providing real tests in CI and coverage now
 
 ## Loading the Library
 
@@ -36,15 +37,11 @@ import * as DataTier from './dist/data-tier.min.js';    // align the path with y
 
 ## Basic concepts
 
-My, definitely opinionated, insights of how client application should look like in general and how `data-tier` library comes into that picture can be found [__here__](https://github.com/gullerya/data-tier/blob/master/docs/client-app-architecture.md). That would probably be the most completed overview of the library's overall usage intent.
+My, definitely opinionated, insights of how client application should look like in general and how `data-tier` library comes into that picture can be found [__here__](https://github.com/gullerya/data-tier/blob/master/docs/client-app-architecture.md). That is probably the most complete overview of the library's overall usage intent. Yet, please read below for a short conceptual intro.
 
-#### Tie
+As many similar libraries do it, `data-tier` also empasized a two: the __declarative__ part of binding views to model found in `HTML` and the __functional__ part of defining/operating the model self from `JS`.
 
-__`Tie`__ holds an observable data structure associated with some name/key, it's about __what__ to tie.
-This the the __model__, to use the classic terminology.
-Ties serve most and foremost data segregation and management purposes.
-
-Having the following data structure:
+Let's observe the following example, where having data as
 ```javascript
 let bands = [
     {
@@ -59,12 +56,15 @@ let bands = [
 ];
 bands.totalTooltip = 'My hall-of-fame bands';
 ```
-one can create a tie named, say, 'bandsTie', having its data set to the bands array:
+one can create a __tie__ keyed, say, 'bandsTie', having its data set to the bands array:
 ```javascript
-let bandsDataStore = DataTier.ties.create('bandsTie', bands);
+let bandsModel = DataTier.ties.create('bandsTie', bands);
 ```
 
-and then tie any UI element to it via the tie name and the path:
+__`Tie`__ is the __model__, to use the classic terminology.
+It holds an __observable__ data either provided upon creation or an empty object to begin with, if none provided.
+
+Now one can bind (tie) any UI element to the model using the key and the path:
 ```html
 <span data-tie="bandsTie:length => textContent, bandsTie:totalTooltip => tooltip"></span>
 
@@ -74,27 +74,24 @@ and then tie any UI element to it via the tie name and the path:
 </div>
 ```
 where:
-* the first item in the path is always the tie's name, having colon separating it from an actual path within the model
+* the first item in the path is always the tie's key, having colon separating it from an actual path within the model
 * `bandsTie:0` - refer to the whole object at index 0 of our array
 * `bandsTie:length` - `length` property, inherited from the native `Array`, may also be used
 * `bandsTie:0.name` - path can get deeper...
 * `bandsTie:0.albums.1.since` - ...actually, it can get to any level of deepness
 
-Basically, it is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating everything from there, but IMHO it would be a bad practice.
-Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on application performance.
+It is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating everything from there, but IMHO it would be a bad practice.
+Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on the library performance.
 
-`Tie` object not only meant to hold the link between the data and its namespace, but also tie's specific configurations/customizations and data management APIs.
 For more details see [__API reference__](https://github.com/gullerya/data-tier/blob/master/docs/api-reference.md).
 
 ## Extensions
 
-While previous versions of `data-tier` prior to `1.0` were concerned with providing all of the seemingly relevant to MVVM functionalities within the same bundle, present version's approach is different.
-
 I believe, and already outlined that [somewhere else](https://github.com/gullerya/data-tier/blob/master/docs/client-app-architecture.md), that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s.
 
-Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by __dedicated components__, probably, yet not necessary, built on top of `data-tier` or any other framework.
+Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by a __dedicated components__, probably, yet not necessary, built on top of `data-tier` or any other framework.
 
-Having said that, me myself investing some effort in building `data-tier` oriented components. I'll maintain the list below, updating it from time to time (please update me if you have something to add here).
+Me myself investing some effort in building `data-tier` oriented components. I'll maintain the list below, updating it from time to time (please update me if you have something to add here).
 * [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on the single template
 
 ## Documentation
