@@ -18,7 +18,7 @@ suite.runTest({ name: 'wrong tie name', sync: true }, async test => {
 	await test.waitNextMicrotask();
 	test.assertTrue(errors.length &&
 		errors[0] instanceof Error &&
-		errors[0].message.includes('"some.wrong.thing" not fits'));
+		errors[0].message.includes('"some.wrong.thing" is not'));
 
 	console.error = originalConsoleError;
 });
