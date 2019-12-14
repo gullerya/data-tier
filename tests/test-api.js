@@ -124,6 +124,34 @@ suite.runTest({ name: 'remove Tie - negative tests' }, test => {
 	}
 });
 
+suite.runTest({ name: 'create/remove Tie - no object provided' }, test => {
+	const t = DataTier.ties.create('noGivenOTieA');
+
+	test.assertEqual('object', typeof t);
+	test.assertTrue('observe' in t);
+});
+
+suite.runTest({ name: 'create/remove Tie - plain object provided' }, test => {
+	const o = { test: 'some' };
+	const t = DataTier.ties.create('noGivenOTieB', o);
+
+	test.assertNotEqual(o, t);
+	test.assertEqual('object', typeof t);
+	test.assertEqual('some', t.test);
+	test.assertTrue('observe' in t);
+});
+
+suite.runTest({ name: 'create/remove Tie - plain array provided' }, test => {
+	const a = ['a', 'b', 'c'];
+	const t = DataTier.ties.create('noGivenOTieC', a);
+
+	test.assertNotEqual(a, t);
+	test.assertEqual('object', typeof t);
+	test.assertTrue(Array.isArray(t));
+	test.assertEqual('a', t[0]);
+	test.assertTrue('observe' in t);
+});
+
 suite.runTest({ name: 'root APIs - negative tests' }, test => {
 	try {
 		DataTier.addRootDocument();
