@@ -6,20 +6,18 @@
 
 ## Overview
 
-`data-tier` ('tier' from 'to tie') is a two way binding (MVVM) service targeting client (browser) HTML/Javascript applications.
+`data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/Javascript applications.
 `data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [`object-observer`](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
-> In future I may consider allowing provision of custom `Observable` implementation if there will be any interest in it.
-
-#### Support matrix: ![CHROME](https://github.com/gullerya/data-tier/raw/master/docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](https://github.com/gullerya/data-tier/raw/master/docs/icons/firefox.png)<sub>60+</sub>
+#### Support matrix: ![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub>
 
 #### Performance report: TBD
 
-#### Versions ([full changelog](https://github.com/gullerya/data-tier/blob/master/docs/changelog.md))
+#### Versions ([full changelog](./docs/changelog.md))
 
 * __2.0.0__
   * implemented [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
-> !!! This is API breaking change!. While migration from an old API to the new one is easy - take care to go over the docs here.
+> 2.0.0 is API breaking version! While migration from an old API to the new one is easy (remove the notion of `model` property everywhere in JS) - take care to go over the docs here.
 
 * __1.14.0__
   * upgrading `object-observer` dependency, which has a fix for a proper handling of an Error objects
@@ -29,19 +27,22 @@
   * fixed [issue #33](https://github.com/gullerya/data-tier/issues/33) - fixes a defect with NULL value in the deep object's tied path
   * fixed issue (non-reported) with creation of non existing path by change event
 
-## Loading the Library
+## Loading the library
 
 ```javascript
-import * as DataTier from './dist/data-tier.min.js';    // align the path with your folders structure
+import * as DataTier from './dist/data-tier.min.js';
 ```
 
-## Basic concepts
+## Basic example
 
-My, definitely opinionated, insights of how client application should look like in general and how `data-tier` library comes into that picture can be found [__here__](https://github.com/gullerya/data-tier/blob/master/docs/client-app-architecture.md). That is probably the most complete overview of the library's overall usage intent. Yet, please read below for a short conceptual intro.
+As many similar libraries do, `data-tier` also employes the two:
+* __declarative__ part of binding views to model found in HTML
+* __functional__ part of defining and operating on the model in JavaScript
 
-As many similar libraries do it, `data-tier` also empasized a two: the __declarative__ part of binding views to model found in `HTML` and the __functional__ part of defining/operating the model self from `JS`.
+Let's see how it plays in the code.
 
-Let's observe the following example, where having data as
+##### functional (JS) part
+Having data model defined, for example, as:
 ```javascript
 let bands = [
     {
@@ -49,45 +50,43 @@ let bands = [
         name: 'Dream Theater',
         since: 1985,
         albums: [
-            { id: 2345, name: 'When Dream and Day Unite', since: 1988 },
-            { id: 2346, name: 'Images and Words', since: 1991 }
+            { id: 2345, year: 1988, name: 'When Dream and Day Unite' },
+            { id: 2346, year: 1991, name: 'Images and Words' }
         ]
     }
 ];
-bands.totalTooltip = 'My hall-of-fame bands';
 ```
-one can create a __tie__ keyed, say, 'bandsTie', having its data set to the bands array:
+one can create a __`tie`__ keyed, say, 'bandsTie', having its data set to the bands array:
 ```javascript
-let bandsModel = DataTier.ties.create('bandsTie', bands);
+const bandsModel = DataTier.ties.create('bandsTie', bands);
 ```
 
-__`Tie`__ is the __model__, to use the classic terminology.
-It holds an __observable__ data either provided upon creation or an empty object to begin with, if none provided.
+`create` API returns an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md) clone of the provided `object`/`array`.
 
-Now one can bind (tie) any UI element to the model using the key and the path:
+> If no model provided, `data-tier` will create an empty object model by default.
+
+`bandsModel` from our example may be operated on as a usual JS `object`/`array`, but it is also being observed by `data-tier` for any (deep) changes.
+
+Any direct (JS driven) change will be reflected in the tied views.
+Also, any relevant changes from the views will be reflected in the `bandsModel` back.
+
+##### declarative (HTML) part
+
+Any UI element may be tied to the model using the key and the path:
 ```html
-<span data-tie="bandsTie:length => textContent, bandsTie:totalTooltip => tooltip"></span>
+<span data-tie="bandsTie:length"></span>
 
 <div>
-    <span data-tie="bandsTie:0.albums.1.name => textContent"></span>
+    <span data-tie="bandsTie:0.albums.1.name"></span>
     <custom-album-viewer data-tie="bandsTie:0.albums.1 => data"></custom-album-viewer>
 </div>
 ```
-where:
-* the first item in the path is always the tie's key, having colon separating it from an actual path within the model
-* `bandsTie:0` - refer to the whole object at index 0 of our array
-* `bandsTie:length` - `length` property, inherited from the native `Array`, may also be used
-* `bandsTie:0.name` - path can get deeper...
-* `bandsTie:0.albums.1.since` - ...actually, it can get to any level of deepness
 
-It is possible to create a single dataset for the whole application, making a single 'uber-tie' from it and operating everything from there, but IMHO it would be a bad practice.
-Having say that, I'll note, that there is no limitations on the size or the structure complexity of the tied model, nor there are any negative effects of those on the library performance.
-
-For more details see [__API reference__](https://github.com/gullerya/data-tier/blob/master/docs/api-reference.md).
+For more details see [__API reference__](./docs/api-reference.md).
 
 ## Extensions
 
-I believe, and already outlined that [somewhere else](https://github.com/gullerya/data-tier/blob/master/docs/client-app-architecture.md), that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s.
+I believe, that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s (more conceptual details and examples [here](./docs/client-app-architecture.md)).
 
 Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by a __dedicated components__, probably, yet not necessary, built on top of `data-tier` or any other framework.
 
@@ -95,8 +94,8 @@ Me myself investing some effort in building `data-tier` oriented components. I'l
 * [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on the single template
 
 ## Documentation
-[__API__](https://github.com/gullerya/data-tier/blob/master/docs/api-reference.md)
+[__API__](./docs/api-reference.md)
 
-[__WebComponents, ShadowDOM, MicroFrontends__](https://github.com/gullerya/data-tier/blob/master/docs/web-components.md)
+[__WebComponents, ShadowDOM, MicroFrontends__](./docs/web-components.md)
 
-[__Tutorials__](https://github.com/gullerya/data-tier/blob/master/docs/tutorials.md)
+[__Tutorials__](./docs/tutorials.md)

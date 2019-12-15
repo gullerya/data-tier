@@ -1,15 +1,21 @@
 # API
 
-## Initialization
-```javascript
-import * as DataTier from './dist/data-tier.min.js';    // align the path with your folders structure
-```
-`DataTier` variable here becomes a top level library's namespace.
-Any JS related functionality will be available through the properties of this object.
+Here I'll detail the API, which splits into the __functional__ (JS) part and the __declarative__ tying syntax found in HTML.
 
-## `ties` namespace
-Ties (more about `Tie` [below](#tie)) management namespace having the following APIs:
-### `const tie = create(key[, model])`
+While Model-to-View data flow is pretty simple and straightforward, the opposite direction, View-to-Model, relys on some pre-conditions. I'll touch this part below as well.
+
+Beside the actual API's signatures, there is much of importance of understaning `data-tier`'s lifecycle and its runtime capabilities/limitations. See [Lifecycle](./lifecycle.md) documentation dedicated just to that part.
+
+> In the snippets below I'll assume, that the following statement was used to import the library: `import * as DataTier from './dist/data-tier.min.js';`
+
+## JavaScript - model definitions and operations
+Imported `DataTier` object has `ties` object defined on it:
+> `typeof DataTier.ties === 'object';   //  true`
+
+`ties` is a data management namespace, holding the following APIs:
+
+1. `const tie = DataTier.ties.`__`create(key[, model]);`__
+
 Internally creates a new tie management with the specified (unique) key.
 __`Observable`__ model is returned being created (via cloning) from the initially provided one, or an empty object if none provided.
 > See more about `Observable`, observation and cloning [here](https://www.npmjs.com/package/object-observer).
@@ -33,7 +39,9 @@ let user = {
     userTie = DataTier.ties.create('user', user),
     settingsTie = DataTier.ties.create('settings');
 ```
-### `remove(tieToRemove)`
+
+2. `DataTier.ties.`__`remove(tieToRemove);`__
+
 Removes tie.
 
 Tie's model becomes unobserved by the `data-tier` and is revoked if an `Observable` was initially created by `data-tier`.
@@ -49,7 +57,8 @@ If no tie found by the given `tieToRemove`, nothing will happen.
 DataTier.ties.remove('settings');
 ```
 
-### `get(key)`
+3. `const tie = DataTier.ties.`__`get(key);`__
+
 Retrieves tie by key.
 
 If no tie found by the given `key`, will return `undefined`.
@@ -60,8 +69,8 @@ If no tie found by the given `key`, will return `undefined`.
 let settingsTie = DataTier.ties.get('settings');
 ```
 
-## `HTML` tying declaration
-In order to tie **view** (DOM element) to **model** and vice-versa, some declaration in HTML is required.
+## `HTML` - tying declaration
+In order to tie a __view/s__ (some DOM element/s) to __model__, a declaration in HTML is required.
 This declaration is done via element's attribute `data-tie`:
 
 ```html
@@ -72,34 +81,31 @@ This declaration is done via element's attribute `data-tie`:
 <span data-tie="user:firstName"></span>
 ```
 
-This declaration ties between span's `textContent` and the property `firstName` of the `userTie`'s model.
-* `data-tie` - attribute name, that `data-tier` is looking for when processing the DOM
-* `user:` - first part of tied view's parameter is the **tie key** (see above) followed by **colon**
-* `firstName` - **path** to the tied property within the tied model; the path can have any depth
-* `=>` - arrow (with any number of surrounding spacings) separates **model's** and **view's** 'addresses'
-* `textContent` - view's **target property** tied to the given model
+or via the corresponding `dataset` property:
 
->Last item, targeted property, is **optional** (when ommitted, `=>` separator should also be left out).
+```javascript
+const vEl = document.querySelector('.field .first-name');
+vEl.dataset.tie = 'user:firstName';
+```
+
+This declaration ties between span's `textContent` and the property `firstName` of the `userTie`'s model. Let's review the declaration syntax parts:
+* `data-tie` - attribute name; `data-tier` library is looking for those when processing the DOM; those properties are also observed for mutations in runtime reflecting and change in the view
+* `user:` - first part of tied view's parameter is the __tie key__ followed by the __`:`__ character (colon)
+* `firstName` - path to the __source property__ within the tied model; path can be of any depth (__`.`__ (dot) separated nodes)
+* `=>` - fat arrow (with none/any spaces around) separates __model's__ and __view's__ addresses
+* `textContent` - view's __target property__ tied to the given model; as of now, this part may only be of a depth of 1 (flat)
+
+>Last item, targeted property, is __optional__ (when ommitted, `=>` separator should also be left out).
 >Shortened example is shown above.
->When short syntax is used, `DataTier` will resolve the **default** target property, which resolved in the following order:
->* custom default property used if the element has property `defaultTieTarget` defined
->* `value` used for elements `INPUT`, `SELECT`, `TEXTAREA`
->* `src` used for elements `IFRAME`, `IMG`, `SOURCE`
->* `textContent` for the rest
+>When short syntax is used `DataTier` will resolve the target property in the following sequence:
+>* custom default property used if the element has `defaultTieTarget` property defined and returning a non-empty string
+>* else `value` if element is `INPUT`, `SELECT`, `TEXTAREA`
+>* else `src` if element is `IFRAME`, `IMG`, `SOURCE`
+>* else `textContent`
 
-The library scans for such an attributes, parses them and ties to the relevant model/s via relevant ties.
+Elements found and processed as valid `data-tier`'s views said to be __tied to__ their corresponding tie, so we may say that, `span` from the example is tied to the `userTie`.
 
-Elements found and processed as valid `data-tier`'s views said to be **tied to** their corresponding tie.
-`span` from the example is tied to the `userTie`.
-
-Actual view update happens immediately when:
-* tied element just being added to the document, and relevant Tie is already defined
-* element's tying definition (attribute value) is being changed and a corresponding Tie is already defined
-  * tie definition may be set as an attribute in HTML or setting `element.dataset.tie` property from JS
-* new Tie is being created and a pre-tied element is already found in the document
-* model's property, that the element is tied to, is being changed
-
-To continue with our example, once the 'user' Tie is defined and the above `span` is added to the document, it's `textContent` will immediately be updated to 'Ploni'.
+For the more detailed explanation when those attributes are scanned, their observation and changes propagation see [Lifecycle](./lifecycle.md) documentation.
 
 Let's see more advanced example:
 
