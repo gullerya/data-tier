@@ -5,24 +5,6 @@ const
 	originalConsoleError = console.error,
 	suite = createSuite({ name: 'Testing views (negative)' });
 
-suite.runTest({ name: 'wrong tie name', sync: true }, async test => {
-	const d = document.createElement('div');
-	const errors = [];
-
-	console.error = (m, e) => {
-		errors.push(e);
-	};
-
-	d.dataset.tie = 'some.wrong.thing';
-	document.body.appendChild(d);
-	await test.waitNextMicrotask();
-	test.assertTrue(errors.length &&
-		errors[0] instanceof Error &&
-		errors[0].message.includes('"some.wrong.thing" is not'));
-
-	console.error = originalConsoleError;
-});
-
 suite.runTest({ name: 'wrong tying syntax', sync: true }, async test => {
 	const d = document.createElement('div');
 	const errors = [];
