@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __2.0.2__
+  * documentation improvements and enhancements
+
 * __2.0.0__
   * implemented [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
 

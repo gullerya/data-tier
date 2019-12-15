@@ -9,11 +9,16 @@
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/Javascript applications.
 `data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [`object-observer`](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
+It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts. Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will also have a bunch of useful information on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+
 #### Support matrix: ![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub>
 
 #### Performance report: TBD
 
 #### Versions ([full changelog](./docs/changelog.md))
+
+* __2.0.2__
+  * documentation improvements and enhancements
 
 * __2.0.0__
   * implemented [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
@@ -21,11 +26,6 @@
 
 * __1.14.0__
   * upgrading `object-observer` dependency, which has a fix for a proper handling of an Error objects
-
-* __1.13.1__
-  * fixed [issue #32](https://github.com/gullerya/data-tier/issues/32) - when mistakenly same property tied more than once - error is shown, the first one is effective
-  * fixed [issue #33](https://github.com/gullerya/data-tier/issues/33) - fixes a defect with NULL value in the deep object's tied path
-  * fixed issue (non-reported) with creation of non existing path by change event
 
 ## Loading the library
 
