@@ -6,12 +6,13 @@ const suite = createSuite({ name: 'Testing ties' });
 
 suite.runTest({ name: 'adding a tie and then a view' }, async test => {
 	const
+		tieName = test.getRandom(8),
 		newEl = document.createElement('div'),
 		text = 'text test A';
 
-	ties.create('tiesTestA', { name: text });
+	ties.create(tieName, { name: text });
 
-	newEl.dataset.tie = 'tiesTestA:name => textContent';
+	newEl.dataset.tie = tieName + ':name => textContent';
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
@@ -21,15 +22,17 @@ suite.runTest({ name: 'adding a tie and then a view' }, async test => {
 
 suite.runTest({ name: 'adding a view and then a tie' }, async test => {
 	const
+		tieNameA = test.getRandom(8),
+		tieNameB = test.getRandom(8),
 		newEl = document.createElement('div'),
 		text = 'text test B';
 
-	newEl.dataset.tie = 'tiesTestB:name => textContent';
+	newEl.dataset.tie = tieNameA + ':nonce => nonce, ' + tieNameB + ':name';
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
 
-	ties.create('tiesTestB', { name: text });
+	ties.create(tieNameB, { name: text });
 	if (newEl.textContent !== text) test.fail(new Error('expected the content to be "' + text + '", found: ' + newEl.textContent));
 });
 

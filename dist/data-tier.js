@@ -266,9 +266,7 @@ function updateFromTie(element, changedPath, change, tieKey, tieModel) {
 				newValue = '';
 			}
 			const tp = param.targetProperty;
-			if (tp === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
-				element.checked = newValue;
-			} else if (tp === 'href') {
+			if (tp === 'href') {
 				element.href.baseVal = newValue;
 			} else {
 				element[tp] = newValue;
@@ -294,9 +292,7 @@ function updateFromView(element, changedPath) {
 				value = '';
 			}
 			const tp = param.targetProperty;
-			if (tp === 'value' && element.nodeName === 'INPUT' && element.type === 'checkbox') {
-				element.checked = value;
-			} else if (tp === 'href') {
+			if (tp === 'href') {
 				element.href.baseVal = value;
 			} else {
 				element[tp] = value;

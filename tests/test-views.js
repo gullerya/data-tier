@@ -78,16 +78,28 @@ suite.runTest({ name: 'adding few views (with depth) with paths defined' }, asyn
 	if (newElB.textContent !== user.address.apt.toString()) test.fail(new Error('expected the content to be "' + user.address.apt + '"'));
 });
 
-suite.runTest({ name: 'adding checkbox view and verifying its value set correctly' }, async test => {
+suite.runTest({ name: 'adding checkbox view and verifying its default value set correctly' }, async test => {
 	const newEl = document.createElement('input');
 	newEl.type = 'checkbox';
-	newEl.dataset.tie = 'cbValueTest:test => value';
+	newEl.dataset.tie = 'cbValueTest:test';
 	document.body.appendChild(newEl);
 	DataTier.ties.create('cbValueTest', { test: true });
 
 	await test.waitNextMicrotask();
 
 	if (newEl.checked !== true) test.fail(new Error('expected the value to be "true", but found "' + newEl.checked + '"'));
+});
+
+suite.runTest({ name: 'adding source and verifying its default value set correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	const newEl = document.createElement('source');
+	newEl.dataset.tie = tieName + ':test';
+	document.body.appendChild(newEl);
+	DataTier.ties.create(tieName, { test: 'some.non.existing.url' });
+
+	await test.waitNextMicrotask();
+
+	test.assertTrue(newEl.src.endsWith('some.non.existing.url'));
 });
 
 suite.runTest({ name: 'verify that falsish values (0, false, \'\') are visualized correctly' }, async test => {
