@@ -3,6 +3,10 @@
 Modern
 ------
 
+* __2.1.0__
+  * fixed [issue #34](https://github.com/gullerya/data-tier/issues/34) - tying the model at the root level
+  * minor documentation improvements
+
 * __2.0.2__
   * documentation improvements and enhancements
 
