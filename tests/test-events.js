@@ -147,11 +147,12 @@ suite.runTest({ name: 'custom event/value multiple bindings' }, async test => {
 	test.assertEqual(testTie.other, 'thing');
 });
 
-suite.runTest({ name: 'deeply nested model update' }, async test => {
-	const testModel = DataTier.ties.create('deepNestModelUpdate', {});
+suite.runTest({ name: 'deeply nested model update - success' }, async test => {
+	const tieName = test.getRandom(8);
+	const testModel = DataTier.ties.create(tieName);
 
 	const i = document.createElement('input');
-	i.dataset.tie = 'deepNestModelUpdate:one.two.three';
+	i.dataset.tie = tieName + ':one.two.three';
 	document.body.appendChild(i);
 
 	await test.waitNextMicrotask();
@@ -161,7 +162,25 @@ suite.runTest({ name: 'deeply nested model update' }, async test => {
 
 	await test.waitNextMicrotask();
 
-	test.assertEqual(testModel.one && testModel.one.two && testModel.one.two.three, 'new value');
+	test.assertEqual('new value', testModel.one && testModel.one.two && testModel.one.two.three);
+});
+
+suite.runTest({ name: 'deeply nested model update - failure' }, async test => {
+	const tieName = test.getRandom(8);
+	const testModel = DataTier.ties.create(tieName, { one: { two: 4 } });
+
+	const i = document.createElement('input');
+	i.dataset.tie = tieName + ':one.two.three';
+	document.body.appendChild(i);
+
+	await test.waitNextMicrotask();
+
+	i.value = 'new value';
+	i.dispatchEvent(new Event('change'));
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(4, testModel.one.two);
 });
 
 suite.runTest({ name: 'removed view is untied' }, async test => {

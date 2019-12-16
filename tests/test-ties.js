@@ -1,5 +1,6 @@
 import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import { ties } from '../dist/data-tier.js';
+import { Observable } from '../dist/object-observer.min.js';
 
 const suite = createSuite({ name: 'Testing ties' });
 
@@ -47,53 +48,53 @@ suite.runTest({ name: 'creating a tie with an undefined data' }, async test => {
 	if (newEl.textContent !== o.text) test.fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 });
 
-suite.runTest({ name: 'creating a tie with a NULL data' }, async test => {
+suite.runTest({ name: 'setting a tie with a non Observable', expectError: 'Cannot perform \'get\' on a proxy that has been revoked' }, async test => {
 	const
-		newEl = document.createElement('div'),
-		o = { text: 'text test D' },
-		t = ties.create('tiesTestD', null);
-	newEl.dataset.tie = 'tiesTestD:text => textContent';
-	document.body.appendChild(newEl);
-
-	await test.waitNextMicrotask();
-
-	if (newEl.textContent) test.fail(new Error('preliminary expectation failed: expected the content to be empty'));
-	Object.assign(t, o);
-	if (newEl.textContent !== o.text) test.fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
-});
-
-suite.runTest({ name: 'setting a tie with a non Observable object' }, async test => {
-	const
+		tieName = test.getRandom(8),
 		newEl = document.createElement('div'),
 		o = { text: 'text test E' },
-		t = ties.create('tiesTestE', o);
-	newEl.dataset.tie = 'tiesTestE:text => textContent';
+		t = ties.create(tieName, o);
+
+	test.assertNotEqual(o, t);
+
+	newEl.dataset.tie = tieName + ':text => textContent';
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
+	test.assertEqual(newEl.textContent, t.text);
 
-	if (newEl.textContent !== o.text) test.fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
+	ties.remove(tieName);
 
-	const newO = { text: 'text test E new' };
-	Object.assign(t, newO);
+	t.text;
+});
+
+suite.runTest({ name: 'setting a tie with an Observable' }, async test => {
+	const
+		tieName = test.getRandom(8),
+		newEl = document.createElement('div'),
+		o = Observable.from({ text: 'text test E' }),
+		t = ties.create(tieName, o);
+
+	test.assertEqual(o, t);
+
+	newEl.dataset.tie = tieName + ':text';
+	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
+	test.assertEqual(newEl.textContent, o.text);
 
-	if (newEl.textContent !== newO.text) test.fail(new Error('expected the content to be "text test E new"; found: ' + newEl.textContent));
+	ties.remove(tieName);
+
+	test.assertEqual('text test E', o.text);
+});
+
+suite.runTest({ name: 'creating a tie with a NULL data - negative', expectError: 'initial model, when provided, MUST NOT be null' }, () => {
+	ties.create('tiesTestD', null);
 });
 
 suite.runTest({ name: 'setting a tie with a non object value - negative' }, test => {
 	try {
 		ties.create('tiesTestE', 5);
-		test.fail('flow was not supposed to get to this point');
-	} catch (e) {
-	}
-});
-
-suite.runTest({ name: 'tie should be sealed - negative' }, test => {
-	try {
-		const tie = ties.create('tiesTestSealed', {});
-		tie.someProp = 'text';
 		test.fail('flow was not supposed to get to this point');
 	} catch (e) {
 	}

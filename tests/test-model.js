@@ -105,9 +105,9 @@ suite.runTest({ name: 'deep model, NULL base' }, async test => {
 
 	await test.waitNextMicrotask();
 
-	test.assertEqual(d1.textContent, '');
-	test.assertEqual(d2.textContent, '');
-	test.assertEqual(d3.textContent, '');
+	test.assertEqual('[object Object]', d1.textContent);
+	test.assertEqual('', d2.textContent);
+	test.assertEqual('', d3.textContent);
 });
 
 suite.runTest({ name: 'deep model, NULL IN path' }, async test => {
@@ -129,7 +129,7 @@ suite.runTest({ name: 'deep model, NULL IN path' }, async test => {
 
 	await test.waitNextMicrotask();
 
-	test.assertEqual(d1.textContent, '');
-	test.assertEqual(d2.textContent, '');
-	test.assertEqual(d3.textContent, '');
+	test.assertEqual('[object Object]', d1.textContent);
+	test.assertEqual('', d2.textContent);
+	test.assertEqual('', d3.textContent);
 });

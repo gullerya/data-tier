@@ -5,6 +5,35 @@ const
 	suite = createSuite({ name: 'Testing views changes' }),
 	user = { name: 'some name', age: 7, address: { street: 'str', apt: 9 } };
 
+suite.runTest({ name: 'adding root model to view - model first' }, async test => {
+	const tieName = test.getRandom(8);
+	DataTier.ties.create(tieName, { test: 'test' });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = tieName + ' => data';
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	test.assertTrue(newEl.data !== null && newEl.data !== undefined);
+	test.assertEqual('test', newEl.data.test)
+});
+
+suite.runTest({ name: 'adding root model to view - view first' }, async test => {
+	const tieName = test.getRandom(8);
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = tieName + ' => data';
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	DataTier.ties.create(tieName, { test: 'test' });
+
+	test.assertTrue(newEl.data !== null && newEl.data !== undefined);
+	test.assertEqual('test', newEl.data.test)
+});
+
 suite.runTest({ name: 'update view when path changes (deep)' }, async test => {
 	DataTier.ties.create('viewsA', user);
 	const s1 = document.createElement('div');
@@ -26,7 +55,7 @@ suite.runTest({ name: 'adding new view (zero depth) with path defined' }, async 
 	DataTier.ties.create('viewsB', user);
 
 	const newEl = document.createElement('div');
-	newEl.dataset.tie = 'viewsB:name => textContent';
+	newEl.dataset.tie = 'viewsB:name';
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();

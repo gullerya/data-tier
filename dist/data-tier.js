@@ -58,7 +58,8 @@ const
 class Tie {
 	constructor(key, model) {
 		this.key = key;
-		this.model = model;
+		this.model = ensureObservable(model);
+		this.ownModel = this.model !== model;
 		this.observer = Tie.processDataChanges.bind(this);
 		this.model.observe(this.observer);
 		Object.freeze(this);
@@ -133,13 +134,17 @@ function Ties() {
 		}
 		validateTieKey(key);
 
+		if (model === null) {
+			throw new Error('initial model, when provided, MUST NOT be null');
+		}
+
 		if (!(key in views)) views[key] = {};
 
-		const m = ensureObservable(model);
-		ts[key] = new Tie(key, m);
+		const t = new Tie(key, model);
+		ts[key] = t;
 		ts[key].observer([{ path: [] }]);
 
-		return m;
+		return t.model;
 	};
 
 	this.remove = function remove(tieToRemove) {
@@ -155,7 +160,7 @@ function Ties() {
 		delete views[tieNameToRemove];
 		const tie = ts[tieNameToRemove];
 		if (tie) {
-			if (tie.model) {
+			if (tie.model && tie.ownModel) {
 				tie.model.revoke();
 			}
 			delete ts[tieNameToRemove];

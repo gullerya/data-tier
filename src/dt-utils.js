@@ -4,7 +4,16 @@ const
 	DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget',
 	CHANGE_EVENT_NAME_PROVIDER = 'changeEventName',
 	PARAM_SPLITTER = /\s*=>\s*/,
-	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/;
+	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/,
+	DEFAULT_VALUE_ELEMENTS = {
+		INPUT: 1, SELECT: 1, TEXTAREA: 1
+	},
+	DEFAULT_SRC_ELEMENTS = {
+		IMG: 1, IFRAME: 1, SOURCE: 1
+	},
+	DEFAULT_CHANGE_ELEMENTS = {
+		INPUT: 1, SELECT: 1, TEXTAREA: 1
+	};
 
 export {
 	ensureObservable,
@@ -19,13 +28,13 @@ export {
 }
 
 function ensureObservable(o) {
-	let result;
 	if (!o) {
-		result = Observable.from({});
+		return Observable.from({});
 	} else if (!Observable.isObservable(o)) {
-		result = Observable.from(o);
+		return Observable.from(o);
+	} else {
+		return o;
 	}
-	return result;
 }
 
 function getTargetProperty(element) {
@@ -34,9 +43,9 @@ function getTargetProperty(element) {
 		const eName = element.nodeName;
 		if (eName === 'INPUT' && element.type === 'checkbox') {
 			result = 'checked';
-		} else if (eName === 'INPUT' || eName === 'SELECT' || eName === 'TEXTAREA') {
+		} else if (eName in DEFAULT_VALUE_ELEMENTS) {
 			result = 'value';
-		} else if (eName === 'IMG' || eName === 'IFRAME' || eName === 'SOURCE') {
+		} else if (eName in DEFAULT_SRC_ELEMENTS) {
 			result = 'src';
 		} else {
 			result = 'textContent';
@@ -53,7 +62,6 @@ function extractViewParams(element) {
 	return result;
 }
 
-//	syntax example (first param is a shortcut to default): data-tie="orders:0.address.street, orders:0.address.apt => title"
 function parseViewParams(multiParam, element) {
 	const
 		result = [],
@@ -69,7 +77,7 @@ function parseViewParams(multiParam, element) {
 		try {
 			parsedParam = parseTieParam(next, element);
 			if (parsedParam.targetProperty in keysTest) {
-				console.error('elements\'s property "' + parsedParam.targetProperty + '" tied more than once; all but first ties dismissed');
+				console.error('elements\'s property "' + parsedParam.targetProperty + '" tied more than once; all but first dismissed');
 			} else {
 				result.push(parsedParam);
 				keysTest[parsedParam.targetProperty] = true;
@@ -81,7 +89,6 @@ function parseViewParams(multiParam, element) {
 	return result;
 }
 
-//	syntax example: data-tie="orders:0.address.street => textContent"
 function parseTieParam(rawParam, element) {
 	const parts = rawParam.split(PARAM_SPLITTER);
 
@@ -122,9 +129,7 @@ function delChangeListener(element, changeListener) {
 function obtainChangeEventName(element) {
 	let changeEventName = element[CHANGE_EVENT_NAME_PROVIDER];
 	if (!changeEventName) {
-		if (element.nodeName === 'INPUT' ||
-			element.nodeName === 'SELECT' ||
-			element.nodeName === 'TEXTAREA') {
+		if (element.nodeName in DEFAULT_CHANGE_ELEMENTS) {
 			changeEventName = 'change';
 		}
 	}
@@ -134,6 +139,7 @@ function obtainChangeEventName(element) {
 function getPath(ref, path) {
 	if (!ref) return null;
 	const l = path.length;
+	if (!l) return ref;
 	let i = 0, n;
 	for (; i < l - 1; i++) {
 		n = path[i];
@@ -146,13 +152,18 @@ function getPath(ref, path) {
 function setPath(ref, path, value) {
 	if (!ref) return;
 	const l = path.length;
-	let i = 0, n;
+	let i = 0, n, o;
 	for (; i < l - 1; i++) {
 		n = path[i];
-		if (!ref[n] || typeof ref[n] !== 'object') {
+		o = ref[n];
+		if (o && typeof o === 'object') {
+			ref = o;
+		} else if (o === undefined || o === null) {
 			ref[n] = {};
+			ref = ref[n];
+		} else if (typeof o !== 'object') {
+			throw new Error('setting deep path MAY NOT override primitives along the way');
 		}
-		ref = ref[n]
 	}
 	ref[path[i]] = value;
 }
