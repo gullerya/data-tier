@@ -257,9 +257,9 @@ function updateFromTie(element, changedPath, change, tieKey, tieModel) {
 
 		if (param.rawPath.indexOf(changedPath) === 0) {
 			let newValue;
-			if (changedPath !== param.rawPath || typeof change.value === 'undefined') {
+			if (!change || typeof change.value === 'undefined' || changedPath !== param.rawPath) {
 				newValue = getPath(tieModel, param.path);
-			} else {
+			} else if (change) {
 				newValue = change.value;
 			}
 			if (typeof newValue === 'undefined') {

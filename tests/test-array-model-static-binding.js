@@ -52,3 +52,21 @@ suite.runTest({ name: 'array multi-manipulation flow' }, async test => {
 	testTie.push('one', 'two', 'tree');
 	if (element.textContent !== 'one') test.fail('expected textContent to be [one], found ' + element.textContent);
 });
+
+suite.runTest({ name: 'array - full replate' }, async test => {
+	const
+		tieName = test.getRandom(8),
+		testTie = DataTier.ties.create(tieName, { data: [] }),
+		element = document.createElement('div');
+
+	element.dataset.tie = tieName + ':data => data';
+	document.body.appendChild(element);
+
+	await test.waitNextMicrotask();
+	test.assertTrue(Array.isArray(element.data));
+	test.assertEqual(0, element.data.length);
+
+	testTie.data.push.apply(testTie.data, [0, 1, 2, 3]);
+	test.assertEqual(4, element.data.length);
+	test.assertEqual(2, element.data[2]);
+});
