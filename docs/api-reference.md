@@ -9,115 +9,137 @@ Beside the actual API's signatures, there is much of importance of understaning 
 > In the snippets below I'll assume, that the following statement was used to import the library: `import * as DataTier from './dist/data-tier.min.js';`
 
 ## JavaScript - model definitions and operations
-Imported `DataTier` object has `ties` object defined on it:
-> `typeof DataTier.ties === 'object';   //  true`
+Imported `DataTier` object has a `ties` property.
+`ties` is a data management namespace, holding model related APIs.
 
-`ties` is a data management namespace, holding the following APIs:
+### __A__. `const tiedModel = DataTier.ties.create(key[, model]);`
+Creates (internally) a new tie, processes the `model`, updates the views if any (synchronously) and returns the processed `model` ready for further usage by application.
 
-1. `const tie = DataTier.ties.`__`create(key[, model]);`__
+Parameters:
+* __`key`__ `[string]` - unique, MUST match `/^[a-zA-Z0-9]+$/` pattern
+* __`model`__ `[object/Array]` - optional, MUST NOT be null
 
-Internally creates a new tie management with the specified (unique) key.
-__`Observable`__ model is returned being created (via cloning) from the initially provided one, or an empty object if none provided.
-> See more about `Observable`, observation and cloning [here](https://www.npmjs.com/package/object-observer).
+Result:
+* __`tiedModel`__ `[Observable]` - created (by cloning) from the provided model, or from an empty object if none provided
+> Read about `Observable` creation, APIs and more [here](https://www.npmjs.com/package/object-observer).
 
-Any elements already found in DOM and declared to be tied to it (by key, see HTML syntax [below](#html-tying-declaration)), will be updated immediatelly (synchronously).
-
-* `key` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`, unique
-* `model` - optional parameter, which, if provided, MUST be an object/array
-* result is an `Observable` object (clone of provided modes or an empty object)
-> Attention! If the tie intended to be an `Array`, provide an array (may be empty) as the model upon creation.
-
+Examples:
 ```javascript
-let user = {
-        firstName: 'Ploni',
-        lastName: 'Almoni',
-        address: {
-            country: 'Utopia',
-            city: 'Dreamcity'
-        }
-    },
-    userTie = DataTier.ties.create('user', user),
-    settingsTie = DataTier.ties.create('settings');
+//  provided initial model example
+const band = {
+    name: 'Dream Theater',
+    kind: 'progressive metal',
+    since: 1985
+};
+const bandModel = DataTier.ties.create('bandModel', band);
+console.log(bandModel === band);
+//  false - source model is cloned
+
+//  default empty model - object
+const userSettings = DataTier.ties.create('userSettings');
+
+//  insist on Array model (empty one in this case)
+const albums = DataTier.ties.create('albums', []);
+
+//  creating from an already crafted Observable (rare use-cases)
+const oUser = Observable.from({
+    firstName: 'Uria',
+    lastName: 'Guller'
+});
+const tiedUser = DataTier.ties.create('userModel', oUser);
+console.log(tiedUser === oUser);
+//  true - if an Observable provided, it's taken as it is
 ```
 
-2. `DataTier.ties.`__`remove(tieToRemove);`__
+### __B__. `void DataTier.ties.remove(tieToRemove);`
+Discards/unties the specified tie.
 
-Removes tie.
+Note: untying won't have any effect on the views, the will remain at their last state. If views cleanup desired, one should explicitly reset tie's properties (to `null`, for example) or delete them.
 
-Tie's model becomes unobserved by the `data-tier` and is revoked if an `Observable` was initially created by `data-tier`.
-If `Observable` was provided by hosting application, it remains intact.
+Parameters:
+* __`key`__ `[string/object/Array]` - key or an actual tie model (the one obtained from `create` API call)
+
+If the tie was created from an `Observable` (see last example above) - it will be untied, but __not revoked__, thus will remain usable by the providing application.
+
+On the opposite, if an `Observable` was crafted during `create` API call, if will be __revoked__, thus becoming unusable for any further use.
 
 If no tie found by the given `tieToRemove`, nothing will happen.
 
-* `tieToRemove` - MUST parameter, may be one of:
-  * valid tie key (string matching the pattern `/^[a-zA-Z0-9]+$/`)
-  * tie object itself 
-
+Examples (continue with examples above):
 ```javascript
-DataTier.ties.remove('settings');
+//  remove providing the tie's model
+DataTier.ties.remove(bandModel);
+console.log(bandModel.name);
+//  Error - model was revoked
+
+//  or by key
+DataTier.ties.remove('userSettings');
+
+DataTier.ties.remove(tiedUser);
+console.log(tiedUser.firstName);
+//  Uria - provided Observable won't be revoked upon removal
 ```
 
-3. `const tie = DataTier.ties.`__`get(key);`__
+### __C__. `const tiedModel = DataTier.ties.get(key);`
 
 Retrieves tie by key.
 
-If no tie found by the given `key`, will return `undefined`.
+Parameters:
+* __`key`__ `[string]` - key, the tie was created with
 
-* `key` - MUST parameter, string matching the pattern `/^[a-zA-Z0-9]+$/`
+Result:
+* __`tiedModel`__ `[Observable]` - tie's model; `undefined` if none found
 
+Example:
 ```javascript
-let settingsTie = DataTier.ties.get('settings');
+const settingsTie = DataTier.ties.get('userSettings');
 ```
 
 ## `HTML` - tying declaration
-In order to tie a __view/s__ (some DOM element/s) to __model__, a declaration in HTML is required.
-This declaration is done via element's attribute `data-tie`:
+In order to turn a DOM element into `data-tier`'s view, or putting it in other words, to tie it to the __model__, a `data-tie` attribute declaration is used.
 
+Let's start from examples this time:
 ```html
-//  explicit syntax
+//  full syntax (including target property) - single parameter
 <span data-tie="user:firstName => textContent"></span>
 
-//  shortened syntax (tying to the default target property)
+//  short syntax (tying to the default target property)
 <span data-tie="user:firstName"></span>
+
+//  mixed syntaxes - multi parameter
+<span data-tie="user:firstName, user:editFirstName => click">
+<!-- firstName property will be tied to the default textContent -->
+<!-- editFirstName function will be set on the element's 'click' -->
 ```
 
-or via the corresponding `dataset` property:
-
+It is also perfectly valid to operate the same thing via JavaScript and element's `dataset` property:
 ```javascript
-const vEl = document.querySelector('.field .first-name');
-vEl.dataset.tie = 'user:firstName';
+const ve = document.querySelector('.field .first-name');
+ve.dataset.tie = 'user:address.city';
 ```
 
-This declaration ties between span's `textContent` and the property `firstName` of the `userTie`'s model. Let's review the declaration syntax parts:
-* `data-tie` - attribute name; `data-tier` library is looking for those when processing the DOM; those properties are also observed for mutations in runtime reflecting and change in the view
-* `user:` - first part of tied view's parameter is the __tie key__ followed by the __`:`__ character (colon)
-* `firstName` - path to the __source property__ within the tied model; path can be of any depth (__`.`__ (dot) separated nodes)
-* `=>` - fat arrow (with none/any spaces around) separates __model's__ and __view's__ addresses
-* `textContent` - view's __target property__ tied to the given model; as of now, this part may only be of a depth of 1 (flat)
+Let's take a closer look onto the tie parameter/s parts:
+* `user` - tie's __key__
+* `:address.city` - __path__ to the __source property__ within the tied model
+    * path can be of any depth; path separated from tie's key by the `:` (colon)
+* `=> textContent` - view's __target property__ tied to the given model
+    * as of now, this part may only be of a depth of 1 (flat)
+    * in a multi-param definition, any target property MAY NOT be used more than once
+    * target property is separated by the `=>` (fat arrow) surrounded by zero or more spaces
 
->Last item, targeted property, is __optional__ (when ommitted, `=>` separator should also be left out).
->Shortened example is shown above.
->When short syntax is used `DataTier` will resolve the target property in the following sequence:
->* custom default property used if the element has `defaultTieTarget` property defined and returning a non-empty string
->* else `value` if element is `INPUT`, `SELECT`, `TEXTAREA`
->* else `src` if element is `IFRAME`, `IMG`, `SOURCE`
->* else `textContent`
+As we've seen in the examples above, the target property may be omitted, leaving `data-tier` to resolve the target property as default. This is done by the following steps (in the exact order):
+* if the element has `defaultTieTarget` property defined and returning a non-empty string - this string will be taken as the target property
+* else `value` will be used for `INPUT`, `SELECT` and `TEXTAREA`
+* else `src` will be used for `IFRAME`, `IMG` and `SOURCE`
+* else `textContent`
 
-Elements found and processed as valid `data-tier`'s views said to be __tied to__ their corresponding tie, so we may say that, `span` from the example is tied to the `userTie`.
-
-For the more detailed explanation when those attributes are scanned, their observation and changes propagation see [Lifecycle](./lifecycle.md) documentation.
-
-Let's see more advanced example:
-
+Worthy to mention, that it is perfectly valid to tie a view to the whole tie's model. In this case `path` part is omitted, of course. Since it is not possible to re-assign tie's model as a whole, this is a __one-time__ binding. It may be good, actually, for a cases like binding some immutable model to the read-only views, data for a charting widgets, for example:
 ```html
-<input type="text" data-tie="user:address.city => value, user:address.country => title">
+<!-- longer syntax to explicitly specify target property -->
+<chart-widget data-tie="chartModel => data"></chart-widget>
+
+<!-- shorter syntax if the element has 'defaultTieTarget' property set to 'data' -->
+<chart-widget data-tie="chartModel"></chart-widget>
 ```
 
-In this case we have a multi-valued tying parameter, one for an element's `value` property and another one for the `title`.
-There may be any number of tying values in a multi-valued parameter.
-Multi-valued parameter should be separated by some string matching `/\s*[,;]\s*/` (basically `,` [comma] and `;` [semicolon] surrounded by any number of spacings).
-
-Few simple and obvious rules to keep in mind here:
-
-* Same property of a single element MAY NOT be tied more than once
-* Several elements and several properties within a single element MAY be tied to the same model's property
+For the more detailed explanation about when those attributes are scanned, their observation and changes propagation see [Lifecycle](./lifecycle.md) documentation.

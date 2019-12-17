@@ -59,7 +59,7 @@ the following JS will play right:
 ```javascript
 const ve = document.querySelector('.display-name');
 
-console.log(e.textContent);
+console.log(ve.textContent);
 //	empty string
 
 const currentUser = DataTier.ties.create('currentUser', {
@@ -96,23 +96,23 @@ const nextToGo = DataTier.ties.create('nextToGo', {
 ```
 the following JS will play right:
 ```javascript
-const e = document.createElement('span');
+const ve = document.createElement('span');
 e.dataset.tie = 'nextToGo:name';
 document.body.appendChild(e);
 
-console.log(e.textContent);
+console.log(ve.textContent);
 //	empty string - we shall wait next microtask to see the changes
 
 await new Promise(r => setTimeout(r, 0));
 
-console.log(e.textContent);
+console.log(ve.textContent);
 //	Negev - added elements are processed and if detected as view - updated
 
-e.dataset.tie = 'nextToGo:type'
+ve.dataset.tie = 'nextToGo:type'
 
 await new Promise(r => setTimeout(r, 0));
 
-console.log(e.textContent);
+console.log(ve.textContent);
 //	desert - 'data-tie' attribute mutations observed and processed too
 ```
 
