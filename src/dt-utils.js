@@ -55,9 +55,10 @@ function getTargetProperty(element) {
 }
 
 function extractViewParams(element) {
-	let result = [], param;
-	if (element && element.dataset && (param = element.dataset.tie)) {
-		result = parseViewParams(param, element);
+	let result = null;
+	const rawParam = element.dataset.tie;
+	if (rawParam) {
+		result = parseViewParams(rawParam, element);
 	}
 	return result;
 }

@@ -206,18 +206,20 @@ function add(element) {
 
 	if (element.matches(':defined')) {
 		const viewParams = extractViewParams(element);
-		let i = viewParams.length;
-		while (i) {
-			const next = viewParams[--i];
-			const tieKey = next.tieKey;
-			const rawPath = next.rawPath;
-			const tieViews = views[tieKey] || (views[tieKey] = {});
-			const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
-			if (pathViews.indexOf(element) < 0) {
-				pathViews.push(element);
-				element[VIEW_PARAMS_KEY] = viewParams;
-				updateFromView(element);
-				addChangeListener(element, changeListener);
+		element[VIEW_PARAMS_KEY] = viewParams;
+		if (viewParams) {
+			let i = viewParams.length;
+			while (i) {
+				const next = viewParams[--i];
+				const tieKey = next.tieKey;
+				const rawPath = next.rawPath;
+				const tieViews = views[tieKey] || (views[tieKey] = {});
+				const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
+				if (pathViews.indexOf(element) < 0) {
+					pathViews.push(element);
+					updateFromView(element);
+					addChangeListener(element, changeListener);
+				}
 			}
 		}
 
@@ -380,17 +382,19 @@ function move(element, oldParam, newParam) {
 
 	if (newParam) {
 		viewParams = extractViewParams(element);
-		element[VIEW_PARAMS_KEY] = viewParams;
-		for (i = 0, l = viewParams.length; i < l; i++) {
-			const tieParam = viewParams[i];
-			const tieViews = views[tieParam.tieKey] || (views[tieParam.tieKey] = {});
-			const pathViews = tieViews[tieParam.rawPath] || (tieViews[tieParam.rawPath] = []);
-			if (pathViews.indexOf(element) < 0) {
-				pathViews.push(element);
-				updateFromView(element, tieParam.rawPath);
+		if (viewParams) {
+			element[VIEW_PARAMS_KEY] = viewParams;
+			for (i = 0, l = viewParams.length; i < l; i++) {
+				const tieParam = viewParams[i];
+				const tieViews = views[tieParam.tieKey] || (views[tieParam.tieKey] = {});
+				const pathViews = tieViews[tieParam.rawPath] || (tieViews[tieParam.rawPath] = []);
+				if (pathViews.indexOf(element) < 0) {
+					pathViews.push(element);
+					updateFromView(element, tieParam.rawPath);
+				}
 			}
+			addChangeListener(element, changeListener);
 		}
-		addChangeListener(element, changeListener);
 	}
 }
 
