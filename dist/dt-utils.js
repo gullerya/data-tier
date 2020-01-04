@@ -27,6 +27,17 @@ export {
 	setPath
 }
 
+class Parameter {
+	constructor(tieKey, rawPath, path, targetProperty, isFunctional, fParams) {
+		this.tieKey = tieKey;
+		this.rawPath = rawPath;
+		this.path = path;
+		this.targetProperty = targetProperty;
+		this.isFunctional = isFunctional;
+		this.fParams = fParams;
+	}
+}
+
 function ensureObservable(o) {
 	if (!o) {
 		return Observable.from({});
@@ -55,12 +66,12 @@ function getTargetProperty(element) {
 }
 
 function extractViewParams(element) {
-	let result = null;
 	const rawParam = element.dataset.tie;
 	if (rawParam) {
-		result = parseViewParams(rawParam, element);
+		return parseViewParams(rawParam, element);
+	} else {
+		return null;
 	}
-	return result;
 }
 
 function parseViewParams(multiParam, element) {
@@ -69,14 +80,28 @@ function parseViewParams(multiParam, element) {
 		keysTest = {},
 		rawParams = multiParam.split(MULTI_PARAMS_SPLITTER),
 		l = rawParams.length;
-	let i = 0, next, parsedParam;
+	let i = 0, next, fnext, parsedParam;
 	for (; i < l; i++) {
 		next = rawParams[i];
 		if (!next) {
 			continue;
 		}
+		if (fnext) {
+			fnext += ',' + next;
+		}
+		if (next.indexOf('(') > 0) {
+			fnext = next;
+			if (fnext.indexOf(')') < 0) {
+				continue;
+			}
+		}
 		try {
-			parsedParam = parseTieParam(next, element);
+			if (fnext) {
+				parsedParam = parseFunctionParam(fnext);
+				fnext = null;
+			} else {
+				parsedParam = parsePropertyParam(next, element);
+			}
 			if (parsedParam.targetProperty in keysTest) {
 				console.error('elements\'s property "' + parsedParam.targetProperty + '" tied more than once; all but first dismissed');
 			} else {
@@ -90,7 +115,28 @@ function parseViewParams(multiParam, element) {
 	return result;
 }
 
-function parseTieParam(rawParam, element) {
+function parseFunctionParam(rawParam) {
+	const parts = rawParam.split(/[()]/);
+	const fParams = parts[1].split(/\s*,\s*/).map(fp => {
+		const origin = fp.split(':');
+		if (!origin.length || origin.length > 2 || !origin[0]) {
+			throw new Error('invalid function tied value: ' + fp);
+		}
+		const rawPath = origin.length > 1 ? origin[1] : '';
+		return {
+			tieKey: origin[0],
+			rawPath: rawPath,
+			path: rawPath.split('.').filter(node => node)
+		};
+	});
+	if (!fParams.length) {
+		throw new Error('functional tie parameter MUST have at least one tied argument');
+	}
+
+	return new Parameter(null, null, null, parts[0], true, fParams);
+}
+
+function parsePropertyParam(rawParam, element) {
 	const parts = rawParam.split(PARAM_SPLITTER);
 
 	//  add default 'to' property if needed
@@ -105,12 +151,7 @@ function parseTieParam(rawParam, element) {
 	}
 
 	const rawPath = origin.length > 1 ? origin[1] : '';
-	return {
-		tieKey: origin[0],
-		rawPath: rawPath,
-		path: rawPath.split('.').filter(node => node),
-		targetProperty: parts[1]
-	};
+	return new Parameter(origin[0], rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
 }
 
 function addChangeListener(element, changeListener) {

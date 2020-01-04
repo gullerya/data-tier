@@ -1,15 +1,16 @@
 import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import { ties } from '../dist/data-tier.js';
 import { extractViewParams } from '../dist/dt-utils.js';
 
-const suite = createSuite({ name: 'Testing tie params' });
+const suite = createSuite({ name: 'Testing tie properties params' });
 
 //	tie param structure is defined as following:
 //	{
 //		tieKey: <string>,
 //		rawPath: <string>,
 //		path: <string[]>,
-//		targetProperty: <string>
+//		targetProperty: <string>,
+//		isFunctional: false
+//		fParams: null
 //	}
 
 //	single
@@ -34,6 +35,8 @@ suite.runTest({ name: 'single param - full' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(3, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'single param - short' }, test => {
@@ -50,6 +53,8 @@ suite.runTest({ name: 'single param - short' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(3, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'single param - short (short path)' }, test => {
@@ -66,6 +71,8 @@ suite.runTest({ name: 'single param - short (short path)' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(1, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'single param - root' }, test => {
@@ -82,6 +89,8 @@ suite.runTest({ name: 'single param - root' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'single param - long with root' }, test => {
@@ -98,6 +107,8 @@ suite.runTest({ name: 'single param - long with root' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 //	multi
@@ -116,12 +127,16 @@ suite.runTest({ name: 'multi param - full' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(3, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 	vp = vps[1];
 	test.assertEqual('tieNameB', vp.tieKey);
 	test.assertEqual('other.path', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(2, vp.path.length);
 	test.assertEqual('test', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'multi param - short' }, test => {
@@ -138,12 +153,16 @@ suite.runTest({ name: 'multi param - short' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(3, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 	vp = vps[1];
 	test.assertEqual('tieNameB', vp.tieKey);
 	test.assertEqual('other.path', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(2, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'multi param - short (short path)' }, test => {
@@ -160,12 +179,16 @@ suite.runTest({ name: 'multi param - short (short path)' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(1, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 	vp = vps[1];
 	test.assertEqual('tieNameB', vp.tieKey);
 	test.assertEqual('path', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(1, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'multi param - root' }, test => {
@@ -182,12 +205,16 @@ suite.runTest({ name: 'multi param - root' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 	vp = vps[1];
 	test.assertEqual('tieNameB', vp.tieKey);
 	test.assertEqual('', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'multi param - long with root' }, test => {
@@ -204,12 +231,16 @@ suite.runTest({ name: 'multi param - long with root' }, test => {
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 	vp = vps[1];
 	test.assertEqual('tieNameB', vp.tieKey);
 	test.assertEqual('', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('some', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 });
 
 suite.runTest({ name: 'multi param - duplicate target (explicit) - negative' }, test => {
@@ -232,6 +263,8 @@ suite.runTest({ name: 'multi param - duplicate target (explicit) - negative' }, 
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('data', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 
 	console.error = originalConsoleError;
 });
@@ -256,6 +289,8 @@ suite.runTest({ name: 'multi param - duplicate target (implicit) - negative' }, 
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 
 	console.error = originalConsoleError;
 });
@@ -280,6 +315,8 @@ suite.runTest({ name: 'multi param - duplicate target (mixed) - negative' }, tes
 	test.assertTrue(Array.isArray(vp.path));
 	test.assertEqual(0, vp.path.length);
 	test.assertEqual('textContent', vp.targetProperty);
+	test.assertFalse(vp.isFunctional);
+	test.assertEqual(null, vp.fParams);
 
 	console.error = originalConsoleError;
 });

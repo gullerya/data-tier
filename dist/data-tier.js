@@ -206,21 +206,34 @@ function add(element) {
 
 	if (element.matches(':defined')) {
 		const viewParams = extractViewParams(element);
-		element[VIEW_PARAMS_KEY] = viewParams;
-		if (viewParams) {
-			let i = viewParams.length;
+		let i;
+
+		if (viewParams && (i = viewParams.length)) {
+			element[VIEW_PARAMS_KEY] = viewParams;
 			while (i) {
 				const next = viewParams[--i];
-				const tieKey = next.tieKey;
-				const rawPath = next.rawPath;
-				const tieViews = views[tieKey] || (views[tieKey] = {});
-				const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
-				if (pathViews.indexOf(element) < 0) {
-					pathViews.push(element);
-					updateFromView(element);
-					addChangeListener(element, changeListener);
+				if (next.isFunctional) {
+					next.fParams.forEach(fp => {
+						const tieKey = fp.tieKey;
+						const rawPath = fp.rawPath;
+						const tieViews = views[tieKey] || (views[tieKey] = {});
+						const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
+						if (pathViews.indexOf(element) < 0) {
+							pathViews.push(element);
+						}
+					});
+				} else {
+					const tieKey = next.tieKey;
+					const rawPath = next.rawPath;
+					const tieViews = views[tieKey] || (views[tieKey] = {});
+					const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
+					if (pathViews.indexOf(element) < 0) {
+						pathViews.push(element);
+					}
 				}
 			}
+			updateFromView(element);
+			addChangeListener(element, changeListener);
 		}
 
 		if (element.shadowRoot) {
@@ -253,11 +266,32 @@ function updateFromTie(element, changedPath, change, tieKey, tieModel) {
 	let i = viewParams.length;
 	while (i) {
 		const param = viewParams[--i];
-		if (param.tieKey !== tieKey) {
-			continue;
-		}
+		if (param.isFunctional) {
+			if (param.fParams.some(fp => fp.tieKey === tieKey && fp.rawPath.indexOf(changedPath) === 0)) {
+				let someData = false;
+				const args = [];
+				param.fParams.forEach(fp => {
+					let arg;
+					const tie = ties.get(fp.tieKey);
+					if (tie) {
+						arg = getPath(tie, fp.path);
+						someData = true;
+					}
+					args.push(arg);
+				});
+				if (someData) {
+					args.push([change]);
+					element[param.targetProperty].apply(element, args);
+				}
+			}
+		} else {
+			if (param.tieKey !== tieKey) {
+				continue;
+			}
+			if (param.rawPath.indexOf(changedPath) !== 0) {
+				continue;
+			}
 
-		if (param.rawPath.indexOf(changedPath) === 0) {
 			let newValue;
 			if (!change || typeof change.value === 'undefined' || changedPath !== param.rawPath) {
 				newValue = getPath(tieModel, param.path);
@@ -282,22 +316,40 @@ function updateFromView(element, changedPath) {
 	let i = viewParams.length;
 	while (i) {
 		const param = viewParams[--i];
-		const tie = ties.get(param.tieKey);
-
-		if (undefined === tie) {
-			continue;
-		}
-
-		if (!changedPath || param.rawPath.indexOf(changedPath) === 0) {
-			let value = getPath(tie, param.path);
-			if (typeof value === 'undefined') {
-				value = '';
+		if (param.isFunctional) {
+			if (!changedPath || param.fParams.some(fp => fp.rawPath.indexOf(changedPath) === 0)) {
+				let someData = false;
+				const args = [];
+				param.fParams.forEach(fp => {
+					let arg;
+					const tie = ties.get(fp.tieKey);
+					if (tie) {
+						arg = getPath(tie, fp.path);
+						someData = true;
+					}
+					args.push(arg);
+				});
+				if (someData) {
+					args.push(null);
+					element[param.targetProperty].apply(element, args);
+				}
 			}
-			const tp = param.targetProperty;
-			if (tp === 'href') {
-				element.href.baseVal = value;
-			} else {
-				element[tp] = value;
+		} else {
+			if (!changedPath || param.rawPath.indexOf(changedPath) === 0) {
+				const tie = ties.get(param.tieKey);
+				if (undefined === tie) {
+					continue;
+				}
+				let value = getPath(tie, param.path);
+				if (typeof value === 'undefined') {
+					value = '';
+				}
+				const tp = param.targetProperty;
+				if (tp === 'href') {
+					element.href.baseVal = value;
+				} else {
+					element[tp] = value;
+				}
 			}
 		}
 	}
@@ -363,11 +415,12 @@ function dropTree(root) {
 }
 
 function move(element, oldParam, newParam) {
-	let viewParams, i, l, index;
+	let viewParams, i, index;
 	if (oldParam) {
 		viewParams = element[VIEW_PARAMS_KEY];
-		for (i = 0, l = viewParams.length; i < l; i++) {
-			const tieParam = viewParams[i];
+		i = viewParams.length;
+		while (i) {
+			const tieParam = viewParams[--i];
 			if (!views[tieParam.tieKey]) continue;
 			const pathViews = views[tieParam.tieKey][tieParam.rawPath];
 			if (pathViews) {
@@ -382,10 +435,10 @@ function move(element, oldParam, newParam) {
 
 	if (newParam) {
 		viewParams = extractViewParams(element);
-		if (viewParams) {
+		if (viewParams && (i = viewParams.length)) {
 			element[VIEW_PARAMS_KEY] = viewParams;
-			for (i = 0, l = viewParams.length; i < l; i++) {
-				const tieParam = viewParams[i];
+			while (i) {
+				const tieParam = viewParams[--i];
 				const tieViews = views[tieParam.tieKey] || (views[tieParam.tieKey] = {});
 				const pathViews = tieViews[tieParam.rawPath] || (tieViews[tieParam.rawPath] = []);
 				if (pathViews.indexOf(element) < 0) {
