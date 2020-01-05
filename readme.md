@@ -44,6 +44,7 @@ As many similar libraries do, `data-tier` also employes the two:
 Let's see how it plays in the code.
 
 ##### functional (JS) part
+
 Having data model defined, for example, as:
 ```javascript
 let bands = [
@@ -96,6 +97,7 @@ Me myself investing some effort in building `data-tier` oriented components. I'l
 * [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on the single template
 
 ## Documentation
+
 [__API__](./docs/api-reference.md)
 
 [__WebComponents, ShadowDOM, MicroFrontends__](./docs/web-components.md)
