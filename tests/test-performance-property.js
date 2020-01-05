@@ -1,7 +1,7 @@
 import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = createSuite({ name: 'Testing Performance' });
+const suite = createSuite({ name: 'Testing Performance (property tying)' });
 
 class Movable extends HTMLElement {
 	set top(top) {
@@ -13,19 +13,19 @@ class Movable extends HTMLElement {
 	}
 }
 
-customElements.define('movable-element', Movable);
+customElements.define('movable-element-a', Movable);
 
-suite.runTest({ name: 'perf test - many changes in loop', timeout: 60000 }, async test => {
+suite.runTest({ name: 'perf test - many changes in loop - property tying', timeout: 60000 }, async test => {
 	const pg = document.createElement('div');
 	pg.style.cssText = 'position: relative;width: 200px;height: 200px; border: 1px solid #aaa';
 
 	const movables = [];
 	for (let i = 0; i < 500; i++) {
-		const m = document.createElement('movable-element');
+		const m = document.createElement('movable-element-a');
 		m.style.cssText = 'position: absolute;width: 10px;height: 10px; border-radius: 5px; background-color: rgb(' + 255 * Math.random() + ',' + 255 * Math.random() + ',' + 255 * Math.random() + ');';
-		m.dataset.tie = 'm' + i + ':top => top, m' + i + ':left => left';
+		m.dataset.tie = 'ma' + i + ':top => top, ma' + i + ':left => left';
 		movables.push({
-			t: DataTier.ties.create('m' + i, { top: 190 * Math.random(), left: 190 * Math.random() }),
+			t: DataTier.ties.create('ma' + i, { top: 190 * Math.random(), left: 190 * Math.random() }),
 			xi: 3 * Math.random(),
 			yi: 3 * Math.random()
 		});
@@ -34,7 +34,7 @@ suite.runTest({ name: 'perf test - many changes in loop', timeout: 60000 }, asyn
 	document.body.appendChild(pg);
 
 	return new Promise(resolve => {
-		customElements.whenDefined('movable-element').then(() => {
+		customElements.whenDefined('movable-element-a').then(() => {
 			let moves = 2000;
 
 			function render() {
