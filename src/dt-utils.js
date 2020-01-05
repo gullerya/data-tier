@@ -193,7 +193,7 @@ function getPath(ref, path) {
 	for (; i < l - 1; i++) {
 		n = path[i];
 		ref = ref[n];
-		if (ref === null || ref === undefined) return null;
+		if (ref === null || ref === undefined) return ref;
 	}
 	return ref[path[i]];
 }

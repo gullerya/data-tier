@@ -117,3 +117,46 @@ suite.runTest({ name: 'adding mixed models multi to view - view first' }, async 
 	test.assertEqual(model, calls[1][1]);
 	test.assertTrue(typeof calls[1][2] === 'object');
 });
+
+//	multiple arguments - ongoing changes
+//
+suite.runTest({ name: 'adding mixed models multi to view - model first' }, async test => {
+	const tieNameA = test.getRandom(8);
+	const tieNameB = test.getRandom(8);
+	const modelA = DataTier.ties.create(tieNameA, { deep: { test: 'test' } });
+	const modelB = DataTier.ties.create(tieNameB, { deep: { test: 'test' } });
+
+	const calls = [];
+	const newEl = document.createElement('div');
+	newEl.f = function () { calls.push(arguments) };
+	newEl.dataset.tie = 'f(' + tieNameA + ', ' + tieNameB + ':deep.test)';
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	calls.splice(0);
+
+	modelB.deep.test = 'change primitive';
+	delete modelB.deep;
+
+	test.assertEqual(2, calls.length);
+
+	test.assertEqual(modelA, calls[0][0]);
+	test.assertEqual('change primitive', calls[0][1]);
+	test.assertTrue(Array.isArray(calls[0][2]));
+	test.assertEqual('update', calls[0][2][0].type);
+	test.assertTrue(Array.isArray(calls[0][2][0].path));
+	test.assertEqual(2, calls[0][2][0].path.length);
+	test.assertEqual('test', calls[0][2][0].oldValue);
+	test.assertEqual('change primitive', calls[0][2][0].value);
+
+	test.assertEqual(modelA, calls[1][0]);
+	test.assertEqual(undefined, calls[1][1]);
+	test.assertTrue(Array.isArray(calls[1][2]));
+	test.assertEqual(modelB, calls[1][2][0].object);
+	test.assertEqual('delete', calls[1][2][0].type);
+	test.assertTrue(Array.isArray(calls[1][2][0].path));
+	test.assertEqual(1, calls[1][2][0].path.length);
+	test.assertEqual('object', typeof calls[1][2][0].oldValue);
+	test.assertEqual(undefined, calls[1][2][0].value);
+});
