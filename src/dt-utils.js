@@ -11,6 +11,9 @@ const
 	DEFAULT_SRC_ELEMENTS = {
 		IMG: 1, IFRAME: 1, SOURCE: 1
 	},
+	DEFAULT_HREF_ELEMENTS = {
+		A: 1, ANIMATE: 1, AREA: 1, BASE: 1, DISCARD: 1, IMAGE: 1, LINK: 1, PATTERN: 1, USE: 1
+	},
 	DEFAULT_CHANGE_ELEMENTS = {
 		INPUT: 1, SELECT: 1, TEXTAREA: 1
 	};
@@ -24,7 +27,9 @@ export {
 	addChangeListener,
 	delChangeListener,
 	getPath,
-	setPath
+	setPath,
+	setViewProperty,
+	callViewFunction
 }
 
 class Parameter {
@@ -58,6 +63,8 @@ function getTargetProperty(element) {
 			result = 'value';
 		} else if (eName in DEFAULT_SRC_ELEMENTS) {
 			result = 'src';
+		} else if (eName in DEFAULT_HREF_ELEMENTS) {
+			result = 'href';
 		} else {
 			result = 'textContent';
 		}
@@ -208,4 +215,24 @@ function setPath(ref, path, value) {
 		}
 	}
 	ref[path[i]] = value;
+}
+
+function setViewProperty(e, p, v) {
+	try {
+		if (p === 'href' && typeof e.href === 'object') {
+			e.href.baseVal = v;
+		} else {
+			e[p] = v;
+		}
+	} catch (e) {
+		console.error(`failed to set '${p}' of '${e}' to '${v}'`);
+	}
+}
+
+function callViewFunction(e, f, a) {
+	try {
+		e[f].apply(e, a);
+	} catch (e) {
+		console.error(`failed to call '${f}' of '${e}' with '${a}'`);
+	}
 }

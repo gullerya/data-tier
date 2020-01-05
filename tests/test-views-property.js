@@ -102,6 +102,18 @@ suite.runTest({ name: 'adding source and verifying its default value set correct
 	test.assertTrue(newEl.src.endsWith('some.non.existing.url'));
 });
 
+suite.runTest({ name: 'adding anchor and verifying its default value set correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	const newEl = document.createElement('a');
+	newEl.dataset.tie = tieName + ':test';
+	document.body.appendChild(newEl);
+	DataTier.ties.create(tieName, { test: 'some.non.existing.url' });
+
+	await test.waitNextMicrotask();
+
+	test.assertTrue(newEl.href.endsWith('some.non.existing.url'));
+});
+
 suite.runTest({ name: 'verify that falsish values (0, false, \'\') are visualized correctly' }, async test => {
 	const newEl = document.createElement('div');
 	DataTier.ties.create('falsishTest', { test: 0 });

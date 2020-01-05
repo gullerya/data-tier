@@ -7,7 +7,9 @@ import {
 	addChangeListener,
 	delChangeListener,
 	getPath,
-	setPath
+	setPath,
+	setViewProperty,
+	callViewFunction
 } from './dt-utils.js';
 
 export {
@@ -27,11 +29,7 @@ export const addRootDocument = rootDocument => {
 
 	initDocumentObserver(rootDocument);
 
-	console.debug('DT: scanning the document for a views...');
-	const baseDocumentScanStartTime = performance.now();
 	addTree(rootDocument);
-	console.debug('DT: ... scanning the ' + rootDocument + ' for a views DONE (took ' +
-		Math.floor((performance.now() - baseDocumentScanStartTime) * 100) / 100 + 'ms');
 	roots.add(rootDocument);
 	return true;
 };
@@ -281,7 +279,7 @@ function updateFromTie(element, changedPath, change, tieKey, tieModel) {
 				});
 				if (someData) {
 					args.push([change]);
-					element[param.targetProperty].apply(element, args);
+					callViewFunction(element, param.targetProperty, args);
 				}
 			}
 		} else {
@@ -301,12 +299,7 @@ function updateFromTie(element, changedPath, change, tieKey, tieModel) {
 			if (typeof newValue === 'undefined') {
 				newValue = '';
 			}
-			const tp = param.targetProperty;
-			if (tp === 'href') {
-				element.href.baseVal = newValue;
-			} else {
-				element[tp] = newValue;
-			}
+			setViewProperty(element, param.targetProperty, newValue);
 		}
 	}
 }
@@ -331,7 +324,7 @@ function updateFromView(element, changedPath) {
 				});
 				if (someData) {
 					args.push(null);
-					element[param.targetProperty].apply(element, args);
+					callViewFunction(element, param.targetProperty, args);
 				}
 			}
 		} else {
@@ -344,12 +337,7 @@ function updateFromView(element, changedPath) {
 				if (typeof value === 'undefined') {
 					value = '';
 				}
-				const tp = param.targetProperty;
-				if (tp === 'href') {
-					element.href.baseVal = value;
-				} else {
-					element[tp] = value;
-				}
+				setViewProperty(element, param.targetProperty, value);
 			}
 		}
 	}
@@ -489,7 +477,6 @@ function processDomChanges(changes) {
 }
 
 function initDocumentObserver(document) {
-	console.debug('DT: initializing DOM observer on document');
 	const domObserver = new MutationObserver(processDomChanges);
 	domObserver.observe(document, {
 		childList: true,
