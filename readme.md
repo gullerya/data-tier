@@ -17,6 +17,11 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __2.2.0__
+  * implemented [issue #36](https://github.com/gullerya/data-tier/issues/36) - method/function based tying
+  * enhanced tests coverage
+  * performance tunings
+
 * __2.1.2__
   * documentation improved and enhanced
   * added full test coverage for a tie params
@@ -25,9 +30,7 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
   * fixed [issue #34](https://github.com/gullerya/data-tier/issues/34) - tying the model at the root level
   * minor documentation improvements
 
-* __2.0.0__
-  * implemented [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
-> 2.0.0 is an API breaking version! While migration from an old API to the new one is easy (remove the notion of `model` property everywhere in JS) - please, take care to go over the updated APIs.
+> `2.0.0` version was an API breaking version! While migration from an old API to the new one is easy (remove the notion of `model` property everywhere in JS) - please, take care to go over the updated APIs.
 
 ## Loading the library
 

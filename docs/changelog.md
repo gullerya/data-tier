@@ -3,6 +3,11 @@
 Modern
 ------
 
+* __2.2.0__
+  * implemented [issue #36](https://github.com/gullerya/data-tier/issues/36) - method/function based tying
+  * enhanced tests coverage
+  * performance tunings
+
 * __2.1.2__
   * documentation improved and enhanced
   * added full test coverage for a tie params
@@ -16,6 +21,8 @@ Modern
 
 * __2.0.0__
   * implemented [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
+
+> This point (`2.0.0`) is an API breaking point! Please refer to the API documentation.
 
 * __1.14.0__
   * upgrading `object-observer` dependency, which has a fix for a proper handling of an Error objects
