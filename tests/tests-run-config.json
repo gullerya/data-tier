@@ -1,7 +1,7 @@
 {
 	"tests": {
 		"url": "/tests/test.html",
-		"ttl": 45000,
+		"ttl": 55000,
 		"maxSkip": 1
 	},
 	"coverage": {
