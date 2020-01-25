@@ -75,7 +75,7 @@ suite.runTest({ name: 'binding view to object' }, async test => {
 	document.body.appendChild(s4);
 	const t = DataTier.ties.create('modelF', user);
 
-	s3.dataset.tie = 'modelF:address => textContent';
+	s3.dataset.tie = 'modelF:address';
 	test.assertEqual(s3.textContent, '');
 	t.address = { street: 'street name', apt: 17 };
 	t.address.toString = function () {

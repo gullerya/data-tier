@@ -17,6 +17,10 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __2.3.0__
+  * implemented [issue #37](https://github.com/gullerya/data-tier/issues/37) - fixed mishandlings of the `data-tie` property changes
+  * attempting to push performance further (switched model change observer definition from `bind` to lambda syntax)
+
 * __2.2.0__
   * implemented [issue #36](https://github.com/gullerya/data-tier/issues/36) - method/function based tying
   * enhanced tests coverage

@@ -224,3 +224,31 @@ suite.runTest({ name: 'multiparam (with occasional comma duplicate)' }, async te
 	test.assertEqual(d.textContent, 'test');
 	test.assertEqual(d.data, 'test');
 });
+
+suite.runTest({ name: 'tie property changes cycle' }, async test => {
+	const
+		tn = test.getRandom(8),
+		t = DataTier.ties.create(tn, { some: 'test' }),
+		d = document.createElement('div');
+	document.body.appendChild(d);
+
+	//	set tie to NULL
+	d.dataset.tie = null;
+
+	await test.waitNextMicrotask();
+
+	//	set tie to empty
+	d.dataset.tie = '';
+
+	await test.waitNextMicrotask();
+
+	//	set tie to existing value
+	d.dataset.tie = tn + ':some';
+
+	await test.waitNextMicrotask();
+
+	//	set tie to the same value again (ensure in debugger that update is not running here)
+	d.dataset.tie = tn + ':some';
+
+	await test.waitNextMicrotask();
+});

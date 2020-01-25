@@ -48,6 +48,15 @@ console.info('DT: starting initialization...');
 const initStartTime = performance.now();
 
 const
+	MUTATION_OBSERVER_OPTIONS = {
+		childList: true,
+		subtree: true,
+		attributes: true,
+		attributeOldValue: true,
+		attributeFilter: ['data-tie'],
+		characterData: false,
+		characterDataOldValue: false
+	},
 	ELEMENT_PROCESSED_SYMBOL = Symbol('element-processed'),
 	VIEW_PARAMS_KEY = Symbol('view.params.key'),
 	roots = new WeakSet(),
@@ -57,17 +66,16 @@ class Tie {
 	constructor(key, model) {
 		this.key = key;
 		this.model = ensureObservable(model);
+		this.views = null;
 		this.ownModel = this.model !== model;
-		this.observer = Tie.processDataChanges.bind(this);
-		this.model.observe(this.observer);
-		Object.freeze(this);
+		this.model.observe(changes => this.processDataChanges(changes));
 	}
 
-	static processDataChanges(changes) {
+	processDataChanges(changes) {
 		const
 			tieKey = this.key,
 			tieModel = this.model,
-			tieViews = views[tieKey],
+			tieViews = this.views || (this.views = views[tieKey]),
 			tiedPaths = Object.keys(tieViews),
 			fullUpdatesMap = {};
 		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
@@ -140,7 +148,7 @@ function Ties() {
 
 		const t = new Tie(key, model);
 		ts[key] = t;
-		ts[key].observer([{ path: [] }]);
+		ts[key].processDataChanges([{ path: [] }]);
 
 		return t.model;
 	};
@@ -406,19 +414,21 @@ function move(element, oldParam, newParam) {
 	let viewParams, i, index;
 	if (oldParam) {
 		viewParams = element[VIEW_PARAMS_KEY];
-		i = viewParams.length;
-		while (i) {
-			const tieParam = viewParams[--i];
-			if (!views[tieParam.tieKey]) continue;
-			const pathViews = views[tieParam.tieKey][tieParam.rawPath];
-			if (pathViews) {
-				index = pathViews.indexOf(element);
-				if (index >= 0) {
-					pathViews.splice(index, 1);
+		if (viewParams) {
+			i = viewParams.length;
+			while (i) {
+				const tieParam = viewParams[--i];
+				if (!views[tieParam.tieKey]) continue;
+				const pathViews = views[tieParam.tieKey][tieParam.rawPath];
+				if (pathViews) {
+					index = pathViews.indexOf(element);
+					if (index >= 0) {
+						pathViews.splice(index, 1);
+					}
 				}
 			}
+			delChangeListener(element, changeListener);
 		}
-		delChangeListener(element, changeListener);
 	}
 
 	if (newParam) {
@@ -441,15 +451,19 @@ function move(element, oldParam, newParam) {
 
 function processDomChanges(changes) {
 	const l = changes.length;
-	let i = 0, node, nodeType, change, changeType,
-		attributeName, added, i2, removed, i3;
+	let i = 0, node, nodeType, change, changeType, added, i2, removed, i3;
 	for (; i < l; i++) {
 		change = changes[i];
 		changeType = change.type;
 		if (changeType === 'attributes') {
-			attributeName = change.attributeName;
-			node = change.target;
-			move(node, change.oldValue, node.getAttribute(attributeName));
+			const
+				attributeName = change.attributeName,
+				node = change.target,
+				oldValue = change.oldValue,
+				newValue = node.getAttribute(attributeName);
+			if (oldValue !== newValue) {
+				move(node, oldValue, newValue);
+			}
 		} else if (changeType === 'childList') {
 			//	process added nodes
 			added = change.addedNodes;
@@ -478,15 +492,7 @@ function processDomChanges(changes) {
 
 function initDocumentObserver(document) {
 	const domObserver = new MutationObserver(processDomChanges);
-	domObserver.observe(document, {
-		childList: true,
-		subtree: true,
-		attributes: true,
-		attributeOldValue: true,
-		attributeFilter: ['data-tie'],
-		characterData: false,
-		characterDataOldValue: false
-	});
+	domObserver.observe(document, MUTATION_OBSERVER_OPTIONS);
 }
 
 addRootDocument(document);
