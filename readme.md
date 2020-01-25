@@ -102,6 +102,7 @@ Functionalities like `repeater`, `router` and other well known UI paradigms shou
 
 Me myself investing some effort in building `data-tier` oriented components. I'll maintain the list below, updating it from time to time (please update me if you have something to add here).
 * [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on the single template
+* [`i18n`](https://www.npmjs.com/package/@gullerya/i18n) - internationalization library, mostly concerned with translation, where dynamic replacement of the localized texts upon active locale change is driven by `data-tier`
 
 ## Documentation
 
