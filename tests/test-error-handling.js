@@ -1,7 +1,7 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = createSuite({ name: 'Testing erroneous cases' });
+const suite = getSuite({ name: 'Testing erroneous cases' });
 
 suite.runTest({ name: 'adding view with empty tie definition' }, () => {
 	const elem = document.createElement('div');

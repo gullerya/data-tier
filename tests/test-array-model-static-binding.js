@@ -1,7 +1,7 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = createSuite({ name: 'Testing array changes (static binding)' });
+const suite = getSuite({ name: 'Testing array changes (static binding)' });
 
 suite.runTest({ name: 'array manipulation flow' }, async test => {
 	const

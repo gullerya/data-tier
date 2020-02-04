@@ -1,8 +1,8 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
 const
-	suite = createSuite({ name: 'Testing model changes' }),
+	suite = getSuite({ name: 'Testing model changes' }),
 	user = { name: 'some', age: 7, address: { street: 'str', apt: 9 } };
 
 suite.runTest({ name: 'new model bound' }, async test => {

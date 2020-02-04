@@ -1,8 +1,8 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
 let clickCounter = 0;
-const suite = createSuite({ name: 'Testing functions dynamic binding' }),
+const suite = getSuite({ name: 'Testing functions dynamic binding' }),
 	user = {
 		name: 'click me',
 		clickHandler: function (e) {

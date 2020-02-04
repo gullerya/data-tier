@@ -1,7 +1,7 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = createSuite({ name: 'Testing Shadowing in iFrame' });
+const suite = getSuite({ name: 'Testing Shadowing in iFrame' });
 
 suite.runTest({ name: 'iframe as such should not be influenced by the DataTier' }, test => {
 	const tieName = 'tieForIFrame';

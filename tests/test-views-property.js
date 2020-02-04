@@ -1,8 +1,8 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
 const
-	suite = createSuite({ name: 'Testing views changes - property tying' }),
+	suite = getSuite({ name: 'Testing views changes - property tying' }),
 	user = { name: 'some name', age: 7, address: { street: 'str', apt: 9 } };
 
 suite.runTest({ name: 'adding root model to view - model first' }, async test => {

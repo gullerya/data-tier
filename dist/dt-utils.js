@@ -40,6 +40,7 @@ class Parameter {
 		this.targetProperty = targetProperty;
 		this.isFunctional = isFunctional;
 		this.fParams = fParams;
+		this.iClasses = null;
 	}
 }
 
@@ -110,13 +111,13 @@ function parseViewParams(multiParam, element) {
 				parsedParam = parsePropertyParam(next, element);
 			}
 			if (parsedParam.targetProperty in keysTest) {
-				console.error('elements\'s property "' + parsedParam.targetProperty + '" tied more than once; all but first dismissed');
+				console.error(`elements's property '${parsedParam.targetProperty}' tied more than once; all but first dismissed`);
 			} else {
 				result.push(parsedParam);
 				keysTest[parsedParam.targetProperty] = true;
 			}
 		} catch (e) {
-			console.error('failed to parse one of a multi param parts (' + next + '), skipping it', e)
+			console.error(`failed to parse one of a multi param parts (${next}), skipping it`, e)
 		}
 	}
 	return result;
@@ -137,7 +138,7 @@ function parseFunctionParam(rawParam) {
 		};
 	});
 	if (!fParams.length) {
-		throw new Error('functional tie parameter MUST have at least one tied argument');
+		throw new Error(`functional tie parameter MUST have at least one tied argument, '${rawParam}' doesn't`);
 	}
 
 	return new Parameter(null, null, null, parts[0], true, fParams);
@@ -154,11 +155,16 @@ function parsePropertyParam(rawParam, element) {
 	//  process 'from' part
 	const origin = parts[0].split(':');
 	if (!origin.length || origin.length > 2 || !origin[0]) {
-		throw new Error('invalid tie value; found: "' + rawParam + '"; expected (example of multi param, one with default target): "orders:0.address.street, orders:0.address.apt => title"');
+		throw new Error(`invalid tie parameter '${rawParam}'; expected (example): "orders:0.address.street, orders:0.address.apt => title"`);
 	}
 
 	const rawPath = origin.length > 1 ? origin[1] : '';
-	return new Parameter(origin[0], rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
+	const result = new Parameter(origin[0], rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
+	if (result.targetProperty === 'classList') {
+		result.iClasses = Array.from(element.classList);
+	}
+
+	return result;
 }
 
 function addChangeListener(element, changeListener) {
@@ -187,15 +193,15 @@ function obtainChangeEventName(element) {
 
 function getPath(ref, path) {
 	if (!ref) return null;
-	const l = path.length;
+	const p = path, l = p.length;
 	if (!l) return ref;
-	let i = 0, n;
+	let r = ref, i = 0, n;
 	for (; i < l - 1; i++) {
-		n = path[i];
-		ref = ref[n];
-		if (ref === null || ref === undefined) return ref;
+		n = p[i];
+		r = r[n];
+		if (r === null || r === undefined) return r;
 	}
-	return ref[path[i]];
+	return r[p[i]];
 }
 
 function setPath(ref, path, value) {
@@ -211,28 +217,58 @@ function setPath(ref, path, value) {
 			ref[n] = {};
 			ref = ref[n];
 		} else if (typeof o !== 'object') {
-			throw new Error('setting deep path MAY NOT override primitives along the way');
+			console.error('setting deep path MAY NOT override primitives along the way');
+			return;
 		}
 	}
 	ref[path[i]] = value;
 }
 
-function setViewProperty(e, p, v) {
+function setViewProperty(elem, param, value) {
+	const targetProperty = param.targetProperty;
 	try {
-		if (p === 'href' && typeof e.href === 'object') {
-			e.href.baseVal = v;
+		if (targetProperty === 'href' && typeof elem.href === 'object') {
+			elem.href.baseVal = value;
+		} else if (targetProperty === 'classList') {
+			const classes = param.iClasses.slice(0);
+			if (value) {
+				if (Array.isArray(value) && value.length) {
+					value.forEach(c => {
+						if (classes.indexOf(c) < 0) {
+							classes.push(c);
+						}
+					});
+				} else if (typeof value === 'object') {
+					Object.keys(value).forEach(c => {
+						const i = classes.indexOf(c);
+						if (value[c]) {
+							if (i < 0) {
+								classes.push(c);
+							}
+						} else if (i >= 0) {
+							classes.splice(i, 1);
+						}
+					});
+				} else if (typeof value === 'string') {
+					if (classes.indexOf(value) < 0) {
+						classes.push(value);
+					}
+				}
+			}
+
+			elem.className = classes.join(' ');
 		} else {
-			e[p] = v;
+			elem[targetProperty] = value;
 		}
 	} catch (e) {
-		console.error(`failed to set '${p}' of '${e}' to '${v}'`);
+		console.error(`failed to set '${targetProperty}' of '${elem}' to '${value}'`, e);
 	}
 }
 
-function callViewFunction(e, f, a) {
+function callViewFunction(elem, func, args) {
 	try {
-		e[f].apply(e, a);
+		elem[func].apply(elem, args);
 	} catch (e) {
-		console.error(`failed to call '${f}' of '${e}' with '${a}'`);
+		console.error(`failed to call '${func}' of '${elem}' with '${args}'`, e);
 	}
 }

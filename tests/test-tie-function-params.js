@@ -1,7 +1,7 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import { extractViewParams } from '../dist/dt-utils.js';
 
-const suite = createSuite({ name: 'Testing tie functional params' });
+const suite = getSuite({ name: 'Testing tie functional params' });
 
 //	tie param structure is defined as following:
 //	{

@@ -1,8 +1,8 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import { ties } from '../dist/data-tier.js';
 import { Observable } from '../dist/object-observer.min.js';
 
-const suite = createSuite({ name: 'Testing ties' });
+const suite = getSuite({ name: 'Testing ties' });
 
 suite.runTest({ name: 'adding a tie and then a view' }, async test => {
 	const

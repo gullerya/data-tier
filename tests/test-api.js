@@ -1,7 +1,7 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = createSuite({ name: 'Testing Tie APIs' });
+const suite = getSuite({ name: 'Testing Tie APIs' });
 
 suite.runTest({ name: 'add/remove Tie - positive simple flow' }, test => {
 	const tieName = 'tieApiPosTest';

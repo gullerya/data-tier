@@ -1,9 +1,9 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import { ties } from '../dist/data-tier.js';
 
 const
 	originalConsoleError = console.error,
-	suite = createSuite({ name: 'Testing views (negative)' });
+	suite = getSuite({ name: 'Testing views (negative)' });
 
 suite.runTest({ name: 'wrong tying syntax', sync: true }, async test => {
 	const d = document.createElement('div');

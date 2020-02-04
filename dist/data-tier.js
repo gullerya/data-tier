@@ -112,7 +112,7 @@ class Tie {
 			pl = tiedPaths.length;
 			while (pl) {
 				tiedPath = tiedPaths[--pl];
-				if (tiedPath.indexOf(changedPath) === 0) {
+				if (tiedPath.indexOf(changedPath) === 0 || changedPath.indexOf(tiedPath) === 0) {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
 					while (pvl) {
@@ -294,7 +294,7 @@ function updateFromTie(element, changedPath, change, tieKey, tieModel) {
 			if (param.tieKey !== tieKey) {
 				continue;
 			}
-			if (param.rawPath.indexOf(changedPath) !== 0) {
+			if (param.rawPath.indexOf(changedPath) !== 0 && changedPath.indexOf(param.rawPath) !== 0) {
 				continue;
 			}
 
@@ -307,18 +307,18 @@ function updateFromTie(element, changedPath, change, tieKey, tieModel) {
 			if (typeof newValue === 'undefined') {
 				newValue = '';
 			}
-			setViewProperty(element, param.targetProperty, newValue);
+			setViewProperty(element, param, newValue);
 		}
 	}
 }
 
-function updateFromView(element, changedPath) {
+function updateFromView(element, tiedPath) {
 	const viewParams = element[VIEW_PARAMS_KEY];
 	let i = viewParams.length;
 	while (i) {
 		const param = viewParams[--i];
 		if (param.isFunctional) {
-			if (!changedPath || param.fParams.some(fp => fp.rawPath.indexOf(changedPath) === 0)) {
+			if (!tiedPath || param.fParams.some(fp => fp.rawPath.indexOf(tiedPath) === 0)) {
 				let someData = false;
 				const args = [];
 				param.fParams.forEach(fp => {
@@ -336,7 +336,7 @@ function updateFromView(element, changedPath) {
 				}
 			}
 		} else {
-			if (!changedPath || param.rawPath.indexOf(changedPath) === 0) {
+			if (!tiedPath || param.rawPath.indexOf(tiedPath) === 0) {
 				const tie = ties.get(param.tieKey);
 				if (undefined === tie) {
 					continue;
@@ -345,7 +345,7 @@ function updateFromView(element, changedPath) {
 				if (typeof value === 'undefined') {
 					value = '';
 				}
-				setViewProperty(element, param.targetProperty, value);
+				setViewProperty(element, param, value);
 			}
 		}
 	}

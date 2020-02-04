@@ -1,8 +1,8 @@
-import { createSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
 const
-	suite = createSuite({ name: 'Testing AnyProperty Controller' }),
+	suite = getSuite({ name: 'Testing AnyProperty Controller' }),
 	model = DataTier.ties.create('anyPropTestsModel', {
 		text: 'some text',
 		date: new Date(),

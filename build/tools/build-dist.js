@@ -6,16 +6,16 @@
 
 process.stdout.write('STARTING...' + os.EOL);
 
-process.stdout.write('cleaning "dist"...' + os.EOL);
+process.stdout.write('\tcleaning "dist"...' + os.EOL);
 fsExtra.emptyDirSync('./dist');
 
-process.stdout.write('installing "object-observer"...' + os.EOL);
+process.stdout.write('\tinstalling "object-observer"...' + os.EOL);
 fsExtra.copySync('node_modules/object-observer/dist/object-observer.min.js', 'src/object-observer.min.js');
 
-process.stdout.write('building "dist"' + os.EOL);
+process.stdout.write('\tbuilding "dist"...' + os.EOL);
 fsExtra.copySync('src/', 'dist/');
 
-process.stdout.write('minifying...' + os.EOL);
+process.stdout.write('\tminifying...' + os.EOL);
 const dataTierUtilsSource = fs
 	.readFileSync('dist/dt-utils.js', { encoding: 'utf8' });
 fs.writeFileSync('dist/dt-utils.min.js', uglifyES.minify({ dataTierUtils: dataTierUtilsSource }).code);
