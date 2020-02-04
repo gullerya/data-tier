@@ -30,14 +30,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
   * enhanced tests coverage
   * performance tunings
 
-* __2.1.2__
-  * documentation improved and enhanced
-  * added full test coverage for a tie params
-
-* __2.1.0__
-  * fixed [issue #34](https://github.com/gullerya/data-tier/issues/34) - tying the model at the root level
-  * minor documentation improvements
-
 > `2.0.0` version was an API breaking version! While migration from an old API to the new one is easy (remove the notion of `model` property everywhere in JS) - please, take care to go over the updated APIs.
 
 ## Loading the library
