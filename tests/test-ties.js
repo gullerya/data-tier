@@ -51,7 +51,7 @@ suite.runTest({ name: 'creating a tie with an undefined data' }, async test => {
 	if (newEl.textContent !== o.text) test.fail(new Error('expected the content to be "' + o.text + '"; found: ' + newEl.textContent));
 });
 
-suite.runTest({ name: 'setting a tie with a non Observable', expectError: 'Cannot perform \'get\' on a proxy that has been revoked' }, async test => {
+suite.runTest({ name: 'setting a tie with a non Observable', expectError: 'revoked' }, async test => {
 	const
 		tieName = test.getRandom(8),
 		newEl = document.createElement('div'),
