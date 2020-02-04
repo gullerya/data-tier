@@ -141,6 +141,13 @@ As we've seen in the examples above, the target property may be omitted, leaving
 * else `href` will be used for `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
 * else `textContent`
 
+`classList` property deserved special treatment, when the data tied to it, the following applies:
+* any classes found on the tied view before tied are taken as the baseline
+* tied data interpreted by the following rules and merged into the baseline, then applied to the element
+    * `string` - taken as a single class
+    * `Array` - each of its elements taken as a class
+    * `object` - each of its __keys__ taken as a class, those with truthy values are set, falsish ones - removed
+
 ### __B__. methods tying
 
 Sometimes there is a need to tie a model to a method/s. Usually it'll happen when dealing with ready to use components, that already have their API designed via functions. This flavor is also convenient in cases where a component relies on several/many data bits and it is more effective/convenient to just pass them all in a bunch to a single function / method of the component.
@@ -153,7 +160,7 @@ Additional benefit of method tying is the fact, that `data-tier` will supply the
 
 <!-- ... or compact them, as much more effective in this case... -->
 <custom-view data-tie="update(user)"></custom-view>
-<!-- ... all accorging to the target method's signature -->
+<!-- ... all according to the target method's signature -->
 ```
 
 It is possible, of course to mix the __property__ and __method__ tying in the single statement. I've not exemplified it here for the brevity.
