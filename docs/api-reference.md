@@ -127,6 +127,7 @@ Let's take a closer look onto the single tie parameter/s parts:
 * `user` - tie's __key__
 * `:address.city` - __path__ to the __source property__ within the tied model
     * path can be of any depth; path separated from tie's key by the `:` (colon)
+    * view's update may be triggered by both, the (any) ancestor change or the (any deep) child change along the path
 * `=> textContent` - view's __target property__ tied to the given model
     * as of now, this part may only be of a depth of 1 (flat)
     * in a multi-param definition, any target property MAY NOT be used more than once
@@ -141,12 +142,13 @@ As we've seen in the examples above, the target property may be omitted, leaving
 * else `href` will be used for `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
 * else `textContent`
 
-`classList` property deserved special treatment, when the data tied to it, the following applies:
-* any classes found on the tied view before tied are taken as the baseline
-* tied data interpreted by the following rules and merged into the baseline, then applied to the element
-    * `string` - taken as a single class
-    * `Array` - each of its elements taken as a class
-    * `object` - each of its __keys__ taken as a class, those with truthy values are set, falsish ones - removed
+`classList` property deserved a special treatment. When `classList` is being tied, the following happens:
+* any classes found on the tied view before `data-tier` processes the view are taken as a __baseline__ state
+* tied data may be of types `string`, `object` and `Array`:
+    * `string` is taken simple as a class to add
+    * `Array` - each of its elements taken as a class; __all__ of'em added to the view; if some of the members are removed - those classes are removed from the view correspondingly
+    * `object` - each of its __keys__ taken as a class; those with truthy values are added and the falsish ones - removed to/from the view; this way one may force removal of the __baseline__ class
+* each time the view's `classList` is updated, upon initiation or upon model change, the __baseline__ classes are merged with the model's classes as per rules above and the merged result is set as a view's new classes state
 
 ### __B__. methods tying
 
@@ -167,11 +169,12 @@ It is possible, of course to mix the __property__ and __method__ tying in the si
 
 Let's go over a quite simple syntax:
 * `update` - view's __target method__; it resembles the target property in that this method will be looked for on the view/element
-* `(param[, param[, ...]])` - 1 or more __parameters__ to call the method with
-    * ALL parameters are expected to be taken from tied model/s
+* `(arg1[, arg2[, ...]])` - 1 or more __arguments__ to call the method with
+    * argument syntax is the same as in the property parameter case
+    * __all__ arguments are expected to be taken from a tied model/s
     * any number of different `ties` may be used
-    * once the model of one of the method's parameters changes - `data-tier` resolves all of the params and calls the method
-    * actual method's arguments will always be supplied with one more parameter - an array of the model's affecting relevant changes, if any (see [Change](https://github.com/gullerya/object-observer/blob/master/docs/observable.md#change-instance-properties) definition for more info)
+    * once the model of one of the method's arguments changes - `data-tier` resolves all of the arguments and calls the method
+    * actual method's arguments will always be supplied with one more thing - an array of the model's affecting relevant changes, if any (see [Change](https://github.com/gullerya/object-observer/blob/master/docs/observable.md#change-instance-properties) definition for more info)
 
 > Pro note: as of now, due to synchronous changes delivery, all but some specific `Array` mutations will be delivered as a single synchronous change. Yet the API is designed as __always__ providing an Array of changes for possible future compatibility with async changes aggregation as well as with Arrays massive mutations.
 

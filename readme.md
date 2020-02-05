@@ -11,11 +11,14 @@
 
 It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts. Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will also have a bunch of useful information on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
 
-#### Support matrix: ![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub>
-
-#### Performance report: TBD
+#### Support matrix
+![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](./docs/icons/edge-chromium.png)<sub>79+</sub>
 
 #### Versions ([full changelog](./docs/changelog.md))
+
+* __2.5.0__
+  * implemented [issue #40](https://github.com/gullerya/data-tier/issues/40) - documented all of the latest changes, verified functional tying documentation
+  * add full tutorial example and improved tutorials description (should add more use-cases in the future)
 
 * __2.4.0__
   * implemented [issue #39](https://github.com/gullerya/data-tier/issues/39) - added support for a `classList` in a special manner
@@ -24,11 +27,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 * __2.3.0__
   * implemented [issue #37](https://github.com/gullerya/data-tier/issues/37) - fixed mishandlings of the `data-tie` property changes
   * attempting to push performance further (switched model change observer definition from `bind` to lambda syntax)
-
-* __2.2.0__
-  * implemented [issue #36](https://github.com/gullerya/data-tier/issues/36) - method/function based tying
-  * enhanced tests coverage
-  * performance tunings
 
 > `2.0.0` version was an API breaking version! While migration from an old API to the new one is easy (remove the notion of `model` property everywhere in JS) - please, take care to go over the updated APIs.
 
@@ -97,7 +95,7 @@ I believe, that `data-tier` as a framework should serve a single purpose of tyin
 Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by a __dedicated components__, probably, yet not necessary, built on top of `data-tier` or any other framework.
 
 Me myself investing some effort in building `data-tier` oriented components. I'll maintain the list below, updating it from time to time (please update me if you have something to add here).
-* [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on the single template
+* [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on a single template
 * [`i18n`](https://www.npmjs.com/package/@gullerya/i18n) - internationalization library, mostly concerned with translation, where dynamic replacement of the localized texts upon active locale change is driven by `data-tier`
 
 ## Documentation

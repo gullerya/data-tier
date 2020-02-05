@@ -3,6 +3,10 @@
 Modern
 ------
 
+* __2.5.0__
+  * implemented [issue #40](https://github.com/gullerya/data-tier/issues/40) - documented all of the latest changes, verified functional tying documentation
+  * add full tutorial example and improved tutorials description (should add more use-cases in the future)
+
 * __2.4.0__
   * implemented [issue #39](https://github.com/gullerya/data-tier/issues/39) - added support for a `classList` in a special manner
   * changed behavior of the nested properties change when parent is watched - now parent is also notified
