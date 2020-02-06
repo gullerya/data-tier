@@ -1,56 +1,12 @@
 <!DOCTYPE html>
 <html>
 
-<head></head>
+<head>
+	<title>User view - data-tier example a</title>
+	<link rel="stylesheet" type="text/css" href="./use-view.css" />
+</head>
 
 <body>
-	<style>
-		input {
-			width: calc(50% - 12px);
-			margin: 12px 0;
-			border: none;
-			border-bottom: 1px solid #ccd;
-			background-color: transparent;
-			outline: none;
-		}
-
-		.user-form {
-			width: 320px;
-			margin: 24px auto;
-			padding: 12px;
-			display: flex;
-			flex-direction: column;
-			background-color: #eef;
-			border-radius: 8px;
-		}
-
-		.block {
-			width: 100%;
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			flex-wrap: wrap;
-			margin: 12px 0;
-		}
-
-		.user-view {
-			width: 320px;
-			margin: 24px auto;
-			padding: 12px;
-			display: flex;
-			flex-direction: column;
-			background-color: #eef;
-			border-radius: 8px;
-			font-family: Tahoma;
-			line-height: 200%;
-		}
-
-		.user-view.inactive {
-			color: #bbb;
-			background-color: #efefef;
-		}
-	</style>
-
 	<form class="user-form">
 		<div class="block personal">
 			<input type="text" data-tie="userInfo:firstName">

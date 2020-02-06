@@ -16,7 +16,7 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
-* __2.5.0__
+* __2.5.1__
   * implemented [issue #40](https://github.com/gullerya/data-tier/issues/40) - documented all of the latest changes, verified functional tying documentation
   * add full tutorial example and improved tutorials description (should add more use-cases in the future)
 

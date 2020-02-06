@@ -1,6 +1,6 @@
 {
   "name": "data-tier",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
   "keywords": [
     "two",

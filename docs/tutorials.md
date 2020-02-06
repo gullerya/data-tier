@@ -1,78 +1,26 @@
-# 1. Basic example
+# Intro
 
-In essence, the purpose of the `data-tier` service is to tie model and view and sync between them automatically once changes detected in either one or another.
+To allow some quick impression of what we are talking about here, as well as ready-to-use playground to hack around. Once JSFiddle will allow to import ES6 modules nicely, I'll push those there too.
 
-In order to make this happen, two things need to be done:
-- any model to be shown should be registered in the `data-tier` service via `Tie` management objects
-- DOM elements intended to visualize the model need to be attributed with an appropriate configuration/s
+On this page I'll describe shortly each example and link to it's own `md` where broader explanation will be found. In the same folder there are `htm` and `js` files, open the `htm` as a usual web page and you have a small workin app.
 
-The above two may happen in any order, at any phase in the application lifecycle. `data-tier` supports lazy binding, watching for DOM changes as well as for a data changes and will pick up any new linking information relevant and tie the things up.
+## 1. User view
 
-Let's review the actual example - `user-view`. Fully working code you may see [here](tutorials/a-user-view/user-view.htm).
-In essence we have a `JS` simulating fetching user data and defining the model. Below is an abbreviated version of that:
+User view is a small app (below 30 lines of `js` and below 50 lines of `html`) with 2 main view blocks:
+* form with input elements for a user's personal info, address and activation checkbox
+* condensed summary preview of the user's info
 
-##### JS
+Both of those views are tied to the same model.
+App is simulating the fetching of the data from the server and initiating the model via `data-tier` APIs.
+Actual MVVM part is around 5 lines of code!
 
-```javascript
-import * as DataTier from '../node_modules/dist/data-tier.min.js';
+Due to the living binding, editing of input fields immedatelly updates the model and then immediatelly reflected in the summary preview.
+> Pay attention, that by default `data-tier` listens on the `change` event of an `input` elements to track value changes. Therefore model update happens only when the field's value committed - on moving the focus away.
 
-let user = {
-	firstName: 'Aya',
-	lastName: 'Guller',
-	age: 4,
-	active: true,
-	address: {
-		country: 'Dreamland',
-		city: 'Hope',
-		street: 'Thousand Smiles',
-		block: 6,
-		apartment: 11
-	}
-};
+Additional feature exemplified here is managing a view state via classes tied to model.
+This part involves few lines of code (within those 5 yet) where one part of the model is observed and upon changes another part is being updated.
+It is cool, take a look on it!
 
-const model = DataTier.ties.create('userInfo', userData);
-model.classes = { active: true };
-model.observe(() => {
-    model.classes.inactive = !model.active;
-}, { path: 'active' });
-```
+[Link](./tutorials/a-user-view/user-view.md)
 
-In order to exemplify somewhat more complex data management, in this case to manipulate view's state via tied `classList`, I've thrown a bit of observation and manual data manipulation logic as a bonus :).
-
-##### HTML
-
-```html
-<form class="user-form">
-	<div class="block personal">
-        <input type="text" data-tie="userInfo:firstName">
-        ...
-	</div>
-	<div class="block address">
-        <input type="text" data-tie="userInfo:address.country">
-        ...
-	</div>
-	<div class="block status">
-		<input type="checkbox" data-tie="userInfo:active">
-	</div>
-</form>
-
-<user-view class="user-view" data-tie="userInfo:classes => classList">
-	<div>
-        <span data-tie="userInfo:firstName"></span>
-        ...
-	</div>
-	<div>
-        <span data-tie="userInfo:address.block"></span>
-        ...
-	</div>
-</user-view>
-```
- 
- I've abbreviated the `HTML` part for clarity, the full example is [here](tutorials/a-user-view/user-view.htm).
- The main idea here is to show the tying of the model to the interactive `form` from one side, and to a kind of condensened view of the data on the other.
- 
- Changing the form values are reflected in the model and then immediatelly propagated to the view.
- Pay attention, that `input` elements update the model in `change` event, only when the new values is committed.
- You're welcome to play with the `checkbox` to follow the management of the element's state via classes.
- 
-More examples to come in the future...
+More examples to do...
