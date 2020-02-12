@@ -63,7 +63,7 @@ const
 	views = {},
 	scopedViews = new WeakMap();
 
-export const ties = new Ties(VIEW_PARAMS_KEY, views);
+export const ties = new Ties(VIEW_PARAMS_KEY, views, scopedViews);
 
 function changeListener(event) {
 	const
@@ -113,13 +113,12 @@ function add(element) {
 					const tieKey = next.tieKey;
 					const rawPath = next.rawPath;
 					let tieViews;
-					if (next.scoped) {
-						const parent = element.getRootNode().host;
-						if (scopedViews.has(parent)) {
-							tieViews = scopedViews.get(parent);
+					if (typeof next.tieKey !== 'string') {
+						if (scopedViews.has(next.tieKey)) {
+							tieViews = scopedViews.get(next.tieKey);
 						} else {
 							tieViews = {};
-							scopedViews.set(parent, tieViews);
+							scopedViews.set(next.tieKey, tieViews);
 						}
 					} else {
 						tieViews = views[tieKey] || (views[tieKey] = {});

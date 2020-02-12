@@ -35,7 +35,6 @@ export {
 class Parameter {
 	constructor(tieKey, rawPath, path, targetProperty, isFunctional, fParams) {
 		this.tieKey = tieKey;
-		this.scoped = tieKey === 'root';
 		this.rawPath = rawPath;
 		this.path = path;
 		this.targetProperty = targetProperty;
@@ -160,7 +159,8 @@ function parsePropertyParam(rawParam, element) {
 	}
 
 	const rawPath = origin.length > 1 ? origin[1] : '';
-	const result = new Parameter(origin[0], rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
+	const result = new Parameter(origin[0] === 'root' ? element.getRootNode().host : origin[0],
+		rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
 	if (result.targetProperty === 'classList') {
 		result.iClasses = Array.from(element.classList);
 	}

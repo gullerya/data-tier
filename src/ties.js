@@ -7,18 +7,19 @@ import {
 
 const
 	namedTies = {},
-	// scopedTies = new WeakMap(),
+	rootedTies = new WeakMap(),
 	tieNameValidator = /^[a-zA-Z0-9]+$/;
 
 let VIEW_PARAMS_KEY,
 	ties,
-	views;
+	views,
+	rootedViews;
 
 class Tie {
-	constructor(key, model) {
+	constructor(key, model, views) {
 		this.key = key;
 		this.model = ensureObservable(model);
-		this.views = null;
+		this.views = views;
 		this.ownModel = this.model !== model;
 		this.model.observe(changes => this.processDataChanges(changes));
 	}
@@ -26,7 +27,7 @@ class Tie {
 	processDataChanges(changes) {
 		const
 			tieKey = this.key,
-			tieViews = this.views || (this.views = views[tieKey]),
+			tieViews = this.views,
 			tiedPaths = Object.keys(tieViews),
 			fullUpdatesMap = {};
 		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
@@ -121,14 +122,20 @@ class Tie {
 }
 
 export class Ties {
-	constructor(viewParamsKey, viewsCollector) {
+	constructor(viewParamsKey, nViews, rViews) {
 		VIEW_PARAMS_KEY = viewParamsKey;
 		ties = this;
-		views = viewsCollector;
+		views = nViews;
+		rootedViews = rViews;
 	}
 
 	get(key) {
-		const t = namedTies[key];
+		let t;
+		if (typeof key === 'string') {
+			t = namedTies[key];
+		} else {
+			t = rootedTies.get(key);
+		}
 		return t ? t.model : undefined;
 	};
 
@@ -142,11 +149,17 @@ export class Ties {
 			throw new Error('initial model, when provided, MUST NOT be null');
 		}
 
-		if (!(key in views)) views[key] = {};
-
-		const t = new Tie(key, model);
-		namedTies[key] = t;
-		namedTies[key].processDataChanges([{ path: [] }]);
+		let t;
+		if (typeof key === 'string') {
+			if (!(key in views)) views[key] = {};
+			t = new Tie(key, model, views[key]);
+			namedTies[key] = t;
+		} else {
+			if (!rootedViews.has(key)) rootedViews.set(key, {});
+			t = new Tie(key, model, rootedViews.get(key));
+			rootedTies.set(key, t);
+		}
+		t.processDataChanges([{ path: [] }]);
 
 		return t.model;
 	};
@@ -162,6 +175,7 @@ export class Ties {
 		}
 
 		delete views[tieNameToRemove];
+		//	TODO: handle rooted views too
 		const tie = namedTies[tieNameToRemove];
 		if (tie) {
 			if (tie.model && tie.ownModel) {
