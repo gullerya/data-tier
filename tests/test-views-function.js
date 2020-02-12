@@ -107,14 +107,14 @@ suite.runTest({ name: 'adding mixed models multi to view - view first' }, async 
 
 	await test.waitNextMicrotask();
 
-	const model = DataTier.ties.create(tieNameA, { deep: { test: 'test' } });
-	DataTier.ties.create(tieNameB, { deep: { test: 'test' } });
+	const modelA = DataTier.ties.create(tieNameA, { deep: { test: 'testA' } });
+	DataTier.ties.create(tieNameB, { deep: { test: 'testB' } });
 	test.assertEqual(2, calls.length);
 	test.assertEqual(undefined, calls[0][0]);
-	test.assertEqual(model, calls[0][1]);
+	test.assertEqual(modelA, calls[0][1]);
 	test.assertTrue(typeof calls[0][2] === 'object');
-	test.assertEqual('test', calls[1][0]);
-	test.assertEqual(model, calls[1][1]);
+	test.assertEqual('testB', calls[1][0]);
+	test.assertEqual(modelA, calls[1][1]);
 	test.assertTrue(typeof calls[1][2] === 'object');
 });
 

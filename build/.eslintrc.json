@@ -1,11 +1,12 @@
 {
   "extends": "standard",
+  "parser": "babel-eslint",
   "env": {
     "browser": true,
     "es6": true
   },
   "parserOptions": {
-    "ecmaVersion": 6,
+    "ecmaVersion": 11,
     "sourceType": "module"
   },
   "rules": {

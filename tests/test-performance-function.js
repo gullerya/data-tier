@@ -5,8 +5,7 @@ const suite = getSuite({ name: 'Testing Performance (functional tying)' });
 
 class Movable extends HTMLElement {
 	move(top, left) {
-		this.style.top = top + 'px';
-		this.style.left = left + 'px';
+		Object.assign(this.style, { top: top + 'px', left: left + 'px' });
 	}
 }
 
@@ -42,8 +41,10 @@ suite.runTest({ name: 'perf test - many changes in loop- functional tying', time
 						left = m.left;
 					if (top + 10 > 200 || top < 0) movable.xi *= -1;
 					if (left + 10 > 200 || left < 0) movable.yi *= -1;
-					m.top += movable.xi;
-					m.left += movable.yi;
+					Object.assign(m, {
+						top: top + movable.xi,
+						left: left + movable.yi
+					});
 				});
 
 				if (--moves > 0) {

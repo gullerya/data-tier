@@ -1,5 +1,5 @@
+import { Ties } from './ties.js';
 import {
-	ensureObservable,
 	DEFAULT_TIE_TARGET_PROVIDER,
 	getTargetProperty,
 	extractViewParams,
@@ -10,14 +10,14 @@ import {
 	setPath,
 	setViewProperty,
 	callViewFunction
-} from './dt-utils.js';
+} from './utils.js';
 
 export {
 	DEFAULT_TIE_TARGET_PROVIDER,
 	CHANGE_EVENT_NAME_PROVIDER
 }
 
-export const ties = new Ties();
+export const params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
 export const addRootDocument = rootDocument => {
 	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
 		throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
@@ -27,7 +27,7 @@ export const addRootDocument = rootDocument => {
 		return false;
 	}
 
-	initDocumentObserver(rootDocument);
+	new MutationObserver(processDomChanges).observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
 
 	addTree(rootDocument);
 	roots.add(rootDocument);
@@ -60,130 +60,10 @@ const
 	ELEMENT_PROCESSED_SYMBOL = Symbol('element-processed'),
 	VIEW_PARAMS_KEY = Symbol('view.params.key'),
 	roots = new WeakSet(),
-	views = {};
+	views = {},
+	scopedViews = new WeakMap();
 
-class Tie {
-	constructor(key, model) {
-		this.key = key;
-		this.model = ensureObservable(model);
-		this.views = null;
-		this.ownModel = this.model !== model;
-		this.model.observe(changes => this.processDataChanges(changes));
-	}
-
-	processDataChanges(changes) {
-		const
-			tieKey = this.key,
-			tieModel = this.model,
-			tieViews = this.views || (this.views = views[tieKey]),
-			tiedPaths = Object.keys(tieViews),
-			fullUpdatesMap = {};
-		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
-
-		if (!tiedPaths.length) return;
-
-		for (i = 0, l = changes.length; i < l; i++) {
-			change = changes[i];
-			changedObject = change.object;
-			arrPath = change.path;
-
-			if (Array.isArray(changedObject) &&
-				(change.type === 'insert' || change.type === 'delete') &&
-				!isNaN(arrPath[arrPath.length - 1])) {
-				changedPath = arrPath.slice(0, -1).join('.');
-				if (fullUpdatesMap[changedPath] === changedObject) {
-					continue;
-				} else {
-					fullUpdatesMap[changedPath] = changedObject;
-					change = null;
-				}
-			} else {
-				const apl = arrPath.length;
-				if (apl > 1) {
-					for (let k = 0; k < apl - 1; k++) {
-						changedPath += arrPath[k] + '.';
-					}
-					changedPath += arrPath[apl - 1];
-				} else if (apl === 1) {
-					changedPath = arrPath[0];
-				}
-			}
-
-			pl = tiedPaths.length;
-			while (pl) {
-				tiedPath = tiedPaths[--pl];
-				if (tiedPath.indexOf(changedPath) === 0 || changedPath.indexOf(tiedPath) === 0) {
-					pathViews = tieViews[tiedPath];
-					pvl = pathViews.length;
-					while (pvl) {
-						updateFromTie(pathViews[--pvl], changedPath, change, tieKey, tieModel);
-					}
-				}
-			}
-		}
-	}
-}
-
-function Ties() {
-	const
-		ts = {},
-		vp = /^[a-zA-Z0-9]+$/;
-
-	this.get = function get(key) {
-		const t = ts[key];
-		return t ? t.model : undefined;
-	};
-
-	this.create = function create(key, model) {
-		if (ts[key]) {
-			throw new Error('tie "' + key + '" already exists');
-		}
-		validateTieKey(key);
-
-		if (model === null) {
-			throw new Error('initial model, when provided, MUST NOT be null');
-		}
-
-		if (!(key in views)) views[key] = {};
-
-		const t = new Tie(key, model);
-		ts[key] = t;
-		ts[key].processDataChanges([{ path: [] }]);
-
-		return t.model;
-	};
-
-	this.remove = function remove(tieToRemove) {
-		let tieNameToRemove;
-		if (typeof tieToRemove === 'object') {
-			tieNameToRemove = Object.keys(ts).find(key => ts[key].model === tieToRemove);
-		} else if (typeof tieToRemove === 'string') {
-			tieNameToRemove = tieToRemove;
-		} else {
-			throw new Error('tie to remove MUST either be a valid tie key or tie self');
-		}
-
-		delete views[tieNameToRemove];
-		const tie = ts[tieNameToRemove];
-		if (tie) {
-			if (tie.model && tie.ownModel) {
-				tie.model.revoke();
-			}
-			delete ts[tieNameToRemove];
-		}
-	};
-
-	function validateTieKey(key) {
-		if (!key || typeof key !== 'string') {
-			throw new Error('tie key MUST be a non empty string');
-		}
-		if (!vp.test(key)) {
-			throw new Error('tie key MUST match ' + vp + '; "' + key + '" is not');
-		}
-	}
-
-	Object.freeze(this);
-}
+export const ties = new Ties(VIEW_PARAMS_KEY, views);
 
 function changeListener(event) {
 	const
@@ -222,6 +102,7 @@ function add(element) {
 					next.fParams.forEach(fp => {
 						const tieKey = fp.tieKey;
 						const rawPath = fp.rawPath;
+						//	TODO: scoped views
 						const tieViews = views[tieKey] || (views[tieKey] = {});
 						const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
 						if (pathViews.indexOf(element) < 0) {
@@ -231,7 +112,18 @@ function add(element) {
 				} else {
 					const tieKey = next.tieKey;
 					const rawPath = next.rawPath;
-					const tieViews = views[tieKey] || (views[tieKey] = {});
+					let tieViews;
+					if (next.scoped) {
+						const parent = element.getRootNode().host;
+						if (scopedViews.has(parent)) {
+							tieViews = scopedViews.get(parent);
+						} else {
+							tieViews = {};
+							scopedViews.set(parent, tieViews);
+						}
+					} else {
+						tieViews = views[tieKey] || (views[tieKey] = {});
+					}
 					const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
 					if (pathViews.indexOf(element) < 0) {
 						pathViews.push(element);
@@ -242,7 +134,11 @@ function add(element) {
 			addChangeListener(element, changeListener);
 		}
 
-		if (element.shadowRoot) {
+		if (element.hasAttribute('data-tie-root')) {
+			ties.create(element);
+		}
+
+		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
 			addRootDocument(element.shadowRoot);
 		}
 	} else {
@@ -264,51 +160,6 @@ function waitUndefined(element) {
 		customElements.whenDefined(tag).then(() => add(element));
 	} else {
 		console.warn('failed to determine tag of yet undefined custom element ' + element + ', abandoning');
-	}
-}
-
-function updateFromTie(element, changedPath, change, tieKey, tieModel) {
-	const viewParams = element[VIEW_PARAMS_KEY];
-	let i = viewParams.length;
-	while (i) {
-		const param = viewParams[--i];
-		if (param.isFunctional) {
-			if (param.fParams.some(fp => fp.tieKey === tieKey && fp.rawPath.indexOf(changedPath) === 0)) {
-				let someData = false;
-				const args = [];
-				param.fParams.forEach(fp => {
-					let arg;
-					const tie = ties.get(fp.tieKey);
-					if (tie) {
-						arg = getPath(tie, fp.path);
-						someData = true;
-					}
-					args.push(arg);
-				});
-				if (someData) {
-					args.push([change]);
-					callViewFunction(element, param.targetProperty, args);
-				}
-			}
-		} else {
-			if (param.tieKey !== tieKey) {
-				continue;
-			}
-			if (param.rawPath.indexOf(changedPath) !== 0 && changedPath.indexOf(param.rawPath) !== 0) {
-				continue;
-			}
-
-			let newValue;
-			if (!change || typeof change.value === 'undefined' || changedPath !== param.rawPath) {
-				newValue = getPath(tieModel, param.path);
-			} else if (change) {
-				newValue = change.value;
-			}
-			if (typeof newValue === 'undefined') {
-				newValue = '';
-			}
-			setViewProperty(element, param, newValue);
-		}
 	}
 }
 
@@ -352,12 +203,10 @@ function updateFromView(element, tiedPath) {
 }
 
 function addTree(root) {
-	let list;
+	let list = [root];
 	if (root.childElementCount) {
 		list = Array.from(root.querySelectorAll('*'));
 		list.unshift(root);
-	} else {
-		list = [root];
 	}
 
 	let i = list.length;
@@ -490,11 +339,8 @@ function processDomChanges(changes) {
 	}
 }
 
-function initDocumentObserver(document) {
-	const domObserver = new MutationObserver(processDomChanges);
-	domObserver.observe(document, MUTATION_OBSERVER_OPTIONS);
+if (params.autostart !== 'false' && params.autostart !== false) {
+	addRootDocument(document);
 }
-
-addRootDocument(document);
 
 console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');

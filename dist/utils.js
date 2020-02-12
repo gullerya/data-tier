@@ -35,6 +35,7 @@ export {
 class Parameter {
 	constructor(tieKey, rawPath, path, targetProperty, isFunctional, fParams) {
 		this.tieKey = tieKey;
+		this.scoped = tieKey === 'root';
 		this.rawPath = rawPath;
 		this.path = path;
 		this.targetProperty = targetProperty;
@@ -74,7 +75,7 @@ function getTargetProperty(element) {
 }
 
 function extractViewParams(element) {
-	const rawParam = element.dataset.tie;
+	const rawParam = element.getAttribute('data-tie');
 	if (rawParam) {
 		return parseViewParams(rawParam, element);
 	} else {

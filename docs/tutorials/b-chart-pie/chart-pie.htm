@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Chart pie - data-tier example - scoped</title>
+</head>
+
+<body>
+	<style>
+		.chart {
+			width: 320px;
+			height: 240px;
+			margin: 24px auto;
+		}
+	</style>
+
+	<chart-pie class="chart" data-tie="demoData:data => data, demoData:legend => legend">
+		<span>some</span>
+	</chart-pie>
+
+	<script type="module" src="./chart-pie.js"></script>
+	<script type="module">
+		import * as DataTier from '../../../dist/data-tier.js';
+		new Promise(resolve => setTimeout(() =>
+			resolve({
+				legend: {
+					entries: [
+						{ keyA: 'Key A' },
+						{ keyB: 'Key B' },
+						{ keyC: 'Key C' },
+						{ keyD: 'Key D' }
+					]
+				},
+				data: [
+					{ keyA: 0.1 },
+					{ keyB: 0.2 },
+					{ keyC: 0.3 },
+					{ keyD: 0.4 }
+				]
+			})), 1000)
+			.then(demoData => {
+				const model = DataTier.ties.create('demoData', demoData);
+			});
+	</script>
+</body>
+
+</html>
