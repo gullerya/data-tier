@@ -26,7 +26,6 @@ class Tie {
 	processDataChanges(changes) {
 		const
 			tieKey = this.key,
-			tieModel = this.model,
 			tieViews = this.views || (this.views = views[tieKey]),
 			tiedPaths = Object.keys(tieViews),
 			fullUpdatesMap = {};
@@ -68,14 +67,14 @@ class Tie {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
 					while (pvl) {
-						this.updateView(pathViews[--pvl], changedPath, change, tieKey, tieModel);
+						this.updateView(pathViews[--pvl], changedPath, change, tieKey);
 					}
 				}
 			}
 		}
 	}
 
-	updateView(element, changedPath, change, tieKey, tieModel) {
+	updateView(element, changedPath, change, tieKey) {
 		const viewParams = element[VIEW_PARAMS_KEY];
 		let i = viewParams.length;
 		while (i) {
@@ -108,7 +107,7 @@ class Tie {
 
 				let newValue;
 				if (!change || typeof change.value === 'undefined' || changedPath !== param.rawPath) {
-					newValue = getPath(tieModel, param.path);
+					newValue = getPath(this.model, param.path);
 				} else if (change) {
 					newValue = change.value;
 				}
