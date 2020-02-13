@@ -4,48 +4,51 @@ import * as DataTier from '../dist/data-tier.js';
 const suite = getSuite({ name: 'Testing Shadowing in iFrame' });
 
 suite.runTest({ name: 'iframe as such should not be influenced by the DataTier' }, test => {
-	const tieName = 'tieForIFrame';
+	const tieName = test.getRandom(8, ['numeric']);
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
 	const iframe = document.createElement('iframe');
 	document.body.appendChild(iframe);
 	iframe.contentDocument.body.innerHTML = `
-		<div id="test-a" data-tie="tieForIFrame:data">default content</div>`;
+		<div id="test-a" data-tie="${tieName}:data">default content</div>
+	`;
 
 	const c = iframe.contentDocument.getElementById('test-a').textContent;
-	if (c !== 'default content') test.fail('expected textContent to be "default content" but found "' + c + '"');
+	test.assertEqual('default content', c);
 
 	DataTier.ties.remove(tie);
 });
 
 suite.runTest({ name: 'iFrame added as root to DataTier' }, test => {
-	const tieName = 'tieForIFrame';
+	const tieName = test.getRandom(8, ['numeric']);
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
 	const iframe = document.createElement('iframe');
 	document.body.appendChild(iframe);
-	iframe.contentDocument.body.innerHTML = '<div id="test-a" data-tie="tieForIFrame:data">default content</div>';
+	iframe.contentDocument.body.innerHTML = `
+		<div id="test-a" data-tie="${tieName}:data">default content</div>
+	`;
 
 	const e = iframe.contentDocument.getElementById('test-a');
 	let c = e.textContent;
-	if (c !== 'default content') test.fail('expected textContent to be "default content" but found "' + c + '"');
+	test.assertEqual('default content', c);
 
 	//  adding the shadowed iframe to the game
 	DataTier.addRootDocument(iframe.contentDocument);
 	c = e.textContent;
-	if (c !== 'data') test.fail('expected textContent to be "data" but found "' + c + '"');
+	test.assertEqual('data', c);
 
 	//  ongoing change test
 	tie.data = 'change';
 	c = e.textContent;
-	if (c !== 'change') test.fail('expected textContent to be "change" but found "' + c + '"');
+	test.assertEqual('change', c);
 
 	//  removing the iframe should cleanup things
 	DataTier.removeRootDocument(iframe.contentDocument);
 	document.body.removeChild(iframe);
 	tie.data = 'one more time';
 	c = e.textContent;
-	if (c !== 'change') test.fail('expected textContent to be "change" but found "' + c + '"');
+	test.assertEqual('change', c);
 
 	DataTier.ties.remove(tie);
 });

@@ -1,6 +1,7 @@
 import { Observable } from './object-observer.min.js';
 
 const
+	VIEW_PARAMS_KEY = Symbol('view.params.key'),
 	DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget',
 	CHANGE_EVENT_NAME_PROVIDER = 'changeEventName',
 	PARAM_SPLITTER = /\s*=>\s*/,
@@ -20,6 +21,7 @@ const
 
 export {
 	ensureObservable,
+	VIEW_PARAMS_KEY,
 	DEFAULT_TIE_TARGET_PROVIDER,
 	getTargetProperty,
 	extractViewParams,
@@ -159,12 +161,20 @@ function parsePropertyParam(rawParam, element) {
 	}
 
 	const rawPath = origin.length > 1 ? origin[1] : '';
-	const result = new Parameter(origin[0] === 'root' ? element.getRootNode().host : origin[0],
+	const result = new Parameter(origin[0] !== 'root' ? origin[0] : getRootedTieKey(element),
 		rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
 	if (result.targetProperty === 'classList') {
 		result.iClasses = Array.from(element.classList);
 	}
 
+	return result;
+}
+
+function getRootedTieKey(element) {
+	let result = element.getRootNode();
+	if (result.host) {
+		result = result.host;
+	}
 	return result;
 }
 

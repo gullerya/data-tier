@@ -1,5 +1,6 @@
 import { Ties } from './ties.js';
 import {
+	VIEW_PARAMS_KEY,
 	DEFAULT_TIE_TARGET_PROVIDER,
 	getTargetProperty,
 	extractViewParams,
@@ -11,6 +12,7 @@ import {
 	setViewProperty,
 	callViewFunction
 } from './utils.js';
+import { addView, delView } from './views.js';
 
 export {
 	DEFAULT_TIE_TARGET_PROVIDER,
@@ -57,13 +59,9 @@ const
 		characterData: false,
 		characterDataOldValue: false
 	},
-	ELEMENT_PROCESSED_SYMBOL = Symbol('element-processed'),
-	VIEW_PARAMS_KEY = Symbol('view.params.key'),
-	roots = new WeakSet(),
-	views = {},
-	scopedViews = new WeakMap();
+	roots = new WeakSet();
 
-export const ties = new Ties(VIEW_PARAMS_KEY, views, scopedViews);
+export const ties = new Ties();
 
 function changeListener(event) {
 	const
@@ -88,53 +86,13 @@ function changeListener(event) {
 }
 
 function add(element) {
-	element[ELEMENT_PROCESSED_SYMBOL] = true;
-
 	if (element.matches(':defined')) {
 		const viewParams = extractViewParams(element);
-		let i;
 
-		if (viewParams && (i = viewParams.length)) {
-			element[VIEW_PARAMS_KEY] = viewParams;
-			while (i) {
-				const next = viewParams[--i];
-				if (next.isFunctional) {
-					next.fParams.forEach(fp => {
-						const tieKey = fp.tieKey;
-						const rawPath = fp.rawPath;
-						//	TODO: scoped views
-						const tieViews = views[tieKey] || (views[tieKey] = {});
-						const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
-						if (pathViews.indexOf(element) < 0) {
-							pathViews.push(element);
-						}
-					});
-				} else {
-					const tieKey = next.tieKey;
-					const rawPath = next.rawPath;
-					let tieViews;
-					if (typeof next.tieKey !== 'string') {
-						if (scopedViews.has(next.tieKey)) {
-							tieViews = scopedViews.get(next.tieKey);
-						} else {
-							tieViews = {};
-							scopedViews.set(next.tieKey, tieViews);
-						}
-					} else {
-						tieViews = views[tieKey] || (views[tieKey] = {});
-					}
-					const pathViews = tieViews[rawPath] || (tieViews[rawPath] = []);
-					if (pathViews.indexOf(element) < 0) {
-						pathViews.push(element);
-					}
-				}
-			}
+		if (viewParams) {
+			addView(element, viewParams);
 			updateFromView(element);
 			addChangeListener(element, changeListener);
-		}
-
-		if (element.hasAttribute('data-tie-root')) {
-			ties.create(element);
 		}
 
 		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
@@ -162,47 +120,43 @@ function waitUndefined(element) {
 	}
 }
 
-function updateFromView(element, tiedPath) {
+function updateFromView(element) {
 	const viewParams = element[VIEW_PARAMS_KEY];
 	let i = viewParams.length;
 	while (i) {
 		const param = viewParams[--i];
 		if (param.isFunctional) {
-			if (!tiedPath || param.fParams.some(fp => fp.rawPath.indexOf(tiedPath) === 0)) {
-				let someData = false;
-				const args = [];
-				param.fParams.forEach(fp => {
-					let arg;
-					const tie = ties.get(fp.tieKey);
-					if (tie) {
-						arg = getPath(tie, fp.path);
-						someData = true;
-					}
-					args.push(arg);
-				});
-				if (someData) {
-					args.push(null);
-					callViewFunction(element, param.targetProperty, args);
+			let someData = false;
+			const args = [];
+			param.fParams.forEach(fp => {
+				let arg;
+				const tie = ties.get(fp.tieKey);
+				if (tie) {
+					arg = getPath(tie, fp.path);
+					someData = true;
 				}
+				args.push(arg);
+			});
+			if (someData) {
+				args.push(null);
+				callViewFunction(element, param.targetProperty, args);
 			}
 		} else {
-			if (!tiedPath || param.rawPath.indexOf(tiedPath) === 0) {
-				const tie = ties.get(param.tieKey);
-				if (undefined === tie) {
-					continue;
-				}
-				let value = getPath(tie, param.path);
-				if (typeof value === 'undefined') {
-					value = '';
-				}
-				setViewProperty(element, param, value);
+			const tie = ties.get(param.tieKey);
+			if (undefined === tie) {
+				continue;
 			}
+			let value = getPath(tie, param.path);
+			if (typeof value === 'undefined') {
+				value = '';
+			}
+			setViewProperty(element, param, value);
 		}
 	}
 }
 
 function addTree(root) {
-	let list = [root];
+	let list = [root], next;
 	if (root.childElementCount) {
 		list = Array.from(root.querySelectorAll('*'));
 		list.unshift(root);
@@ -211,8 +165,8 @@ function addTree(root) {
 	let i = list.length;
 	while (i) {
 		try {
-			const next = list[--i];
-			if (Node.ELEMENT_NODE === next.nodeType && !next[ELEMENT_PROCESSED_SYMBOL]) {
+			next = list[--i];
+			if (Node.ELEMENT_NODE === next.nodeType && !next[VIEW_PARAMS_KEY]) {
 				add(next);
 			}
 		} catch (e) {
@@ -222,33 +176,21 @@ function addTree(root) {
 }
 
 function dropTree(root) {
-	let list;
+	let list = [root], i, next, viewParams;
 	if (root.childElementCount) {
 		list = Array.from(root.querySelectorAll('*'));
 		list.unshift(root);
-	} else {
-		list = [root];
 	}
 
-	let i = list.length;
+	i = list.length;
 	while (i) {
-		const next = list[--i];
-		const viewParams = next[VIEW_PARAMS_KEY];
+		next = list[--i];
+		viewParams = next[VIEW_PARAMS_KEY];
 
 		//	untie
 		if (viewParams) {
-			let j = viewParams.length;
-			while (j) {
-				const tieParam = viewParams[--j];
-				if (!views[tieParam.tieKey]) continue;
-				const pathViews = views[tieParam.tieKey][tieParam.rawPath];
-				const index = pathViews.indexOf(next);
-				if (index >= 0) {
-					pathViews.splice(index, 1);
-					delChangeListener(next, changeListener);
-				}
-			}
-			delete next[VIEW_PARAMS_KEY];
+			delView(next, viewParams);
+			delChangeListener(next, changeListener);
 		}
 
 		//	remove as root
@@ -258,40 +200,21 @@ function dropTree(root) {
 	}
 }
 
-function move(element, oldParam, newParam) {
-	let viewParams, i, index;
+function onTieParamChange(element, oldParam, newParam) {
+	let viewParams;
 	if (oldParam) {
 		viewParams = element[VIEW_PARAMS_KEY];
 		if (viewParams) {
-			i = viewParams.length;
-			while (i) {
-				const tieParam = viewParams[--i];
-				if (!views[tieParam.tieKey]) continue;
-				const pathViews = views[tieParam.tieKey][tieParam.rawPath];
-				if (pathViews) {
-					index = pathViews.indexOf(element);
-					if (index >= 0) {
-						pathViews.splice(index, 1);
-					}
-				}
-			}
+			delView(element, viewParams);
 			delChangeListener(element, changeListener);
 		}
 	}
 
 	if (newParam) {
 		viewParams = extractViewParams(element);
-		if (viewParams && (i = viewParams.length)) {
-			element[VIEW_PARAMS_KEY] = viewParams;
-			while (i) {
-				const tieParam = viewParams[--i];
-				const tieViews = views[tieParam.tieKey] || (views[tieParam.tieKey] = {});
-				const pathViews = tieViews[tieParam.rawPath] || (tieViews[tieParam.rawPath] = []);
-				if (pathViews.indexOf(element) < 0) {
-					pathViews.push(element);
-					updateFromView(element, tieParam.rawPath);
-				}
-			}
+		if (viewParams) {
+			addView(element, viewParams);
+			updateFromView(element);
 			addChangeListener(element, changeListener);
 		}
 	}
@@ -310,7 +233,7 @@ function processDomChanges(changes) {
 				oldValue = change.oldValue,
 				newValue = node.getAttribute(attributeName);
 			if (oldValue !== newValue) {
-				move(node, oldValue, newValue);
+				onTieParamChange(node, oldValue, newValue);
 			}
 		} else if (changeType === 'childList') {
 			//	process added nodes

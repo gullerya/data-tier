@@ -1,19 +1,19 @@
 import {
+	VIEW_PARAMS_KEY,
 	ensureObservable,
 	getPath,
 	setViewProperty,
 	callViewFunction
 } from './utils.js';
+import { obtainTieViews, deleteTieViews } from './views.js';
 
 const
 	namedTies = {},
 	rootedTies = new WeakMap(),
-	tieNameValidator = /^[a-zA-Z0-9]+$/;
+	tieNameValidator = /^[a-zA-Z0-9]+$/,
+	reservedTieNames = ['root'];
 
-let VIEW_PARAMS_KEY,
-	ties,
-	views,
-	rootedViews;
+let ties;
 
 class Tie {
 	constructor(key, model, views) {
@@ -122,11 +122,8 @@ class Tie {
 }
 
 export class Ties {
-	constructor(viewParamsKey, nViews, rViews) {
-		VIEW_PARAMS_KEY = viewParamsKey;
+	constructor() {
 		ties = this;
-		views = nViews;
-		rootedViews = rViews;
 	}
 
 	get(key) {
@@ -149,39 +146,42 @@ export class Ties {
 			throw new Error('initial model, when provided, MUST NOT be null');
 		}
 
-		let t;
+		const tieViews = obtainTieViews(key);
+		const tie = new Tie(key, model, tieViews);
 		if (typeof key === 'string') {
-			if (!(key in views)) views[key] = {};
-			t = new Tie(key, model, views[key]);
-			namedTies[key] = t;
+			namedTies[key] = tie;
 		} else {
-			if (!rootedViews.has(key)) rootedViews.set(key, {});
-			t = new Tie(key, model, rootedViews.get(key));
-			rootedTies.set(key, t);
+			rootedTies.set(key, tie);
 		}
-		t.processDataChanges([{ path: [] }]);
+		tie.processDataChanges([{ path: [] }]);
 
-		return t.model;
+		return tie.model;
 	};
 
 	remove(tieToRemove) {
-		let tieNameToRemove;
-		if (typeof tieToRemove === 'object') {
-			tieNameToRemove = Object.keys(namedTies).find(key => namedTies[key].model === tieToRemove);
-		} else if (typeof tieToRemove === 'string') {
-			tieNameToRemove = tieToRemove;
+		let tie;
+		let finalTieKeyToRemove;
+		if (typeof tieToRemove === 'object' && tieToRemove.nodeType === Node.ELEMENT_NODE) {
+			finalTieKeyToRemove = tieToRemove;
+			tie = rootedTies.get(finalTieKeyToRemove);
+			rootedTies.delete(finalTieKeyToRemove);
+		} else if (typeof tieToRemove === 'string' || typeof tieToRemove === 'object') {
+			if (typeof tieToRemove === 'object') {
+				finalTieKeyToRemove = Object.keys(namedTies).find(key => namedTies[key].model === tieToRemove);
+			} else {
+				finalTieKeyToRemove = tieToRemove;
+			}
+			tie = namedTies[finalTieKeyToRemove];
+			delete namedTies[finalTieKeyToRemove];
 		} else {
 			throw new Error('tie to remove MUST either be a valid tie key or tie self');
 		}
+		deleteTieViews(finalTieKeyToRemove);
 
-		delete views[tieNameToRemove];
-		//	TODO: handle rooted views too
-		const tie = namedTies[tieNameToRemove];
 		if (tie) {
 			if (tie.model && tie.ownModel) {
 				tie.model.revoke();
 			}
-			delete namedTies[tieNameToRemove];
 		}
 	};
 
@@ -192,6 +192,9 @@ export class Ties {
 		if (typeof key === 'string') {
 			if (!tieNameValidator.test(key)) {
 				throw new Error(`tie key MUST match ${tieNameValidator}; '${key}' doesn't`);
+			}
+			if (reservedTieNames.indexOf(key) >= 0) {
+				throw new Error(`tie key MUST NOT be one of those: ${reservedTieNames.join(', ')}`);
 			}
 		} else if (!key.nodeType || key.nodeType !== Node.ELEMENT_NODE) {
 			throw new Error(`invalid key '${key}'`);
