@@ -5,38 +5,39 @@ const suite = getSuite({ name: 'Testing array changes (static binding)' });
 
 suite.runTest({ name: 'array manipulation flow' }, async test => {
 	const
-		ordersTie = DataTier.ties.create('ordersASB', []),
+		tn = test.getRandom(8, ['numeric']),
+		ordersTie = DataTier.ties.create(tn, []),
 		element = document.createElement('div');
 
 	//	add element with static binding on element 2
-	element.dataset.tie = 'ordersASB:2 => textContent';
+	element.dataset.tie = `${tn}:2 => textContent`;
 	document.body.appendChild(element);
 	await test.waitNextMicrotask();
-	if (element.textContent !== '') test.fail('expected textContent to be [], found ' + element.textContent);
+	test.assertEqual('', element.textContent);
 
 	//	add array having element 2
 	ordersTie.push('0', '1', '2', '3');
-	if (element.textContent !== '2') test.fail('expected textContent to be [2], found ' + element.textContent);
+	test.assertEqual('2', element.textContent);
 
 	//	unshift
 	ordersTie.unshift('primordial');
-	if (element.textContent !== '1') test.fail('expected textContent to be [1], found ' + element.textContent);
+	test.assertEqual('1', element.textContent);
 
 	//	shift
 	ordersTie.shift();
-	if (element.textContent !== '2') test.fail('expected textContent to be [2], found ' + element.textContent);
+	test.assertEqual('2', element.textContent);
 	ordersTie.shift();
-	if (element.textContent !== '3') test.fail('expected textContent to be [3], found ' + element.textContent);
+	test.assertEqual('3', element.textContent);
 	ordersTie.shift();
-	if (element.textContent !== '') test.fail('expected textContent to be [], found ' + element.textContent);
+	test.assertEqual('', element.textContent);
 
 	//	push
 	ordersTie.push('_');
-	if (element.textContent !== '_') test.fail('expected textContent to be [_], found ' + element.textContent);
+	test.assertEqual('_', element.textContent);
 
 	//	pop
 	ordersTie.pop();
-	if (element.textContent !== '') test.fail('expected textContent to be [], found ' + element.textContent);
+	test.assertEqual('', element.textContent);
 });
 
 suite.runTest({ name: 'array multi-manipulation flow' }, async test => {
@@ -53,7 +54,7 @@ suite.runTest({ name: 'array multi-manipulation flow' }, async test => {
 	if (element.textContent !== 'one') test.fail('expected textContent to be [one], found ' + element.textContent);
 });
 
-suite.runTest({ name: 'array - full replate' }, async test => {
+suite.runTest({ name: 'array - full replace' }, async test => {
 	const
 		tieName = test.getRandom(8),
 		testTie = DataTier.ties.create(tieName, { data: [] }),

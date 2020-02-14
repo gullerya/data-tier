@@ -194,7 +194,7 @@ function dropTree(root) {
 		}
 
 		//	remove as root
-		if (next.shadowRoot) {
+		if (next.shadowRoot && !next.hasAttribute('data-tie-blackbox')) {
 			removeRootDocument(next.shadowRoot);
 		}
 	}

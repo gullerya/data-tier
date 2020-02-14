@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>TODO list - data-tier example - scoped</title>
+</head>
+
+<body>
+	<style>
+		.wrapper {
+			display: flex;
+		}
+
+		.todo-list {
+			margin: 24px;
+			box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.1);
+		}
+
+		.todo-form {
+			margin: 24px;
+			padding: 24px;
+			width: 240px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.1);
+		}
+	</style>
+
+	<div class="wrapper">
+		<todo-list class="todo-list" data-tie-blackbox data-tie="updateList(todoListModel)"></todo-list>
+		<form class="todo-form">
+			<input type="text" data-tie="todoFormModel:newItemText" />
+			<button type="button" data-tie="todoFormModel:newItemSubmit => onclick">Add</button>
+		</form>
+	</div>
+
+	<script type="module" src="./todo-list.js"></script>
+	<script type="module">
+		import * as DataTier from '../../../dist/data-tier.js';
+		new Promise(resolve => setTimeout(() =>
+			resolve([
+				{ text: 'TODO A' },
+				{ text: 'TODO B' },
+				{ text: 'TODO C' }
+			])), 1000)
+			.then(listFromServer => {
+				const listModel = DataTier.ties.create('todoListModel', listFromServer);
+				const formModel = DataTier.ties.create('todoFormModel', {
+					newItemText: null,
+					newItemSubmit: event => {
+						const newTodoItem = {
+							text: formModel.newItemText
+						};
+						listModel.push(newTodoItem);
+						formModel.newItemText = null;
+						event.preventDefault();
+					}
+				});
+			});
+	</script>
+</body>
+
+</html>

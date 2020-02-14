@@ -28,26 +28,21 @@ class Tie {
 		const
 			tieViews = this.views,
 			tiedPaths = Object.keys(tieViews),
-			tiedPathsLength = tiedPaths.length,
-			fullUpdatesMap = {};
+			tiedPathsLength = tiedPaths.length;
 		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
-		let cplen, sst, lst, same, view, updateSet;
+		let cplen, sst, lst, fullArrayUpdate, same, view, updateSet;
 
 		if (!tiedPathsLength) return;
 
 		for (i = 0, l = changes.length; i < l; i++) {
+			fullArrayUpdate = false;
 			change = changes[i];
 			changedObject = change.object;
 			arrPath = change.path;
 
 			if (Array.isArray(changedObject) && (change.type === 'insert' || change.type === 'delete') && !isNaN(arrPath[arrPath.length - 1])) {
 				changedPath = arrPath.slice(0, -1).join('.');
-				if (fullUpdatesMap[changedPath] === changedObject) {
-					continue;
-				} else {
-					fullUpdatesMap[changedPath] = changedObject;
-					change = null;
-				}
+				fullArrayUpdate = true;
 			} else {
 				const apl = arrPath.length;
 				if (apl === 1) {
@@ -72,7 +67,7 @@ class Tie {
 					sst = changedPath;
 					lst = tiedPath;
 				}
-				same = sst === lst;
+				same = sst === lst && !fullArrayUpdate;
 				if (lst.indexOf(sst) === 0) {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
