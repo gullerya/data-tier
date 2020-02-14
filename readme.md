@@ -16,6 +16,9 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __2.6.0__
+  * adding experimental __scoped__ tying capabilities - not yet publically available
+
 * __2.5.1__
   * implemented [issue #40](https://github.com/gullerya/data-tier/issues/40) - documented all of the latest changes, verified functional tying documentation
   * add full tutorial example and improved tutorials description (should add more use-cases in the future)
@@ -23,10 +26,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 * __2.4.0__
   * implemented [issue #39](https://github.com/gullerya/data-tier/issues/39) - added support for a `classList` in a special manner
   * changed behavior of the nested properties change when parent is watched - now parent is also notified
-
-* __2.3.0__
-  * implemented [issue #37](https://github.com/gullerya/data-tier/issues/37) - fixed mishandlings of the `data-tie` property changes
-  * attempting to push performance further (switched model change observer definition from `bind` to lambda syntax)
 
 > `2.0.0` version was an API breaking version! While migration from an old API to the new one is easy (remove the notion of `model` property everywhere in JS) - please, take care to go over the updated APIs.
 

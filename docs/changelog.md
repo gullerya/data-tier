@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __2.6.0__
+  * adding experimental __scoped__ tying capabilities - not yet publically available
+
 * __2.5.0__
   * implemented [issue #40](https://github.com/gullerya/data-tier/issues/40) - documented all of the latest changes, verified functional tying documentation
   * add full tutorial example and improved tutorials description (should add more use-cases in the future)
