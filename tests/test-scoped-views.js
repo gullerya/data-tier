@@ -70,3 +70,43 @@ suite.runTest({ name: 'scoped in shadow - move around' }, async test => {
 	model2.data.name = 'else2';
 	test.assertEqual('else2', iv.textContent);
 });
+
+suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async test => {
+	const sv1 = document.createElement('div');
+	const sv2 = document.createElement('div');
+	const sh1 = sv1.attachShadow({ mode: 'open' });
+	const sh2 = sv2.attachShadow({ mode: 'open' });
+	document.body.appendChild(sv1);
+	document.body.appendChild(sv2);
+
+	const model1 = DataTier.ties.create(sv1, { data: { name: 'some1' } });
+	const model2 = DataTier.ties.create(sv2, { data: { name: 'some2' } });
+
+	const iv = document.createElement('input');
+	iv.dataset.tie = 'root:data.name';
+
+	document.body.appendChild(iv);
+	await test.waitNextMicrotask();
+	test.assertEqual('', iv.value);
+
+	sh1.appendChild(iv);
+	await test.waitNextMicrotask();
+	test.assertEqual('some1', iv.value);
+	model1.data.name = 'else1';
+	test.assertEqual('else1', iv.value);
+	iv.value = 'value1';
+	iv.dispatchEvent(new Event('change'));
+	await test.waitNextMicrotask();
+	test.assertEqual('value1', model1.data.name);
+
+	sh2.appendChild(iv);
+	await test.waitNextMicrotask();
+	test.assertEqual('some2', iv.value);
+	model2.data.name = 'else2';
+	test.assertEqual('else2', iv.value);
+	iv.value = 'value2';
+	iv.dispatchEvent(new Event('change'));
+	await test.waitNextMicrotask();
+	test.assertEqual('value2', model2.data.name);
+	test.assertEqual('value1', model1.data.name);
+});

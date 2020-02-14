@@ -26,22 +26,21 @@ class Tie {
 
 	processDataChanges(changes) {
 		const
-			tieKey = this.key,
 			tieViews = this.views,
 			tiedPaths = Object.keys(tieViews),
+			tiedPathsLength = tiedPaths.length,
 			fullUpdatesMap = {};
 		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
+		let cplen, sst, lst, same, view, updateSet;
 
-		if (!tiedPaths.length) return;
+		if (!tiedPathsLength) return;
 
 		for (i = 0, l = changes.length; i < l; i++) {
 			change = changes[i];
 			changedObject = change.object;
 			arrPath = change.path;
 
-			if (Array.isArray(changedObject) &&
-				(change.type === 'insert' || change.type === 'delete') &&
-				!isNaN(arrPath[arrPath.length - 1])) {
+			if (Array.isArray(changedObject) && (change.type === 'insert' || change.type === 'delete') && !isNaN(arrPath[arrPath.length - 1])) {
 				changedPath = arrPath.slice(0, -1).join('.');
 				if (fullUpdatesMap[changedPath] === changedObject) {
 					continue;
@@ -51,73 +50,93 @@ class Tie {
 				}
 			} else {
 				const apl = arrPath.length;
-				if (apl > 1) {
-					for (let k = 0; k < apl - 1; k++) {
-						changedPath += arrPath[k] + '.';
-					}
-					changedPath += arrPath[apl - 1];
-				} else if (apl === 1) {
+				if (apl === 1) {
 					changedPath = arrPath[0];
+				} else if (!apl) {
+				} else if (apl === 2) {
+					changedPath = arrPath[0] + '.' + arrPath[1];
+				} else {
+					changedPath = arrPath.join('.');
 				}
 			}
 
-			pl = tiedPaths.length;
+			cplen = changedPath.length;
+			pl = tiedPathsLength;
+			updateSet = new Map();
 			while (pl) {
 				tiedPath = tiedPaths[--pl];
-				if (tiedPath.indexOf(changedPath) === 0 || changedPath.indexOf(tiedPath) === 0) {
+				if (cplen > tiedPath.length) {
+					sst = tiedPath;
+					lst = changedPath;
+				} else {
+					sst = changedPath;
+					lst = tiedPath;
+				}
+				same = sst === lst;
+				if (lst.indexOf(sst) === 0) {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
 					while (pvl) {
-						this.updateView(pathViews[--pvl], changedPath, change, tieKey);
+						view = pathViews[--pvl];
+						let tmp = updateSet.get(view);
+						if (!tmp) {
+							tmp = {};
+							updateSet.set(view, tmp);
+						}
+						tmp[tiedPath] = same;
 					}
 				}
 			}
+			this.updateViews(updateSet, change);
 		}
 	}
 
-	updateView(element, changedPath, change, tieKey) {
-		const viewParams = element[VIEW_PARAMS_KEY];
-		let i = viewParams.length;
-		while (i) {
-			const param = viewParams[--i];
-			if (param.isFunctional) {
-				if (param.fParams.some(fp => fp.tieKey === tieKey && fp.rawPath.indexOf(changedPath) === 0)) {
-					let someData = false;
-					const args = [];
-					param.fParams.forEach(fp => {
-						let arg;
-						const tie = ties.get(fp.tieKey);
-						if (tie) {
-							arg = getPath(tie, fp.path);
-							someData = true;
+	updateViews(updateSet, change) {
+		let viewParams, i;
+		updateSet.forEach((paths, element) => {
+			viewParams = element[VIEW_PARAMS_KEY];
+			i = viewParams.length;
+			while (i) {
+				const param = viewParams[--i];
+				if (param.isFunctional) {
+					if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath in paths)) {
+						let someData = false;
+						const args = [];
+						param.fParams.forEach(fp => {
+							let arg;
+							const tie = ties.get(fp.tieKey);
+							if (tie) {
+								arg = getPath(tie, fp.path);
+								someData = true;
+							}
+							args.push(arg);
+						});
+						if (someData) {
+							args.push([change]);
+							callViewFunction(element, param.targetProperty, args);
 						}
-						args.push(arg);
-					});
-					if (someData) {
-						args.push([change]);
-						callViewFunction(element, param.targetProperty, args);
 					}
-				}
-			} else {
-				if (param.tieKey !== tieKey) {
-					continue;
-				}
-				if (param.rawPath.indexOf(changedPath) !== 0 && changedPath.indexOf(param.rawPath) !== 0) {
-					continue;
-				}
+				} else {
+					if (param.tieKey !== this.key) {
+						continue;
+					}
+					if (!(param.rawPath in paths)) {
+						continue;
+					}
 
-				let newValue;
-				if (!change || typeof change.value === 'undefined' || changedPath !== param.rawPath) {
-					newValue = getPath(this.model, param.path);
-				} else if (change) {
-					newValue = change.value;
+					let newValue;
+					if (change && typeof change.value !== 'undefined' && paths[param.rawPath]) {
+						newValue = change.value;
+					} else {
+						newValue = getPath(this.model, param.path);
+					}
+					if (typeof newValue === 'undefined') {
+						newValue = '';
+					}
+					setViewProperty(element, param, newValue);
 				}
-				if (typeof newValue === 'undefined') {
-					newValue = '';
-				}
-				setViewProperty(element, param, newValue);
 			}
-		}
+		});
 	}
 }
 

@@ -1,10 +1,13 @@
-import * as DataTier from '../../../dist/data-tier.js?autostart=false';
+import * as DataTier from '../../../dist/data-tier.js';
 
 const
 	template = document.createElement('template');
 
 template.innerHTML = `
 	<style>
+		:host {
+			display: flex;
+		}
 	</style>
 
 	<div class="legend">
@@ -18,19 +21,23 @@ template.innerHTML = `
 customElements.define('chart-pie', class extends HTMLElement {
 	constructor() {
 		super();
-		this.setAttribute('data-tie-blackbox', '');
+		// this.setAttribute('data-tie-blackbox', '');
 		this.attachShadow({ mode: 'open' })
 			.appendChild(template.content.cloneNode(true));
-		DataTier.ties.create(this);
-		DataTier.addRootDocument(this.shadowRoot);
+		// DataTier.ties.create(this);
+		// DataTier.addRootDocument(this.shadowRoot);
 	}
 
 	set legend(legend) {
-		DataTier.ties.get(this).legend = legend;
+		if (legend) {
+			console.log(legend.entries.length);
+		}
 	}
 
 	set data(data) {
-		DataTier.ties.get(this).data = data;
+		if (data) {
+			console.log(data.length);
+		}
 	}
 
 	connectedCallback() {

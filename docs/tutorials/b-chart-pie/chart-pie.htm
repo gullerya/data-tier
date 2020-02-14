@@ -11,33 +11,52 @@
 			width: 320px;
 			height: 240px;
 			margin: 24px auto;
+			box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.1);
 		}
 	</style>
 
-	<chart-pie class="chart" data-tie="demoData:data => data, demoData:legend => legend"></chart-pie>
+	<chart-pie class="chart" data-tie="demoData1:data => data, demoData1:legend => legend"></chart-pie>
+	<!-- <chart-pie class="chart" data-tie="demoData2:data => data, demoData2:legend => legend"></chart-pie> -->
 
 	<script type="module" src="./chart-pie.js"></script>
 	<script type="module">
-		import * as DataTier from '../../../dist/data-tier.min.js';
+		import * as DataTier from '../../../dist/data-tier.js';
 		new Promise(resolve => setTimeout(() =>
-			resolve({
-				legend: {
-					entries: [
-						{ keyA: 'Key A' },
-						{ keyB: 'Key B' },
-						{ keyC: 'Key C' },
-						{ keyD: 'Key D' }
+			resolve([
+				{
+					legend: {
+						entries: [
+							{ keyA: 'Key 1' },
+							{ keyB: 'Key 2' },
+							{ keyC: 'Key 3' }
+						]
+					},
+					data: [
+						{ keyA: 0.2 },
+						{ keyB: 0.4 },
+						{ keyC: 0.4 }
 					]
 				},
-				data: [
-					{ keyA: 0.1 },
-					{ keyB: 0.2 },
-					{ keyC: 0.3 },
-					{ keyD: 0.4 }
-				]
-			})), 1000)
+				{
+					legend: {
+						entries: [
+							{ keyA: 'Key A' },
+							{ keyB: 'Key B' },
+							{ keyC: 'Key C' },
+							{ keyD: 'Key D' }
+						]
+					},
+					data: [
+						{ keyA: 0.1 },
+						{ keyB: 0.2 },
+						{ keyC: 0.3 },
+						{ keyD: 0.4 }
+					]
+				}
+			])), 1000)
 			.then(demoData => {
-				const model = DataTier.ties.create('demoData', demoData);
+				DataTier.ties.create('demoData1', demoData[0]);
+				//DataTier.ties.create('demoData2', demoData[1]);
 			});
 	</script>
 </body>

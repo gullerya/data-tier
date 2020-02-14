@@ -252,3 +252,100 @@ suite.runTest({ name: 'tie property changes cycle' }, async test => {
 
 	await test.waitNextMicrotask();
 });
+
+suite.runTest({ name: '2 properties of the same tie, update runs only once, create tie first' }, async test => {
+	const
+		tn = test.getRandom(8),
+		t = DataTier.ties.create(tn, { dataA: 'dataA', dataB: 'dataB' }),
+		dataA = [],
+		dataB = [];
+
+	const v = document.createElement('div');
+	Object.defineProperties(v, {
+		dataA: {
+			set(value) {
+				dataA.push(value);
+			}
+		},
+		dataB: {
+			set(value) {
+				dataB.push(value);
+			}
+		}
+	});
+	v.dataset.tie = `${tn}:dataA => dataA, ${tn}:dataB => dataB`;
+
+	document.body.appendChild(v);
+	await test.waitNextMicrotask();
+
+	test.assertEqual(1, dataA.length);
+	test.assertEqual(1, dataB.length);
+});
+
+suite.runTest({ name: '2 properties of the same tie, update runs only once, create view first' }, async test => {
+	const
+		tn = test.getRandom(8),
+		dataA = [],
+		dataB = [];
+
+	const v = document.createElement('div');
+	Object.defineProperties(v, {
+		dataA: {
+			set(value) {
+				dataA.push(value);
+			}
+		},
+		dataB: {
+			set(value) {
+				dataB.push(value);
+			}
+		}
+	});
+	v.dataset.tie = `${tn}:dataA => dataA, ${tn}:dataB => dataB`;
+
+	document.body.appendChild(v);
+	await test.waitNextMicrotask();
+
+	DataTier.ties.create(tn, { dataA: 'dataA', dataB: 'dataB' });
+	test.assertEqual(1, dataA.length);
+	test.assertEqual(1, dataB.length);
+});
+
+suite.runTest({ name: '2 properties of the same tie, update runs only once, update tie' }, async test => {
+	const
+		tn = test.getRandom(8),
+		dataA = [],
+		dataB = [];
+
+	const v = document.createElement('div');
+	Object.defineProperties(v, {
+		dataA: {
+			set(value) {
+				dataA.push(value);
+			}
+		},
+		dataB: {
+			set(value) {
+				dataB.push(value);
+			}
+		}
+	});
+	v.dataset.tie = `${tn}:data.a => dataA, ${tn}:data.b => dataB`;
+
+	document.body.appendChild(v);
+	await test.waitNextMicrotask();
+
+	const model = DataTier.ties.create(tn, { data: { a: 'dataA', b: 'dataB' } });
+	dataA.splice(0);
+	dataB.splice(0);
+
+	model.data.a = 'nextA';
+	test.assertEqual(1, dataA.length);
+	test.assertEqual(0, dataB.length);
+	dataA.splice(0);
+	dataB.splice(0);
+
+	model.data = { a: 'lastA', b: 'lastB' };
+	test.assertEqual(1, dataA.length);
+	test.assertEqual(1, dataB.length);
+});
