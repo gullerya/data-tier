@@ -12,7 +12,8 @@ suite.runTest({ name: 'scoped - self' }, async test => {
 
 	await test.waitNextMicrotask();
 	test.assertEqual('', sv.value);
-	const model = DataTier.ties.create(sv, { data: { name: 'some' } });
+	const model = DataTier.ties.get(sv);
+	model.data = { name: 'some' };
 	test.assertEqual('some', sv.value);
 
 	//	model to view
@@ -38,7 +39,8 @@ suite.runTest({ name: 'scoped - child a' }, async test => {
 
 	await test.waitNextMicrotask();
 	test.assertEqual('', iv.value);
-	const model = DataTier.ties.create(sv, { data: { name: 'some' } });
+	const model = DataTier.ties.get(sv);
+	model.data = { name: 'some' };
 	test.assertEqual('some', iv.value);
 
 	//	model to view
@@ -78,8 +80,12 @@ suite.runTest({ name: 'scoped - move around' }, async test => {
 	document.body.appendChild(sv1);
 	document.body.appendChild(sv2);
 
-	const model1 = DataTier.ties.create(sv1, { data: { name: 'some1' } });
-	const model2 = DataTier.ties.create(sv2, { data: { name: 'some2' } });
+	await test.waitNextMicrotask();
+
+	const model1 = DataTier.ties.get(sv1);
+	model1.data = { name: 'some1' };
+	const model2 = DataTier.ties.get(sv2);
+	model2.data = { name: 'some2' };
 
 	const iv = document.createElement('span');
 	iv.dataset.tie = 'scope:data.name';

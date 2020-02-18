@@ -16,7 +16,8 @@ suite.runTest({ name: 'scoped in shadow - flow a' }, async test => {
 
 	await test.waitNextMicrotask();
 	test.assertEqual('', iv.textContent);
-	const model = DataTier.ties.create(sv, { data: { name: 'some' } });
+	const model = DataTier.ties.get(sv)
+	model.data = { name: 'some' };
 	test.assertEqual('some', iv.textContent);
 
 	model.data.name = 'else';
@@ -85,8 +86,12 @@ suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async
 	document.body.appendChild(sv1);
 	document.body.appendChild(sv2);
 
-	const model1 = DataTier.ties.create(sv1, { data: { name: 'some1' } });
-	const model2 = DataTier.ties.create(sv2, { data: { name: 'some2' } });
+	await test.waitNextMicrotask();
+
+	const model1 = DataTier.ties.get(sv1);
+	model1.data = { name: 'some1' };
+	const model2 = DataTier.ties.get(sv2);
+	model2.data = { name: 'some2' };
 
 	const iv = document.createElement('input');
 	iv.dataset.tie = 'scope:data.name';

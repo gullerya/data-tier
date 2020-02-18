@@ -98,6 +98,9 @@ function add(element) {
 		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
 			addRootDocument(element.shadowRoot);
 		}
+		if (element.hasAttribute && element.hasAttribute('data-tie-scope') && !ties.get(element)) {
+			ties.create(element);
+		}
 	} else {
 		waitUndefined(element);
 	}
