@@ -1,8 +1,8 @@
 import { VIEW_PARAMS_KEY } from './utils.js';
 
-export const
+const
 	namedViews = {},
-	rootedViews = new WeakMap();
+	kelemViews = new WeakMap();
 
 export {
 	obtainTieViews,
@@ -20,10 +20,10 @@ function obtainTieViews(tieKey) {
 			namedViews[tieKey] = tieViews;
 		}
 	} else {
-		tieViews = rootedViews.get(tieKey);
+		tieViews = kelemViews.get(tieKey);
 		if (!tieViews) {
 			tieViews = {};
-			rootedViews.set(tieKey, tieViews);
+			kelemViews.set(tieKey, tieViews);
 		}
 	}
 	return tieViews;
@@ -33,7 +33,7 @@ function deleteTieViews(tieKey) {
 	if (typeof tieKey === 'string') {
 		delete namedViews[tieKey];
 	} else {
-		rootedViews.delete(tieKey);
+		kelemViews.delete(tieKey);
 	}
 }
 
@@ -67,10 +67,10 @@ function seekAndInsertView(tieParam, element) {
 			namedViews[tieKey] = tieViews;
 		}
 	} else {
-		tieViews = rootedViews.get(tieKey);
+		tieViews = kelemViews.get(tieKey);
 		if (!tieViews) {
 			tieViews = {};
-			rootedViews.set(tieKey, tieViews);
+			kelemViews.set(tieKey, tieViews);
 		}
 	}
 	let pathViews = tieViews[rawPath];
@@ -109,7 +109,7 @@ function seekAndRemoveView(tieParam, element) {
 	if (typeof tieKey === 'string') {
 		tieViews = namedViews[tieKey];
 	} else {
-		tieViews = rootedViews.get(tieKey);
+		tieViews = kelemViews.get(tieKey);
 	}
 	const pathViews = tieViews[rawPath];
 	const index = pathViews ? pathViews.indexOf(element) : -1;

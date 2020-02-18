@@ -160,9 +160,14 @@ function parsePropertyParam(rawParam, element) {
 		throw new Error(`invalid tie parameter '${rawParam}'; expected (example): "orders:0.address.street, orders:0.address.apt => title"`);
 	}
 
+	let tieKey = origin[0];
+	if (origin[0] === 'scope') {
+		tieKey = getScopedTieKey(element);
+	}
+
 	const rawPath = origin.length > 1 ? origin[1] : '';
-	const result = new Parameter(origin[0] !== 'root' ? origin[0] : getRootedTieKey(element),
-		rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
+
+	const result = new Parameter(tieKey, rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
 	if (result.targetProperty === 'classList') {
 		result.iClasses = Array.from(element.classList);
 	}
@@ -170,10 +175,14 @@ function parsePropertyParam(rawParam, element) {
 	return result;
 }
 
-function getRootedTieKey(element) {
-	let result = element.getRootNode();
-	if (result.host) {
-		result = result.host;
+//	in future we would like to lookup in existing ties
+function getScopedTieKey(element) {
+	let result = element;
+	while (result.parentNode && !result.hasAttribute('data-tie-scope')) {
+		result = result.parentNode;
+		if (result.host) {
+			result = result.host;
+		}
 	}
 	return result;
 }

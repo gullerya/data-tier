@@ -11,7 +11,7 @@ const
 	namedTies = {},
 	rootedTies = new WeakMap(),
 	tieNameValidator = /^[a-zA-Z0-9]+$/,
-	reservedTieNames = ['root'];
+	reservedTieNames = ['scope'];
 
 let ties;
 
