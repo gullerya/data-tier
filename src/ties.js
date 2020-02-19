@@ -1,15 +1,15 @@
 import {
+	SCOPE_ROOT_KEY,
 	VIEW_PARAMS_KEY,
 	ensureObservable,
 	getPath,
 	setViewProperty,
-	callViewFunction
+	callViewFunction,
+	getRandomKey
 } from './utils.js';
 import { obtainTieViews, deleteTieViews } from './views.js';
 
 const
-	namedTies = {},
-	rootedTies = new WeakMap(),
 	tieNameValidator = /^[a-zA-Z0-9]+$/,
 	reservedTieNames = ['scope'];
 
@@ -27,7 +27,7 @@ class Tie {
 	processDataChanges(changes) {
 		const
 			tieViews = this.views,
-			tiedPaths = Object.keys(tieViews),
+			tiedPaths = tieViews._pathsCache,
 			tiedPathsLength = tiedPaths.length;
 		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
 		let cplen, sst, lst, fullArrayUpdate, same, view, updateSet;
@@ -141,58 +141,56 @@ export class Ties {
 	}
 
 	get(key) {
-		let t;
-		if (typeof key === 'string') {
-			t = namedTies[key];
-		} else {
-			t = rootedTies.get(key);
-		}
-		return t ? t.model : undefined;
+		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_KEY] : undefined);
+		const t = ties[k];
+		return t ? t.model : null;
 	};
 
 	create(key, model) {
-		if (namedTies[key]) {
+		if (ties[key]) {
 			throw new Error(`tie '${key}' already exists`);
 		}
 		this.validateTieKey(key);
+
+		let k = key;
+		if (typeof k !== 'string') {
+			k = getRandomKey(16);
+			key[SCOPE_ROOT_KEY] = k;
+			Object.defineProperty(key, 'scopeTie', {
+				get() {
+					return ties.get(this[SCOPE_ROOT_KEY]);
+				}
+			});
+		}
 
 		if (model === null) {
 			throw new Error('initial model, when provided, MUST NOT be null');
 		}
 
-		const tieViews = obtainTieViews(key);
-		const tie = new Tie(key, model, tieViews);
-		if (typeof key === 'string') {
-			namedTies[key] = tie;
-		} else {
-			rootedTies.set(key, tie);
-		}
+		const tieViews = obtainTieViews(k);
+		const tie = new Tie(k, model, tieViews);
+		ties[k] = tie;
 		tie.processDataChanges([{ path: [] }]);
 
 		return tie.model;
 	};
 
 	remove(tieToRemove) {
-		let tie;
-		let finalTieKeyToRemove;
-		if (typeof tieToRemove === 'object' && tieToRemove.nodeType === Node.ELEMENT_NODE) {
-			finalTieKeyToRemove = tieToRemove;
-			tie = rootedTies.get(finalTieKeyToRemove);
-			rootedTies.delete(finalTieKeyToRemove);
-		} else if (typeof tieToRemove === 'string' || typeof tieToRemove === 'object') {
-			if (typeof tieToRemove === 'object') {
-				finalTieKeyToRemove = Object.keys(namedTies).find(key => namedTies[key].model === tieToRemove);
+		let finalTieKeyToRemove = tieToRemove;
+		if (typeof tieToRemove === 'object') {
+			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
+				finalTieKeyToRemove = tieToRemove[SCOPE_ROOT_KEY];
 			} else {
-				finalTieKeyToRemove = tieToRemove;
+				finalTieKeyToRemove = Object.keys(ties).find(key => ties[key].model === tieToRemove);
 			}
-			tie = namedTies[finalTieKeyToRemove];
-			delete namedTies[finalTieKeyToRemove];
-		} else {
-			throw new Error('tie to remove MUST either be a valid tie key or tie self');
+		} else if (typeof tieToRemove !== 'string') {
+			throw new Error(`invalid tieToRemove parameter ${tieToRemove}`);
 		}
-		deleteTieViews(finalTieKeyToRemove);
 
+		const tie = ties[finalTieKeyToRemove];
 		if (tie) {
+			delete ties[finalTieKeyToRemove];
+			deleteTieViews(finalTieKeyToRemove);
 			if (tie.model && tie.ownModel) {
 				tie.model.revoke();
 			}

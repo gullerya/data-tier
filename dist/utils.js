@@ -1,7 +1,8 @@
 import { Observable } from './object-observer.min.js';
 
 const
-	VIEW_PARAMS_KEY = Symbol('view.params.key'),
+	SCOPE_ROOT_KEY = Symbol('scope.root'),
+	VIEW_PARAMS_KEY = Symbol('view.params'),
 	DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget',
 	CHANGE_EVENT_NAME_PROVIDER = 'changeEventName',
 	PARAM_SPLITTER = /\s*=>\s*/,
@@ -17,12 +18,15 @@ const
 	},
 	DEFAULT_CHANGE_ELEMENTS = {
 		INPUT: 1, SELECT: 1, TEXTAREA: 1
-	};
+	},
+	randomKeySource = 'abcdefghijklmnopqrstuvwxyz0123456789',
+	randomKeySourceLen = randomKeySource.length;
 
 export {
-	ensureObservable,
+	SCOPE_ROOT_KEY,
 	VIEW_PARAMS_KEY,
 	DEFAULT_TIE_TARGET_PROVIDER,
+	ensureObservable,
 	getTargetProperty,
 	extractViewParams,
 	CHANGE_EVENT_NAME_PROVIDER,
@@ -31,7 +35,8 @@ export {
 	getPath,
 	setPath,
 	setViewProperty,
-	callViewFunction
+	callViewFunction,
+	getRandomKey
 }
 
 class Parameter {
@@ -175,16 +180,17 @@ function parsePropertyParam(rawParam, element) {
 	return result;
 }
 
-//	in future we would like to lookup in existing ties
 function getScopedTieKey(element) {
-	let result = element;
-	while (result.parentNode && !result.hasAttribute('data-tie-scope')) {
-		result = result.parentNode;
-		if (result.host) {
-			result = result.host;
+	let next = element,
+		result = next[SCOPE_ROOT_KEY];
+	while (!result && next.parentNode) {
+		next = next.parentNode;
+		if (next.host) {
+			next = next.host;
 		}
+		result = next[SCOPE_ROOT_KEY];
 	}
-	return result;
+	return result || null;
 }
 
 function addChangeListener(element, changeListener) {
@@ -291,4 +297,14 @@ function callViewFunction(elem, func, args) {
 	} catch (e) {
 		console.error(`failed to call '${func}' of '${elem}' with '${args}'`, e);
 	}
+}
+
+function getRandomKey(length) {
+	let result = '', i = length;
+	const random = crypto.getRandomValues(new Uint8Array(length));
+	while (i) {
+		i--;
+		result += randomKeySource.charAt(randomKeySourceLen * random[i] / 256);
+	}
+	return result;
 }

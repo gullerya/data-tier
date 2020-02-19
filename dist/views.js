@@ -1,8 +1,6 @@
 import { VIEW_PARAMS_KEY } from './utils.js';
 
-const
-	namedViews = {},
-	kelemViews = new WeakMap();
+const views = {};
 
 export {
 	obtainTieViews,
@@ -12,29 +10,16 @@ export {
 }
 
 function obtainTieViews(tieKey) {
-	let tieViews;
-	if (typeof tieKey === 'string') {
-		tieViews = namedViews[tieKey];
-		if (!tieViews) {
-			tieViews = {};
-			namedViews[tieKey] = tieViews;
-		}
-	} else {
-		tieViews = kelemViews.get(tieKey);
-		if (!tieViews) {
-			tieViews = {};
-			kelemViews.set(tieKey, tieViews);
-		}
+	let tieViews = views[tieKey];
+	if (!tieViews) {
+		tieViews = { _pathsCache: [] };
+		views[tieKey] = tieViews;
 	}
 	return tieViews;
 }
 
 function deleteTieViews(tieKey) {
-	if (typeof tieKey === 'string') {
-		delete namedViews[tieKey];
-	} else {
-		kelemViews.delete(tieKey);
-	}
+	delete views[tieKey];
 }
 
 function addView(element, tieParams) {
@@ -59,24 +44,12 @@ function addView(element, tieParams) {
 function seekAndInsertView(tieParam, element) {
 	const tieKey = tieParam.tieKey;
 	const rawPath = tieParam.rawPath;
-	let tieViews;
-	if (typeof tieKey === 'string') {
-		tieViews = namedViews[tieKey];
-		if (!tieViews) {
-			tieViews = {};
-			namedViews[tieKey] = tieViews;
-		}
-	} else {
-		tieViews = kelemViews.get(tieKey);
-		if (!tieViews) {
-			tieViews = {};
-			kelemViews.set(tieKey, tieViews);
-		}
-	}
+	const tieViews = obtainTieViews(tieKey);
 	let pathViews = tieViews[rawPath];
 	if (!pathViews) {
 		pathViews = [];
 		tieViews[rawPath] = pathViews;
+		tieViews._pathsCache.push(rawPath);
 	}
 	if (pathViews.indexOf(element) < 0) {
 		pathViews.push(element);
@@ -105,12 +78,7 @@ function delView(element, tieParams) {
 function seekAndRemoveView(tieParam, element) {
 	const tieKey = tieParam.tieKey;
 	const rawPath = tieParam.rawPath;
-	let tieViews;
-	if (typeof tieKey === 'string') {
-		tieViews = namedViews[tieKey];
-	} else {
-		tieViews = kelemViews.get(tieKey);
-	}
+	const tieViews = views[tieKey];
 	const pathViews = tieViews[rawPath];
 	const index = pathViews ? pathViews.indexOf(element) : -1;
 	if (index >= 0) {

@@ -16,7 +16,7 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
-* __2.7.1__
+* __2.7.2__
   * adding experimental __scoped__ tying capabilities - not yet publically available
 
 * __2.5.1__

@@ -1,5 +1,6 @@
 import { Ties } from './ties.js';
 import {
+	SCOPE_ROOT_KEY,
 	VIEW_PARAMS_KEY,
 	DEFAULT_TIE_TARGET_PROVIDER,
 	getTargetProperty,
@@ -87,8 +88,11 @@ function changeListener(event) {
 
 function add(element) {
 	if (element.matches(':defined')) {
-		const viewParams = extractViewParams(element);
+		if (element.hasAttribute && element.hasAttribute('data-tie-scope') && !element[SCOPE_ROOT_KEY]) {
+			ties.create(element);
+		}
 
+		const viewParams = extractViewParams(element);
 		if (viewParams) {
 			addView(element, viewParams);
 			updateFromView(element);
@@ -97,9 +101,6 @@ function add(element) {
 
 		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
 			addRootDocument(element.shadowRoot);
-		}
-		if (element.hasAttribute && element.hasAttribute('data-tie-scope') && !ties.get(element)) {
-			ties.create(element);
 		}
 	} else {
 		waitUndefined(element);
@@ -146,7 +147,7 @@ function updateFromView(element) {
 			}
 		} else {
 			const tie = ties.get(param.tieKey);
-			if (undefined === tie) {
+			if (!tie) {
 				continue;
 			}
 			let value = getPath(tie, param.path);
@@ -165,10 +166,10 @@ function addTree(root) {
 		list.unshift(root);
 	}
 
-	let i = list.length;
-	while (i) {
+	const l = list.length;
+	for (let i = 0; i < l; i++) {
 		try {
-			next = list[--i];
+			next = list[i];
 			if (Node.ELEMENT_NODE === next.nodeType && !next[VIEW_PARAMS_KEY]) {
 				add(next);
 			}
