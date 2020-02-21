@@ -156,11 +156,6 @@ export class Ties {
 		if (typeof k !== 'string') {
 			k = getRandomKey(16);
 			key[SCOPE_ROOT_KEY] = k;
-			Object.defineProperty(key, 'scopeTie', {
-				get() {
-					return ties.get(this[SCOPE_ROOT_KEY]);
-				}
-			});
 		}
 
 		if (model === null) {

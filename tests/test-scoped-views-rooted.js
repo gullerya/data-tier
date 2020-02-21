@@ -36,7 +36,6 @@ suite.runTest({ name: 'scoped in shadow - flow b' }, async test => {
 	document.body.appendChild(sv);
 	sh.appendChild(iv);
 	await test.waitNextMicrotask();
-	test.assertEqual(model, sv.scopeTie);
 	test.assertEqual('some', iv.textContent);
 
 	model.data.name = 'else';
