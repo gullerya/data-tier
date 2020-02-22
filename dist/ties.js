@@ -29,22 +29,27 @@ class Tie {
 			tieViews = this.views,
 			tiedPaths = tieViews._pathsCache,
 			tiedPathsLength = tiedPaths.length;
-		let i, l, change, changedObject, arrPath, changedPath = '', pl, tiedPath, pathViews, pvl;
+		let i, l, change, changedObject, arrPath, apl, changedPath = '', pl, tiedPath, pathViews, pvl;
 		let cplen, sst, lst, fullArrayUpdate, same, view, updateSet;
 
 		if (!tiedPathsLength) return;
 
 		for (i = 0, l = changes.length; i < l; i++) {
-			fullArrayUpdate = false;
 			change = changes[i];
-			changedObject = change.object;
 			arrPath = change.path;
+			apl = arrPath.length;
+
+			if (arrPath.some(e => typeof e === 'symbol')) {
+				continue;
+			}
+
+			fullArrayUpdate = false;
+			changedObject = change.object;
 
 			if (Array.isArray(changedObject) && (change.type === 'insert' || change.type === 'delete') && !isNaN(arrPath[arrPath.length - 1])) {
 				changedPath = arrPath.slice(0, -1).join('.');
 				fullArrayUpdate = true;
 			} else {
-				const apl = arrPath.length;
 				if (apl === 1) {
 					changedPath = arrPath[0];
 				} else if (!apl) {
