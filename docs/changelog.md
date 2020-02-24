@@ -3,6 +3,9 @@
 Modern
 ------
 
+* __2.8.0__
+  * upgraded `object-observer` dependency, bearing an important, yet meanwhile experimental, functionality for a repeater like consumers
+
 * __2.7.2__
   * adding experimental __scoped__ tying capabilities - not yet publically available
 
