@@ -22,7 +22,8 @@ const dataTierTiesSource = fs
 	.replace('views.js', 'views.min.js');
 fs.writeFileSync('dist/ties.min.js', uglifyES.minify({ dataTierUtils: dataTierTiesSource }).code);
 const dataTierUtilsSource = fs
-	.readFileSync('dist/utils.js', { encoding: 'utf8' });
+	.readFileSync('dist/utils.js', { encoding: 'utf8' })
+	.replace('data-tier.js', 'data-tier.min.js')
 fs.writeFileSync('dist/utils.min.js', uglifyES.minify({ dataTierUtils: dataTierUtilsSource }).code);
 const dataTierViewsSource = fs
 	.readFileSync('dist/views.js', { encoding: 'utf8' })

@@ -1,4 +1,5 @@
 import { Observable } from './object-observer.min.js';
+import { ties } from './data-tier.js';
 
 const
 	SCOPE_ROOT_KEY = Symbol('scope.root'),
@@ -253,41 +254,46 @@ function setPath(ref, path, value) {
 function setViewProperty(elem, param, value) {
 	const targetProperty = param.targetProperty;
 	try {
-		if (targetProperty === 'href' && typeof elem.href === 'object') {
-			elem.href.baseVal = value;
-		} else if (targetProperty === 'classList') {
-			const classes = param.iClasses.slice(0);
-			if (value) {
-				if (Array.isArray(value) && value.length) {
-					value.forEach(c => {
-						if (classes.indexOf(c) < 0) {
-							classes.push(c);
-						}
-					});
-				} else if (typeof value === 'object') {
-					Object.keys(value).forEach(c => {
-						const i = classes.indexOf(c);
-						if (value[c]) {
-							if (i < 0) {
-								classes.push(c);
-							}
-						} else if (i >= 0) {
-							classes.splice(i, 1);
-						}
-					});
-				} else if (typeof value === 'string') {
-					if (classes.indexOf(value) < 0) {
-						classes.push(value);
-					}
-				}
-			}
-
-			elem.className = classes.join(' ');
-		} else {
-			elem[targetProperty] = value;
-		}
+		_unsafeSetProperty(elem, param, value, targetProperty);
 	} catch (e) {
 		console.error(`failed to set '${targetProperty}' of '${elem}' to '${value}'`, e);
+	}
+}
+
+function _unsafeSetProperty(elem, param, value, targetProperty) {
+	if (targetProperty === 'href' && typeof elem.href === 'object') {
+		elem.href.baseVal = value;
+	} else if (targetProperty === 'scope' && elem[SCOPE_ROOT_KEY]) {
+		ties.update(elem, value);
+	} else if (targetProperty === 'classList') {
+		const classes = param.iClasses.slice(0);
+		if (value) {
+			if (Array.isArray(value) && value.length) {
+				value.forEach(c => {
+					if (classes.indexOf(c) < 0) {
+						classes.push(c);
+					}
+				});
+			} else if (typeof value === 'object') {
+				Object.keys(value).forEach(c => {
+					const i = classes.indexOf(c);
+					if (value[c]) {
+						if (i < 0) {
+							classes.push(c);
+						}
+					} else if (i >= 0) {
+						classes.splice(i, 1);
+					}
+				});
+			} else if (typeof value === 'string') {
+				if (classes.indexOf(value) < 0) {
+					classes.push(value);
+				}
+			}
+		}
+		elem.className = classes.join(' ');
+	} else {
+		elem[targetProperty] = value;
 	}
 }
 

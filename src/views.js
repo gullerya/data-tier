@@ -79,9 +79,13 @@ function seekAndRemoveView(tieParam, element) {
 	const tieKey = tieParam.tieKey;
 	const rawPath = tieParam.rawPath;
 	const tieViews = views[tieKey];
-	const pathViews = tieViews[rawPath];
-	const index = pathViews ? pathViews.indexOf(element) : -1;
-	if (index >= 0) {
-		pathViews.splice(index, 1);
+	if (tieViews) {
+		const pathViews = tieViews[rawPath];
+		if (pathViews) {
+			const index = pathViews.indexOf(element);
+			if (index >= 0) {
+				pathViews.splice(index, 1);
+			}
+		}
 	}
 }

@@ -20,7 +20,6 @@ class Tie {
 		this.key = key;
 		this.model = ensureObservable(model);
 		this.views = views;
-		this.ownModel = this.model !== model;
 		this.model.observe(changes => this.processDataChanges(changes));
 	}
 
@@ -155,16 +154,16 @@ export class Ties {
 		if (ties[key]) {
 			throw new Error(`tie '${key}' already exists`);
 		}
+		if (model === null) {
+			throw new Error('initial model, when provided, MUST NOT be null');
+		}
+
 		this.validateTieKey(key);
 
 		let k = key;
 		if (typeof k !== 'string') {
 			k = getRandomKey(16);
 			key[SCOPE_ROOT_KEY] = k;
-		}
-
-		if (model === null) {
-			throw new Error('initial model, when provided, MUST NOT be null');
 		}
 
 		const tieViews = obtainTieViews(k);
@@ -174,6 +173,22 @@ export class Ties {
 
 		return tie.model;
 	};
+
+	update(key, model) {
+		if (model && typeof model === 'object') {
+			const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_KEY] : undefined);
+			const tie = ties[k];
+			if (tie) {
+				if (tie.model !== model) {
+					tie.model = model;
+					tie.processDataChanges([{ path: [] }]);
+				}
+				return tie.model;
+			} else {
+				console.error(`no tie matching ${key}`);
+			}
+		}
+	}
 
 	remove(tieToRemove) {
 		let finalTieKeyToRemove = tieToRemove;
@@ -191,9 +206,6 @@ export class Ties {
 		if (tie) {
 			delete ties[finalTieKeyToRemove];
 			deleteTieViews(finalTieKeyToRemove);
-			if (tie.model && tie.ownModel) {
-				tie.model.revoke();
-			}
 		}
 	};
 

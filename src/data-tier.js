@@ -227,6 +227,8 @@ function onTieParamChange(element, oldParam, newParam) {
 function processDomChanges(changes) {
 	const l = changes.length;
 	let i = 0, node, nodeType, change, changeType, added, i2, removed, i3;
+	//	collect all the changes to process and then do the processing
+
 	for (; i < l; i++) {
 		change = changes[i];
 		changeType = change.type;
