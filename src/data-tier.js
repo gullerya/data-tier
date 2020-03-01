@@ -1,51 +1,16 @@
 import { Ties } from './ties.js';
+import { Views } from './views.js';
 import {
-	SCOPE_ROOT_KEY,
-	VIEW_PARAMS_KEY,
-	DEFAULT_TIE_TARGET_PROVIDER,
+	DEFAULT_TIE_TARGET_PROVIDER as dttp,
+	CHANGE_EVENT_NAME_PROVIDER as cenp,
 	getTargetProperty,
 	extractViewParams,
-	CHANGE_EVENT_NAME_PROVIDER,
 	addChangeListener,
 	delChangeListener,
 	getPath,
 	setPath,
-	setViewProperty,
 	callViewFunction
 } from './utils.js';
-import { addView, delView } from './views.js';
-
-export {
-	DEFAULT_TIE_TARGET_PROVIDER,
-	CHANGE_EVENT_NAME_PROVIDER
-}
-
-export const params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
-export const addRootDocument = rootDocument => {
-	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
-		throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
-	}
-	if (roots.has(rootDocument)) {
-		console.warn('any root document may be added only once');
-		return false;
-	}
-
-	new MutationObserver(processDomChanges).observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
-
-	addTree(rootDocument);
-	roots.add(rootDocument);
-	return true;
-};
-export const removeRootDocument = rootDocument => {
-	if (roots.has(rootDocument)) {
-		dropTree(rootDocument);
-		roots.delete(rootDocument);
-		return true;
-	} else {
-		console.warn('no root document ' + rootDocument + ' known');
-		return false;
-	}
-};
 
 console.info('DT: starting initialization...');
 const initStartTime = performance.now();
@@ -62,23 +27,66 @@ const
 	},
 	roots = new WeakSet();
 
-export const ties = new Ties();
+class Instance {
+	constructor() {
+		this.params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
+
+		this.paramsKey = Symbol('view.params');
+		this.scopeRootKey = Symbol('scope.root');
+		this.ties = new Ties(this);
+		this.views = new Views(this);
+	}
+
+	addRootDocument(rootDocument) {
+		if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
+			throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
+		}
+		if (roots.has(rootDocument)) {
+			console.warn('any root document may be added only once');
+			return false;
+		}
+
+		new MutationObserver(processDomChanges).observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
+
+		addTree(rootDocument);
+		roots.add(rootDocument);
+		return true;
+	};
+
+	removeRootDocument(rootDocument) {
+		if (roots.has(rootDocument)) {
+			dropTree(rootDocument);
+			roots.delete(rootDocument);
+			return true;
+		} else {
+			console.warn('no root document ' + rootDocument + ' known');
+			return false;
+		}
+	};
+}
+
+const instance = new Instance();
+export const ties = instance.ties;
+export const DEFAULT_TIE_TARGET_PROVIDER = dttp;
+export const CHANGE_EVENT_NAME_PROVIDER = cenp;
+export const addRootDocument = instance.addRootDocument;
+export const removeRootDocument = instance.removeRootDocument;
 
 function changeListener(event) {
 	const
 		element = event.currentTarget,
 		targetProperty = getTargetProperty(element),
-		viewParams = element[VIEW_PARAMS_KEY];
+		viewParams = element[instance.paramsKey];
 	let tieParam, tie, newValue;
 
 	let i = viewParams.length;
-	while (i) {
-		tieParam = viewParams[--i];
+	while (i--) {
+		tieParam = viewParams[i];
 		if (tieParam.targetProperty !== targetProperty) {
 			continue;
 		}
 
-		tie = ties.get(tieParam.tieKey);
+		tie = instance.ties.get(tieParam.tieKey);
 		if (tie) {
 			newValue = element[targetProperty];
 			setPath(tie, tieParam.path, newValue);
@@ -88,19 +96,15 @@ function changeListener(event) {
 
 function add(element) {
 	if (element.matches(':defined')) {
-		if (element.hasAttribute && element.hasAttribute('data-tie-scope') && !element[SCOPE_ROOT_KEY]) {
-			ties.create(element);
-		}
-
-		const viewParams = extractViewParams(element);
+		const viewParams = extractViewParams(element, instance.scopeRootKey);
 		if (viewParams) {
-			addView(element, viewParams);
-			updateFromView(element);
+			instance.views.addView(element, viewParams);
+			updateFromView(element, viewParams);
 			addChangeListener(element, changeListener);
 		}
 
 		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
-			addRootDocument(element.shadowRoot);
+			instance.addRootDocument(element.shadowRoot);
 		}
 	} else {
 		waitUndefined(element);
@@ -108,7 +112,7 @@ function add(element) {
 }
 
 function waitUndefined(element) {
-	let tag = '';
+	let tag;
 	if (element.localName.indexOf('-') > 0) {
 		tag = element.localName;
 	} else {
@@ -124,17 +128,16 @@ function waitUndefined(element) {
 	}
 }
 
-function updateFromView(element) {
-	const viewParams = element[VIEW_PARAMS_KEY];
+function updateFromView(element, viewParams) {
 	let i = viewParams.length;
-	while (i) {
-		const param = viewParams[--i];
+	while (i--) {
+		const param = viewParams[i];
 		if (param.isFunctional) {
 			let someData = false;
 			const args = [];
 			param.fParams.forEach(fp => {
 				let arg;
-				const tie = ties.get(fp.tieKey);
+				const tie = instance.ties.get(fp.tieKey);
 				if (tie) {
 					arg = getPath(tie, fp.path);
 					someData = true;
@@ -146,7 +149,7 @@ function updateFromView(element) {
 				callViewFunction(element, param.targetProperty, args);
 			}
 		} else {
-			const tie = ties.get(param.tieKey);
+			const tie = instance.ties.get(param.tieKey);
 			if (!tie) {
 				continue;
 			}
@@ -154,7 +157,7 @@ function updateFromView(element) {
 			if (typeof value === 'undefined') {
 				value = '';
 			}
-			setViewProperty(element, param, value);
+			instance.views.setViewProperty(element, param, value);
 		}
 	}
 }
@@ -170,7 +173,7 @@ function addTree(root) {
 	for (let i = 0; i < l; i++) {
 		try {
 			next = list[i];
-			if (Node.ELEMENT_NODE === next.nodeType && !next[VIEW_PARAMS_KEY]) {
+			if (Node.ELEMENT_NODE === next.nodeType && !next[instance.paramsKey]) {
 				add(next);
 			}
 		} catch (e) {
@@ -187,19 +190,19 @@ function dropTree(root) {
 	}
 
 	i = list.length;
-	while (i) {
-		next = list[--i];
-		viewParams = next[VIEW_PARAMS_KEY];
+	while (i--) {
+		next = list[i];
+		viewParams = next[instance.paramsKey];
 
 		//	untie
 		if (viewParams) {
-			delView(next, viewParams);
+			instance.views.delView(next, viewParams);
 			delChangeListener(next, changeListener);
 		}
 
 		//	remove as root
 		if (next.shadowRoot && !next.hasAttribute('data-tie-blackbox')) {
-			removeRootDocument(next.shadowRoot);
+			instance.removeRootDocument(next.shadowRoot);
 		}
 	}
 }
@@ -207,18 +210,18 @@ function dropTree(root) {
 function onTieParamChange(element, oldParam, newParam) {
 	let viewParams;
 	if (oldParam) {
-		viewParams = element[VIEW_PARAMS_KEY];
+		viewParams = element[instance.paramsKey];
 		if (viewParams) {
-			delView(element, viewParams);
+			instance.views.delView(element, viewParams);
 			delChangeListener(element, changeListener);
 		}
 	}
 
 	if (newParam) {
-		viewParams = extractViewParams(element);
+		viewParams = extractViewParams(element, instance.scopeRootKey);
 		if (viewParams) {
-			addView(element, viewParams);
-			updateFromView(element);
+			instance.views.addView(element, viewParams);
+			updateFromView(element, viewParams);
 			addChangeListener(element, changeListener);
 		}
 	}
@@ -245,8 +248,8 @@ function processDomChanges(changes) {
 			//	process added nodes
 			added = change.addedNodes;
 			i2 = added.length;
-			while (i2) {
-				node = added[--i2];
+			while (i2--) {
+				node = added[i2];
 				nodeType = node.nodeType;
 				if (Node.ELEMENT_NODE === nodeType) {
 					addTree(node);
@@ -256,8 +259,8 @@ function processDomChanges(changes) {
 			//	process removed nodes
 			removed = change.removedNodes;
 			i3 = removed.length;
-			while (i3) {
-				node = removed[--i3];
+			while (i3--) {
+				node = removed[i3];
 				nodeType = node.nodeType;
 				if (Node.ELEMENT_NODE === nodeType) {
 					dropTree(node);
@@ -267,8 +270,8 @@ function processDomChanges(changes) {
 	}
 }
 
-if (params.autostart !== 'false' && params.autostart !== false) {
-	addRootDocument(document);
+if (instance.params.autostart !== 'false' && instance.params.autostart !== false) {
+	instance.addRootDocument(document);
 }
 
 console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');

@@ -1,11 +1,11 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import * as DataTier from '../dist/data-tier.js';
+import * as DataTier from '../dist/data-tier.js?inst=scope-rooted';
 
 const suite = getSuite({ name: 'Testing scoped views (rooted)' });
 
 suite.runTest({ name: 'scoped in shadow - flow a' }, async test => {
 	const sv = document.createElement('div');
-	sv.setAttribute('data-tie-scope', '1');
+	DataTier.ties.create(sv);
 
 	const sh = sv.attachShadow({ mode: 'open' });
 	const iv = document.createElement('span');
@@ -26,7 +26,6 @@ suite.runTest({ name: 'scoped in shadow - flow a' }, async test => {
 
 suite.runTest({ name: 'scoped in shadow - flow b' }, async test => {
 	const sv = document.createElement('div');
-	sv.setAttribute('data-tie-scope', '1');
 	const model = DataTier.ties.create(sv, { data: { name: 'some' } });
 
 	const sh = sv.attachShadow({ mode: 'open' });
@@ -45,8 +44,6 @@ suite.runTest({ name: 'scoped in shadow - flow b' }, async test => {
 suite.runTest({ name: 'scoped in shadow - move around' }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
-	sv1.setAttribute('data-tie-scope', '1');
-	sv2.setAttribute('data-tie-scope', '1');
 	const sh1 = sv1.attachShadow({ mode: 'open' });
 	const sh2 = sv2.attachShadow({ mode: 'open' });
 	document.body.appendChild(sv1);
@@ -78,7 +75,8 @@ suite.runTest({ name: 'scoped in shadow - move around' }, async test => {
 suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
-	sv1.setAttribute('data-tie-scope', '1');
+	DataTier.ties.create(sv1);
+	DataTier.ties.create(sv2);
 	sv2.setAttribute('data-tie-scope', '1');
 	const sh1 = sv1.attachShadow({ mode: 'open' });
 	const sh2 = sv2.attachShadow({ mode: 'open' });

@@ -5,7 +5,7 @@ const suite = getSuite({ name: 'Testing scoped views (scoped)' });
 
 suite.runTest({ name: 'scoped - self' }, async test => {
 	const sv = document.createElement('input');
-	sv.setAttribute('data-tie-scope', '1');
+	DataTier.ties.create(sv);
 	sv.dataset.tie = 'scope:data.name';
 
 	document.body.appendChild(sv);
@@ -29,7 +29,7 @@ suite.runTest({ name: 'scoped - self' }, async test => {
 
 suite.runTest({ name: 'scoped - child a' }, async test => {
 	const sv = document.createElement('div');
-	sv.setAttribute('data-tie-scope', '1');
+	DataTier.ties.create(sv);
 
 	const iv = document.createElement('input');
 	iv.dataset.tie = 'scope:data.name';
@@ -56,7 +56,6 @@ suite.runTest({ name: 'scoped - child a' }, async test => {
 
 suite.runTest({ name: 'scoped - child b' }, async test => {
 	const sv = document.createElement('div');
-	sv.setAttribute('data-tie-scope', '1');
 	const model = DataTier.ties.create(sv, { data: { name: 'some' } });
 
 	const iv = document.createElement('span');
@@ -75,8 +74,8 @@ suite.runTest({ name: 'scoped - child b' }, async test => {
 suite.runTest({ name: 'scoped - move around' }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
-	sv1.setAttribute('data-tie-scope', '1');
-	sv2.setAttribute('data-tie-scope', '1');
+	DataTier.ties.create(sv1);
+	DataTier.ties.create(sv2);
 	document.body.appendChild(sv1);
 	document.body.appendChild(sv2);
 

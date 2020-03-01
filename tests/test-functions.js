@@ -2,23 +2,24 @@ import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
 let clickCounter = 0;
-const suite = getSuite({ name: 'Testing functions dynamic binding' }),
-	user = {
+const suite = getSuite({ name: 'Testing functions dynamic binding' });
+
+
+suite.runTest({ name: 'bind onclick logic' }, async test => {
+	const tn = test.getRandom(8);
+	const user = {
 		name: 'click me',
 		clickHandler: function (e) {
 			clickCounter++;
-			DataTier.ties.get('functionalTest').name = 'click again';
-			DataTier.ties.get('functionalTest').clickHandler = function () {
+			DataTier.ties.get(tn).name = 'click again';
+			DataTier.ties.get(tn).clickHandler = function () {
 				clickCounter += 2;
 			}
 		}
 	};
-
-DataTier.ties.create('functionalTest', user);
-
-suite.runTest({ name: 'bind onclick logic' }, async test => {
 	const d = document.createElement('div');
-	d.dataset.tie = 'functionalTest:clickHandler => onclick, functionalTest:name => textContent';
+	DataTier.ties.create(tn, user);
+	d.dataset.tie = `${tn}:clickHandler => onclick, ${tn}:name => textContent`;
 	document.body.appendChild(d);
 
 	await test.waitNextMicrotask();

@@ -1,31 +1,25 @@
 import {
-	SCOPE_ROOT_KEY,
-	VIEW_PARAMS_KEY,
 	ensureObservable,
 	getPath,
-	setViewProperty,
 	callViewFunction,
 	getRandomKey
 } from './utils.js';
-import { obtainTieViews, deleteTieViews } from './views.js';
 
 const
 	tieNameValidator = /^[a-zA-Z0-9]+$/,
 	reservedTieNames = ['scope'];
 
-let ties;
-
 class Tie {
-	constructor(key, model, views) {
+	constructor(key, model, ties) {
 		this.key = key;
 		this.model = ensureObservable(model);
-		this.views = views;
+		this.ties = ties;
 		this.model.observe(changes => this.processDataChanges(changes));
 	}
 
 	processDataChanges(changes) {
 		const
-			tieViews = this.views,
+			tieViews = this.ties.dti.views.obtainTieViews(this.key),
 			tiedPaths = tieViews._pathsCache,
 			tiedPathsLength = tiedPaths.length;
 		let i, l, change, changedObject, arrPath, apl, changedPath = '', pl, tiedPath, pathViews, pvl;
@@ -93,7 +87,7 @@ class Tie {
 	updateViews(updateSet, change) {
 		let viewParams, i;
 		updateSet.forEach((paths, element) => {
-			viewParams = element[VIEW_PARAMS_KEY];
+			viewParams = element[this.ties.dti.paramsKey];
 			i = viewParams.length;
 			while (i) {
 				const param = viewParams[--i];
@@ -103,7 +97,7 @@ class Tie {
 						const args = [];
 						param.fParams.forEach(fp => {
 							let arg;
-							const tie = ties.get(fp.tieKey);
+							const tie = this.ties.get(fp.tieKey);
 							if (tie) {
 								arg = getPath(tie, fp.path);
 								someData = true;
@@ -132,7 +126,7 @@ class Tie {
 					if (typeof newValue === 'undefined') {
 						newValue = '';
 					}
-					setViewProperty(element, param, newValue);
+					this.ties.dti.views.setViewProperty(element, param, newValue);
 				}
 			}
 		});
@@ -140,18 +134,19 @@ class Tie {
 }
 
 export class Ties {
-	constructor() {
-		ties = this;
+	constructor(dtInstance) {
+		this.dti = dtInstance;
+		this.ties = {};
 	}
 
 	get(key) {
-		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_KEY] : undefined);
-		const t = ties[k];
+		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootKey] : undefined);
+		const t = this.ties[k];
 		return t ? t.model : null;
 	};
 
 	create(key, model) {
-		if (ties[key]) {
+		if (this.ties[key]) {
 			throw new Error(`tie '${key}' already exists`);
 		}
 		if (model === null) {
@@ -163,12 +158,12 @@ export class Ties {
 		let k = key;
 		if (typeof k !== 'string') {
 			k = getRandomKey(16);
-			key[SCOPE_ROOT_KEY] = k;
+			key[this.dti.scopeRootKey] = k;
 		}
 
-		const tieViews = obtainTieViews(k);
-		const tie = new Tie(k, model, tieViews);
-		ties[k] = tie;
+		const tieViews = this.dti.views.obtainTieViews(k);
+		const tie = new Tie(k, model, this, tieViews);
+		this.ties[k] = tie;
 		tie.processDataChanges([{ path: [] }]);
 
 		return tie.model;
@@ -176,8 +171,8 @@ export class Ties {
 
 	update(key, model) {
 		if (model && typeof model === 'object') {
-			const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_KEY] : undefined);
-			const tie = ties[k];
+			const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootKey] : undefined);
+			const tie = this.ties[k];
 			if (tie) {
 				if (tie.model !== model) {
 					tie.model = model;
@@ -194,18 +189,18 @@ export class Ties {
 		let finalTieKeyToRemove = tieToRemove;
 		if (typeof tieToRemove === 'object') {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
-				finalTieKeyToRemove = tieToRemove[SCOPE_ROOT_KEY];
+				finalTieKeyToRemove = tieToRemove[this.dti.scopeRootKey];
 			} else {
-				finalTieKeyToRemove = Object.keys(ties).find(key => ties[key].model === tieToRemove);
+				finalTieKeyToRemove = Object.keys(this.ties).find(key => this.ties[key].model === tieToRemove);
 			}
 		} else if (typeof tieToRemove !== 'string') {
 			throw new Error(`invalid tieToRemove parameter ${tieToRemove}`);
 		}
 
-		const tie = ties[finalTieKeyToRemove];
+		const tie = this.ties[finalTieKeyToRemove];
 		if (tie) {
-			delete ties[finalTieKeyToRemove];
-			deleteTieViews(finalTieKeyToRemove);
+			delete this.ties[finalTieKeyToRemove];
+			this.dti.views.deleteTieViews(finalTieKeyToRemove);
 		}
 	};
 

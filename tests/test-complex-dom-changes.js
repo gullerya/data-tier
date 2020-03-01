@@ -5,20 +5,20 @@ const suite = getSuite({ name: 'Testing complex DOM changes' });
 
 suite.runTest({ name: 'adding object and immediatelly removing it' }, async test => {
 	const
-		tn = test.getRandom(8, ['numeric']),
+		tn = test.getRandom(8),
 		m = DataTier.ties.create(tn, []);
 
 	//	adding object 1, then adding the tied element
 	m.push({ test: 'someA' });
 	const e1 = document.createElement('div');
-	e1.dataset.tieScope = '1';
+	DataTier.ties.create(e1);
 	e1.dataset.tie = `${tn}:0 => scope, scope:test`;
 	document.body.appendChild(e1);
 
 	//	adding object 2, then adding the tied element
 	m.push({ test: 'someB' });
 	const e2 = document.createElement('div');
-	e2.dataset.tieScope = '2';
+	DataTier.ties.create(e2);
 	e2.dataset.tie = `${tn}:1 => scope, scope:test`;
 	document.body.appendChild(e2);
 
