@@ -1,4 +1,4 @@
-import * as DataTier from '../../../dist/data-tier.js?autostart=false';
+import * as DataTier from '../../../dist/data-tier.js';
 
 const
 	templateList = document.createElement('template'),
@@ -26,40 +26,18 @@ customElements.define('todo-list', class extends HTMLElement {
 		this.attachShadow({ mode: 'open' })
 			.appendChild(templateList.content.cloneNode(true));
 		DataTier.ties.create(this);
-		DataTier.addRootDocument(this.shadowRoot);
 	}
 
-	updateList(list, changes) {
-		if (!changes || !changes[0] || !changes[0].path.length) {
-			this.innerHTML = '';
-			if (list) {
-				list.forEach(item => {
-					const ie = document.createElement('todo-item');
-					ie.item = item;
-					ie.addEventListener('remove', event => {
-						list.splice(list.indexOf(event.target.item), 1);
-					});
-					this.appendChild(ie);
+	updateList(list) {
+		this.innerHTML = '';
+		if (list) {
+			list.forEach((item, index) => {
+				const ie = document.createElement('todo-item');
+				DataTier.ties.create(ie, item);
+				ie.addEventListener('remove', () => {
+					list.splice(index, 1);
 				});
-			}
-		} else {
-			changes.forEach(change => {
-				if (change.type === 'delete') {
-					this.children[change.path[0]].remove();
-				} else if (change.type === 'insert') {
-					const index = change.path[0];
-					const ie = document.createElement('todo-item');
-					ie.item = list[index];
-					ie.addEventListener('remove', event => {
-						list.splice(list.indexOf(event.target.item), 1);
-					});
-
-					if (index >= this.children.length) {
-						this.appendChild(ie);
-					} else {
-						this.insertBefore(ie, this.children[index]);
-					}
-				}
+				this.appendChild(ie);
 			});
 		}
 	}
@@ -82,13 +60,18 @@ templateItem.innerHTML = `
 			flex: 0 0 auto;
 			padding: 12px;
 			font-family: monospace;
+			border: none;
+			outline: none;
 			background-color: #efefef;
 			border-radius: 4px;
+			cursor: pointer;
+			user-select: none;
+			box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.2);
 		}
 	</style>
 
-	<span class="text" data-tie="root:text"></span>
-	<span class="delete" data-tie="root:remove => onclick">DEL</span>
+	<span class="text" data-tie="scope:text"></span>
+	<button class="delete" type="button" data-tie="scope:remove => onclick">DEL</button>
 `;
 
 customElements.define('todo-item', class extends HTMLElement {
@@ -96,22 +79,8 @@ customElements.define('todo-item', class extends HTMLElement {
 		super();
 		this.attachShadow({ mode: 'open' })
 			.appendChild(templateItem.content.cloneNode(true));
-		DataTier.ties.create(this, {
-			remove: () => this.dispatchEvent(new Event('remove'))
+		this.shadowRoot.querySelector('.delete').addEventListener('click', () => {
+			this.dispatchEvent(new Event('remove'));
 		});
-		DataTier.addRootDocument(this.shadowRoot);
-	}
-
-	connectedCallback() {
-		this.setAttribute('data-tie-blackbox', '1');
-	}
-
-	set item(item) {
-		this._item = item;
-		DataTier.ties.get(this).text = item.text;
-	}
-
-	get item() {
-		return this._item;
 	}
 });

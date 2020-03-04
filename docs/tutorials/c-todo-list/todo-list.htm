@@ -25,13 +25,27 @@
 			align-items: center;
 			box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.1);
 		}
+
+		.todo-form .add {
+			flex: 0 0 auto;
+			margin: 12px;
+			padding: 12px;
+			font-family: monospace;
+			border: none;
+			outline: none;
+			background-color: #efefef;
+			border-radius: 4px;
+			cursor: pointer;
+			user-select: none;
+			box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.2);
+		}
 	</style>
 
 	<div class="wrapper">
-		<todo-list class="todo-list" data-tie-blackbox data-tie="updateList(todoListModel)"></todo-list>
+		<todo-list class="todo-list" data-tie="updateList(todoListModel)"></todo-list>
 		<form class="todo-form">
 			<input type="text" data-tie="todoFormModel:newItemText" />
-			<button type="button" data-tie="todoFormModel:newItemSubmit => onclick">Add</button>
+			<button class="add" type="button" data-tie="todoFormModel:newItemSubmit => onclick">ADD</button>
 		</form>
 	</div>
 
