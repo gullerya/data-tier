@@ -109,8 +109,6 @@ suite.runTest({ name: 'scoped - move around' }, async test => {
 suite.runTest({ name: 'scoped - move around and changes flow' }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
-	sv1.setAttribute('data-tie-scope', '1');
-	sv2.setAttribute('data-tie-scope', '1');
 	document.body.appendChild(sv1);
 	document.body.appendChild(sv2);
 
@@ -144,4 +142,37 @@ suite.runTest({ name: 'scoped - move around and changes flow' }, async test => {
 	await test.waitNextMicrotask();
 	test.assertEqual('value2', model2.data.name);
 	test.assertEqual('value1', model1.data.name);
+});
+
+suite.runTest({ name: 'scoped - nested scopes - views first' }, async test => {
+	const tn = test.getRandom(8);
+	const v = document.createElement('div');
+	const m = DataTier.ties.create(tn, {
+		firstName: 'first',
+		lastName: 'last',
+		address: {
+			city: 'city',
+			street: 'street'
+		}
+	});
+	v.innerHTML = `
+		<div data-tie="${tn} => scope">
+			<span data-tie="scope:firstName"></span>
+			<span data-tie="scope:lastName"></span>
+
+			<div data-tie="scope:address => scope">
+				<span data-tie="scope:city"></span>
+				<span data-tie="scope:street"></span>
+			</div>
+		</div>
+	`;
+
+	document.body.appendChild(v);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(m.firstName, v.firstElementChild.children[0].textContent);
+	test.assertEqual(m.lastName, v.firstElementChild.children[1].textContent);
+	test.assertEqual(m.address.city, v.firstElementChild.children[2].children[0].textContent);
+	test.assertEqual(m.address.street, v.firstElementChild.children[2].children[1].textContent);
 });

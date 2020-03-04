@@ -77,7 +77,6 @@ suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async
 	const sv2 = document.createElement('div');
 	DataTier.ties.create(sv1);
 	DataTier.ties.create(sv2);
-	sv2.setAttribute('data-tie-scope', '1');
 	const sh1 = sv1.attachShadow({ mode: 'open' });
 	const sh2 = sv2.attachShadow({ mode: 'open' });
 	document.body.appendChild(sv1);

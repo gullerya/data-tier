@@ -157,8 +157,11 @@ export class Ties {
 
 		let k = key;
 		if (typeof k !== 'string') {
-			k = getRandomKey(16);
-			key[this.dti.scopeRootKey] = k;
+			k = key[this.dti.scopeRootKey];
+			if (!k) {
+				k = getRandomKey(16);
+				key[this.dti.scopeRootKey] = k;
+			}
 		}
 
 		const tieViews = this.dti.views.obtainTieViews(k);
@@ -180,7 +183,7 @@ export class Ties {
 				}
 				return tie.model;
 			} else {
-				console.error(`no tie matching ${key}`);
+				return this.create(k, model);
 			}
 		}
 	}

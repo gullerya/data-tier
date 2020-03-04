@@ -1,3 +1,5 @@
+import { getRandomKey } from './utils.js';
+
 export class Views {
 	constructor(dtInstance) {
 		this.dti = dtInstance;
@@ -20,6 +22,8 @@ export class Views {
 	addView(element, tieParams) {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
+		let scopeRoot = false;
+		const scoped = typeof element[this.dti.scopeRootKey] !== 'undefined';
 		while (i) {
 			tieParam = tieParams[--i];
 			if (tieParam.isFunctional) {
@@ -28,12 +32,21 @@ export class Views {
 				while (l) {
 					fp = fParams[--l];
 					this.seekAndInsertView(fp, element);
+					if (!scoped && fp.targetProperty === 'scope') {
+						scopeRoot = true;
+					}
 				}
 			} else {
 				this.seekAndInsertView(tieParam, element);
+				if (!scoped && tieParam.targetProperty === 'scope') {
+					scopeRoot = true;
+				}
 			}
 		}
 		element[this.dti.paramsKey] = tieParams;
+		if (scopeRoot) {
+			element[this.dti.scopeRootKey] = getRandomKey(16);
+		}
 	}
 
 	delView(element, tieParams) {
@@ -97,7 +110,7 @@ export class Views {
 	_unsafeSetProperty(elem, param, value, targetProperty) {
 		if (targetProperty === 'href' && typeof elem.href === 'object') {
 			elem.href.baseVal = value;
-		} else if (targetProperty === 'scope' && elem[this.dti.scopeRootKey]) {
+		} else if (targetProperty === 'scope') {
 			this.dti.ties.update(elem, value);
 		} else if (targetProperty === 'classList') {
 			const classes = param.iClasses.slice(0);
