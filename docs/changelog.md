@@ -3,7 +3,7 @@
 Modern
 ------
 
-* __2.8.5__
+* __2.8.6__
   * upgraded `object-observer` dependency, bearing an important, yet meanwhile experimental, functionality for a repeater like consumers
 
 * __2.7.2__
