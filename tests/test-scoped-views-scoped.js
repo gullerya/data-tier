@@ -175,4 +175,9 @@ suite.runTest({ name: 'scoped - nested scopes - views first' }, async test => {
 	test.assertEqual(m.lastName, v.firstElementChild.children[1].textContent);
 	test.assertEqual(m.address.city, v.firstElementChild.children[2].children[0].textContent);
 	test.assertEqual(m.address.street, v.firstElementChild.children[2].children[1].textContent);
+
+	m.firstName = 'FIRST';
+	m.address.city = 'CITY';
+	test.assertEqual(m.firstName, v.firstElementChild.children[0].textContent);
+	test.assertEqual(m.address.city, v.firstElementChild.children[2].children[0].textContent);
 });
