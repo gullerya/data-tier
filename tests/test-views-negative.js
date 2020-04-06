@@ -20,7 +20,7 @@ suite.runTest({ name: 'wrong tying syntax', sync: true }, async test => {
 
 	test.assertTrue(errors.length &&
 		errors[0] instanceof Error &&
-		errors[0].message.includes('invalid tie value; found: "some::thing"'));
+		errors[0].message.includes(`invalid tie parameter '${d.dataset.tie}'`));
 
 	console.error = originalConsoleError;
 });
@@ -45,7 +45,7 @@ suite.runTest({ name: 'multiple bindings to the same property - explicit', sync:
 
 	test.assertTrue(errors.length &&
 		typeof errors[0] === 'string' &&
-		errors[0].includes('elements\'s property "data" tied more than once'));
+		errors[0].includes(`elements's property 'data' tied more than once`));
 	test.assertEqual('txt', d.data);
 
 	console.error = originalConsoleError;
@@ -66,7 +66,7 @@ suite.runTest({ name: 'multiple bindings to the same property - implicit', sync:
 
 	test.assertTrue(errors.length &&
 		typeof errors[0] === 'string' &&
-		errors[0].includes('elements\'s property "textContent" tied more than once'));
+		errors[0].includes(`elements's property 'textContent' tied more than once`));
 	test.assertEqual(d.textContent, 'true');
 
 	console.error = originalConsoleError;
@@ -87,7 +87,7 @@ suite.runTest({ name: 'multiple bindings to the same property - explicit and imp
 
 	test.assertTrue(errors.length &&
 		typeof errors[0] === 'string' &&
-		errors[0].includes('elements\'s property "textContent" tied more than once'));
+		errors[0].includes(`elements's property 'textContent' tied more than once`));
 	test.assertEqual(d.textContent, 'txt');
 
 	console.error = originalConsoleError;
