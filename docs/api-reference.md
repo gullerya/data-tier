@@ -51,7 +51,19 @@ console.log(tiedUser === oUser);
 //  true - if an Observable provided, it's taken as it is
 ```
 
-### __B__. `void DataTier.ties.remove(tieToRemove);`
+### __B__. `const tiedModel = DataTier.ties.update(key[, model]);`
+Updates a tie's model. If the tie is not found, if will be created via fallback to the method `create` (see above).
+During the update all the flow of model pre-processing (observation) and views update is performed.
+
+Parameters:
+* __`key`__ `[string]` - tie key, MUST match `/^[a-zA-Z0-9]+$/` pattern
+* __`model`__ `[object/Array]` - optional, MUST NOT be null; if no valid `model` provided the method silently exits
+
+Result:
+* __`tiedModel`__ `[Observable]` - updated or created tied model (see the remarks about model processing/creation in the method `create` definition)
+
+
+### __C__. `void DataTier.ties.remove(tieToRemove);`
 Discards/unties the specified tie.
 
 Note: untying won't have any effect on the views, the will remain at their last state. If views cleanup desired, one should explicitly reset tie's properties (to `null`, for example) or delete them.

@@ -3,7 +3,11 @@
 Modern
 ------
 
-* __2.8.8__
+* __2.9.0__
+  * implemented [issue #42](https://github.com/gullerya/data-tier/issues/42) - added a possibility to update tie's model as a whole via new API: `DataTier.ties.update(key, newModel);`
+  * upgraded dependencies
+
+* __2.8.7__
   * upgraded `object-observer` dependency, bearing an important, yet meanwhile experimental, functionality for a repeater like consumers
 
 * __2.7.2__
