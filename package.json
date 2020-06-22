@@ -1,6 +1,6 @@
 {
 	"name": "data-tier",
-	"version": "2.9.1",
+	"version": "2.9.2",
 	"description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
 	"keywords": [
 		"two",
@@ -42,7 +42,7 @@
 		"test": "npm run build && node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
 	},
 	"dependencies": {
-		"object-observer": "^3.0.0"
+		"object-observer": "^3.0.2"
 	},
 	"devDependencies": {
 		"eslint": "^7.3.0",

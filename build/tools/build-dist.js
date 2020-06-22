@@ -9,11 +9,11 @@ process.stdout.write('STARTING...' + os.EOL);
 process.stdout.write('\tcleaning "dist"...' + os.EOL);
 fsExtra.emptyDirSync('./dist');
 
-process.stdout.write('\tinstalling "object-observer"...' + os.EOL);
-fsExtra.copySync('node_modules/object-observer/dist/object-observer.min.js', 'src/object-observer.min.js');
-
 process.stdout.write('\tbuilding "dist"...' + os.EOL);
 fsExtra.copySync('src/', 'dist/');
+
+process.stdout.write('\tinstalling "object-observer"...' + os.EOL);
+fsExtra.copySync('node_modules/object-observer/dist/object-observer.min.js', 'dist/object-observer.min.js');
 
 process.stdout.write('\tminifying...' + os.EOL);
 const dataTierUtilsSource = fs
