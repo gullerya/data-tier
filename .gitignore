@@ -3,6 +3,6 @@
 .settings
 .vscode
 
-/reports
 /node_modules
+/reports
 tmp
