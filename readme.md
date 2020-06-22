@@ -16,7 +16,7 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
-* __2.9.0__
+* __2.9.1__
   * implemented [issue #42](https://github.com/gullerya/data-tier/issues/42) - added a possibility to update tie's model as a whole via new API: `DataTier.ties.update(key, newModel);`
   * upgraded dependencies
 
@@ -25,8 +25,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 * __2.7.2__
   * adding experimental __scoped__ tying capabilities - not yet publically available
-
-> `2.0.0` version was an API breaking version! While migration from an old API to the new one is easy (remove the notion of `model` property everywhere in JS) - please, take care to go over the updated APIs.
 
 ## Loading the library
 
