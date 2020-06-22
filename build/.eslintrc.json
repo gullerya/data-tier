@@ -1,27 +1,26 @@
 {
-  "extends": "standard",
-  "parser": "babel-eslint",
-  "env": {
-    "browser": true,
-    "es6": true
-  },
-  "parserOptions": {
-    "ecmaVersion": 11,
-    "sourceType": "module"
-  },
-  "rules": {
-    "indent": [
-      2,
-      "tab"
-    ],
-    "no-tabs": 0,
-    "semi": "off",
-    "space-before-function-paren": "off",
-    "object-curly-spacing": "off",
-    "eol-last": "off",
-    "one-var": "off"
-  },
-  "globals": {
-    "Observable": true
-  }
+	"extends": "standard",
+	"env": {
+		"browser": true,
+		"es6": true
+	},
+	"parserOptions": {
+		"ecmaVersion": 11,
+		"sourceType": "module"
+	},
+	"rules": {
+		"indent": [
+			2,
+			"tab"
+		],
+		"no-tabs": 0,
+		"semi": "off",
+		"space-before-function-paren": "off",
+		"object-curly-spacing": "off",
+		"eol-last": "off",
+		"one-var": "off"
+	},
+	"globals": {
+		"Observable": true
+	}
 }
