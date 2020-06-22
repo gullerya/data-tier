@@ -1,59 +1,60 @@
 {
-  "name": "data-tier",
-  "version": "2.9.0",
-  "description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
-  "keywords": [
-    "two",
-    "way",
-    "data",
-    "binding",
-    "tie",
-    "model",
-    "view",
-    "javascript",
-    "proxy",
-    "object",
-    "observer",
-    "mutation",
-    "observe"
-  ],
-  "homepage": "https://github.com/gullerya/data-tier",
-  "bugs": {
-    "url": "https://github.com/gullerya/data-tier/issues",
-    "email": "gullerya@gmail.com"
-  },
-  "license": "MIT",
-  "files": [
-    "dist"
-  ],
-  "browser": "dist/data-tier.min.js",
-  "author": {
-    "name": "Guller Yuri",
-    "email": "gullerya@gmail.com"
-  },
-  "funding": "https://paypal.me/gullerya?locale.x=en_US",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/gullerya/data-tier"
-  },
-  "scripts": {
-    "eslint": "eslint -c ./build/.eslintrc.json --ignore-path ./build/.eslintignore ./src/**/*.js",
-    "build": "node ./build/tools/build-dist.js",
-    "test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
-  },
-  "dependencies": {
-    "object-observer": "^2.9.3"
-  },
-  "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-node": "^11.1.0",
-    "babel-eslint": "^10.1.0",
-    "just-test": "^2.3.1",
-    "uglify-es": "^3.3.9",
-    "fs-extra": "^9.0.0"
-  }
+	"name": "data-tier",
+	"version": "2.9.0",
+	"description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
+	"keywords": [
+		"two",
+		"way",
+		"data",
+		"binding",
+		"tie",
+		"model",
+		"view",
+		"javascript",
+		"proxy",
+		"object",
+		"observer",
+		"mutation",
+		"observe"
+	],
+	"homepage": "https://github.com/gullerya/data-tier",
+	"bugs": {
+		"url": "https://github.com/gullerya/data-tier/issues",
+		"email": "gullerya@gmail.com"
+	},
+	"license": "MIT",
+	"files": [
+		"dist"
+	],
+	"browser": "dist/data-tier.min.js",
+	"author": {
+		"name": "Guller Yuri",
+		"email": "gullerya@gmail.com"
+	},
+	"funding": "https://paypal.me/gullerya?locale.x=en_US",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gullerya/data-tier"
+	},
+	"scripts": {
+		"build": "node ./build/tools/build-dist.js",
+		"lint": "eslint -c ./build/.eslintrc.json --ignore-path ./build/.eslintignore ./src/**/*.js",
+		"test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json",
+		"publish": "npm run build && npm publish"
+	},
+	"dependencies": {
+		"object-observer": "^3.0.0"
+	},
+	"devDependencies": {
+		"eslint": "^6.8.0",
+		"eslint-config-standard": "^14.1.1",
+		"eslint-plugin-standard": "^4.0.1",
+		"eslint-plugin-promise": "^4.2.1",
+		"eslint-plugin-import": "^2.20.2",
+		"eslint-plugin-node": "^11.1.0",
+		"babel-eslint": "^10.1.0",
+		"just-test": "^2.3.1",
+		"uglify-es": "^3.3.9",
+		"fs-extra": "^9.0.0"
+	}
 }
