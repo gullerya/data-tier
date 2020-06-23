@@ -35,9 +35,9 @@ import * as DataTier from './dist/data-tier.min.js';
 ## Basic example
 
 There is a growing number of examples and ready to run tutorials in the repo (docs/tutorials), but even more convenient to play with the snippets below:
-- [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
-- [WebComponent scoped binding](https://codepen.io/gullerya/pen/xxZEvbK) - this time we have `input` tied to the reflecting `span` by an `input` event (immediate changes), while all of those scoped within a `web-component`, each instance if which has its own encapsulated model
-- ... more to come :)
+* [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
+* [WebComponent scoped binding](https://codepen.io/gullerya/pen/xxZEvbK) - this time we have `input` tied to the reflecting `span` by an `input` event (immediate changes), while all of those scoped within a `web-component`, each instance if which has its own encapsulated model
+* ... more to come :)
 
 As many similar libraries do, `data-tier` also employes the two:
 * __declarative__ part of binding views to model found in HTML
