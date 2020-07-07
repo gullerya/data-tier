@@ -3,7 +3,7 @@
 Modern
 ------
 
-* __2.9.2__
+* __2.9.3__
   * implemented [issue #42](https://github.com/gullerya/data-tier/issues/42) - added a possibility to update tie's model as a whole via new API: `DataTier.ties.update(key, newModel);`
   * upgraded dependencies
 
