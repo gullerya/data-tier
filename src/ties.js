@@ -6,15 +6,24 @@ import {
 } from './utils.js';
 
 const
+	MODEL_KEY = Symbol('model.key'),
 	tieNameValidator = /^[a-zA-Z0-9]+$/,
 	reservedTieNames = ['scope'];
 
 class Tie {
 	constructor(key, model, ties) {
 		this.key = key;
-		this.model = ensureObservable(model);
 		this.ties = ties;
-		this.model.observe(changes => this.processDataChanges(changes));
+		this.model = model;
+	}
+
+	set model(model) {
+		this[MODEL_KEY] = ensureObservable(model);
+		this[MODEL_KEY].observe(changes => this.processDataChanges(changes));
+	}
+
+	get model() {
+		return this[MODEL_KEY];
 	}
 
 	processDataChanges(changes) {
@@ -121,7 +130,7 @@ class Tie {
 					if (change && typeof change.value !== 'undefined' && paths[param.rawPath]) {
 						newValue = change.value;
 					} else {
-						newValue = getPath(this.model, param.path);
+						newValue = getPath(this[MODEL_KEY], param.path);
 					}
 					if (typeof newValue === 'undefined') {
 						newValue = '';
@@ -173,18 +182,20 @@ export class Ties {
 	};
 
 	update(key, model) {
-		if (model && typeof model === 'object') {
-			const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootKey] : undefined);
-			const tie = this.ties[k];
-			if (tie) {
-				if (tie.model !== model) {
-					tie.model = model;
-					tie.processDataChanges([{ path: [] }]);
-				}
-				return tie.model;
-			} else {
-				return this.create(k, model);
+		if (!model || typeof model !== 'object') {
+			throw new Error('model MUST be a non-null object');
+		}
+
+		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootKey] : undefined);
+		const tie = this.ties[k];
+		if (tie) {
+			if (tie.model !== model) {
+				tie.model = model;
+				tie.processDataChanges([{ path: [] }]);
 			}
+			return tie.model;
+		} else {
+			return this.create(k, model);
 		}
 	}
 

@@ -3,29 +3,31 @@ import * as DataTier from '../dist/data-tier.js';
 
 const suite = getSuite({ name: 'Testing scoped views (scoped)' });
 
-suite.runTest({ name: 'custom elements - cascading' }, async test => {
-	customElements.define('ce-suite-view', class extends HTMLElement {
-		constructor() {
-			super();
-			this.attachShadow({ mode: 'open' }).innerHTML = `
+customElements.define('ce-suite-view', class extends HTMLElement {
+	constructor() {
+		super();
+		this.attachShadow({ mode: 'open' }).innerHTML = `
 				<span data-tie="scope:total"></span>
 				<ce-test-view data-tie="scope:test => scope"></ce-test-view>
 			`;
-		}
-	});
+	}
+});
 
-	customElements.define('ce-test-view', class extends HTMLElement {
-		constructor() {
-			super();
-			this.attachShadow({ mode: 'open' }).innerHTML = `
+customElements.define('ce-test-view', class extends HTMLElement {
+	constructor() {
+		super();
+		this.attachShadow({ mode: 'open' }).innerHTML = `
 				<span data-tie="scope:status"></span>
 				<span data-tie="scope:result"></span>
 			`;
-		}
-	});
+	}
+});
 
-	const tieKey = 'scopedCustomElements';
-	const model = DataTier.ties.create(tieKey, {
+const tieKey = 'scopedCustomElements';
+DataTier.ties.create(tieKey);
+
+suite.runTest({ name: 'custom elements - cascading' }, async test => {
+	const model = DataTier.ties.update(tieKey, {
 		total: 7,
 		test: {
 			status: 'running',

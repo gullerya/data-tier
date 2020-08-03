@@ -41,6 +41,8 @@ suite.runTest({ name: 'creating a tie with an undefined data' }, async test => {
 		newEl = document.createElement('div'),
 		o = { text: 'text test C' },
 		t = ties.create('tiesTestC');
+
+	test.assertTrue(Observable.isObservable(t));
 	newEl.dataset.tie = 'tiesTestC:text => textContent';
 	document.body.appendChild(newEl);
 
@@ -58,6 +60,7 @@ suite.runTest({ name: 'setting a tie with a non Observable' }, async test => {
 		o = { text: 'text test E' },
 		t = ties.create(tieName, o);
 
+	test.assertTrue(Observable.isObservable(t));
 	test.assertNotEqual(o, t);
 
 	newEl.dataset.tie = tieName + ':text => textContent';
@@ -78,6 +81,7 @@ suite.runTest({ name: 'setting a tie with an Observable' }, async test => {
 		o = Observable.from({ text: 'text test E' }),
 		t = ties.create(tieName, o);
 
+	test.assertTrue(Observable.isObservable(t));
 	test.assertEqual(o, t);
 
 	newEl.dataset.tie = tieName + ':text';
@@ -95,10 +99,33 @@ suite.runTest({ name: 'creating a tie with a NULL data - negative', expectError:
 	ties.create('tiesTestD', null);
 });
 
-suite.runTest({ name: 'setting a tie with a non object value - negative' }, test => {
-	try {
-		ties.create('tiesTestE', 5);
-		test.fail('flow was not supposed to get to this point');
-	} catch (e) {
-	}
+suite.runTest({ name: 'setting a tie with a non object value - negative', expectError: 'observable MAY ONLY be created from a non-null object' }, test => {
+	ties.create('tiesTestE', 5);
+});
+
+suite.runTest({ name: 'update tie - plain' }, test => {
+	const t = ties.create('testUpdateA');
+	test.assertTrue(Observable.isObservable(t));
+
+	const tu1 = ties.update('testUpdateA', { update: 'a' });
+	test.assertTrue(Observable.isObservable(tu1));
+	test.assertEqual('a', tu1.update);
+
+	const tnu = ties.update('testUpdateA', tu1);
+	test.assertEqual(tu1, tnu);
+});
+
+suite.runTest({ name: 'update tie - observable' }, test => {
+	const t = ties.create('testUpdateB');
+	test.assertTrue(Observable.isObservable(t));
+
+	const oo = Observable.from({ test: 'b' });
+	const tu1 = ties.update('testUpdateB', oo);
+	test.assertTrue(Observable.isObservable(tu1));
+	test.assertEqual(oo, tu1);
+});
+
+suite.runTest({ name: 'update tie - create non-existing' }, test => {
+	const t = ties.update('testUpdateC', {});
+	test.assertTrue(Observable.isObservable(t));
 });
