@@ -16,15 +16,16 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __2.9.4__
+  * implemented [issue #48](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);`
+  * upgraded dependencies
+
 * __2.9.3__
   * implemented [issue #42](https://github.com/gullerya/data-tier/issues/42) - added a possibility to update tie's model as a whole via new API: `DataTier.ties.update(key, newModel);`
   * upgraded dependencies
 
 * __2.8.7__
   * upgraded `object-observer` dependency, bearing an important, yet meanwhile experimental, functionality for a repeater like consumers
-
-* __2.7.2__
-  * adding experimental __scoped__ tying capabilities - not yet publically available
 
 ## Loading the library
 
