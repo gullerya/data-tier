@@ -41,7 +41,7 @@
 	"scripts": {
 		"build": "node ./build/tools/build-dist.js",
 		"lint": "eslint -c ./build/.eslintrc.json --ignore-path ./build/.eslintignore ./src/**/*.js",
-		"test": "npm run build && node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
+		"test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
 	},
 	"dependencies": {
 		"object-observer": "^3.0.3"
