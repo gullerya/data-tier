@@ -3,6 +3,10 @@
 Modern
 ------
 
+* __2.9.5__
+  * implemented [issue #49](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);` which misbehaved when non-existing **scoped** (element) key provided
+  * upgraded dependencies
+
 * __2.9.4__
   * implemented [issue #48](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);`
   * upgraded dependencies
