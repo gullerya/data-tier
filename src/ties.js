@@ -195,7 +195,7 @@ export class Ties {
 			}
 			return tie.model;
 		} else {
-			return this.create(k, model);
+			return this.create(key, model);
 		}
 	}
 

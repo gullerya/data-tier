@@ -125,7 +125,13 @@ suite.runTest({ name: 'update tie - observable' }, test => {
 	test.assertEqual(oo, tu1);
 });
 
-suite.runTest({ name: 'update tie - create non-existing' }, test => {
+suite.runTest({ name: 'update tie - create non-existing - string key' }, test => {
 	const t = ties.update('testUpdateC', {});
+	test.assertTrue(Observable.isObservable(t));
+});
+
+suite.runTest({ name: 'update tie - create non-existing - scope/element key' }, test => {
+	const e = document.createElement('div');
+	const t = ties.update(e, {});
 	test.assertTrue(Observable.isObservable(t));
 });
