@@ -71,7 +71,7 @@ suite.runTest({ name: 'setting a tie with a non Observable' }, async test => {
 
 	ties.remove(tieName);
 
-	test.assertEqual('test test E', t.text);
+	test.assertEqual('text test E', t.text);
 });
 
 suite.runTest({ name: 'setting a tie with an Observable' }, async test => {
