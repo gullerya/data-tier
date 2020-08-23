@@ -67,7 +67,7 @@ suite.runTest({ name: 'array - full replace' }, async test => {
 	test.assertTrue(Array.isArray(element.data));
 	test.assertEqual(0, element.data.length);
 
-	testTie.data.push.apply(testTie.data, [0, 1, 2, 3]);
+	Array.prototype.push.apply(testTie.data, [0, 1, 2, 3]);
 	test.assertEqual(4, element.data.length);
 	test.assertEqual(2, element.data[2]);
 });

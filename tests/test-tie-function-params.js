@@ -28,7 +28,7 @@ suite.runTest({ name: 'func param - single root' }, test => {
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);
@@ -50,7 +50,7 @@ suite.runTest({ name: 'func param - single deep' }, test => {
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);
@@ -76,7 +76,7 @@ suite.runTest({ name: 'func param - multi root' }, test => {
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);
@@ -102,7 +102,7 @@ suite.runTest({ name: 'func param - multi mixed' }, test => {
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);

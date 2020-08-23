@@ -273,7 +273,7 @@ suite.runTest({ name: 'multi param - duplicate target (explicit) - negative' }, 
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual('tieNameA', vp.tieKey);
 	test.assertEqual('', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
@@ -300,7 +300,7 @@ suite.runTest({ name: 'multi param - duplicate target (implicit) - negative' }, 
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual('tieNameA', vp.tieKey);
 	test.assertEqual('', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
@@ -327,7 +327,7 @@ suite.runTest({ name: 'multi param - duplicate target (mixed) - negative' }, tes
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual('tieNameA', vp.tieKey);
 	test.assertEqual('', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
@@ -348,7 +348,7 @@ suite.runTest({ name: 'classList param - basic' }, test => {
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertEqual('tieName', vp.tieKey);
 	test.assertEqual('', vp.rawPath);
 	test.assertTrue(Array.isArray(vp.path));
@@ -369,7 +369,7 @@ suite.runTest({ name: 'classList param - existing classes via classList' }, test
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertTrue(Array.isArray(vp.iClasses));
 	test.assertEqual(3, vp.iClasses.length);
 	test.assertTrue(vp.iClasses.includes('a'));
@@ -386,7 +386,7 @@ suite.runTest({ name: 'classList param - existing classes via className' }, test
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
-	let vp = vps[0];
+	const vp = vps[0];
 	test.assertTrue(Array.isArray(vp.iClasses));
 	test.assertEqual(3, vp.iClasses.length);
 	test.assertTrue(vp.iClasses.includes('a'));

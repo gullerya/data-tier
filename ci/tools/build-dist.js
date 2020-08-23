@@ -1,4 +1,4 @@
-﻿import os from 'os';
+import os from 'os';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
 import uglifyES from 'uglify-es';

@@ -64,6 +64,10 @@ customElements.define('open-shadow-child-test', class extends HTMLElement {
 	set customContent(childData) {
 		DataTier.ties.get('tieForShadowDom').childData = childData;
 	}
+
+	get customContent() {
+		return null;
+	}
 });
 
 customElements.define('open-shadow-parent-test', class extends HTMLElement {

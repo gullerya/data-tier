@@ -228,8 +228,8 @@ suite.runTest({ name: 'multiparam (with occasional comma duplicate)' }, async te
 suite.runTest({ name: 'tie property changes cycle' }, async test => {
 	const
 		tn = test.getRandom(8),
-		t = DataTier.ties.create(tn, { some: 'test' }),
 		d = document.createElement('div');
+	DataTier.ties.create(tn, { some: 'test' });
 	document.body.appendChild(d);
 
 	//	set tie to NULL
@@ -256,21 +256,19 @@ suite.runTest({ name: 'tie property changes cycle' }, async test => {
 suite.runTest({ name: '2 properties of the same tie, update runs only once, create tie first' }, async test => {
 	const
 		tn = test.getRandom(8),
-		t = DataTier.ties.create(tn, { dataA: 'dataA', dataB: 'dataB' }),
 		dataA = [],
 		dataB = [];
+	DataTier.ties.create(tn, { dataA: 'dataA', dataB: 'dataB' });
 
 	const v = document.createElement('div');
 	Object.defineProperties(v, {
 		dataA: {
-			set(value) {
-				dataA.push(value);
-			}
+			set(value) { dataA.push(value); },
+			get() { return null; }
 		},
 		dataB: {
-			set(value) {
-				dataB.push(value);
-			}
+			set(value) { dataB.push(value); },
+			get() { return null; }
 		}
 	});
 	v.dataset.tie = `${tn}:dataA => dataA, ${tn}:dataB => dataB`;
@@ -291,14 +289,12 @@ suite.runTest({ name: '2 properties of the same tie, update runs only once, crea
 	const v = document.createElement('div');
 	Object.defineProperties(v, {
 		dataA: {
-			set(value) {
-				dataA.push(value);
-			}
+			set(value) { dataA.push(value); },
+			get() { return null; }
 		},
 		dataB: {
-			set(value) {
-				dataB.push(value);
-			}
+			set(value) { dataB.push(value); },
+			get() { return null; }
 		}
 	});
 	v.dataset.tie = `${tn}:dataA => dataA, ${tn}:dataB => dataB`;
@@ -320,14 +316,12 @@ suite.runTest({ name: '2 properties of the same tie, update runs only once, upda
 	const v = document.createElement('div');
 	Object.defineProperties(v, {
 		dataA: {
-			set(value) {
-				dataA.push(value);
-			}
+			set(value) { dataA.push(value); },
+			get() { return null; }
 		},
 		dataB: {
-			set(value) {
-				dataB.push(value);
-			}
+			set(value) { dataB.push(value); },
+			get() { return null; }
 		}
 	});
 	v.dataset.tie = `${tn}:data.a => dataA, ${tn}:data.b => dataB`;

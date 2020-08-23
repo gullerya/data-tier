@@ -7,8 +7,16 @@ class Movable extends HTMLElement {
 		this.style.top = top + 'px';
 	}
 
+	get top() {
+		return this.style.top;
+	}
+
 	set left(left) {
 		this.style.left = left + 'px';
+	}
+
+	get left() {
+		return this.style.left;
 	}
 }
 

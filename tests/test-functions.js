@@ -4,7 +4,6 @@ import * as DataTier from '../dist/data-tier.js';
 let clickCounter = 0;
 const suite = getSuite({ name: 'Testing functions dynamic binding' });
 
-
 suite.runTest({ name: 'bind onclick logic' }, async test => {
 	const tn = test.getRandom(8);
 	const user = {

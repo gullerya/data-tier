@@ -31,7 +31,6 @@ suite.runTest({ name: 'testing any-property - date' }, async test => {
 	test.assertEqual(e.anyProp, model.date);
 });
 
-
 suite.runTest({ name: 'testing any-property - boolean' }, async test => {
 	const e = document.createElement('div');
 	e.dataset.tie = 'anyPropTestsModel:bool => anyProp';
