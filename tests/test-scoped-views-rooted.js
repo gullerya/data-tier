@@ -41,6 +41,43 @@ suite.runTest({ name: 'scoped in shadow - flow b' }, async test => {
 	test.assertEqual('else', iv.textContent);
 });
 
+suite.runTest({ name: 'scoped tying - data first, element last' }, async test => {
+	const sv = document.createElement('div');
+	sv.dataset.tie = 'scope:text';
+	const model = DataTier.ties.create(sv, { text: 'text' });
+
+	document.body.appendChild(sv);
+	await test.waitNextMicrotask();
+
+	test.assertEqual(model.text, sv.textContent);
+});
+
+suite.runTest({ name: 'scoped tying - element first, data last' }, async test => {
+	const sv = document.createElement('div');
+	sv.dataset.tie = 'scope:text';
+
+	document.body.appendChild(sv);
+	await test.waitNextMicrotask();
+
+	const model = DataTier.ties.create(sv, { text: 'text' });
+
+	test.assertEqual(model.text, sv.textContent);
+});
+
+suite.runTest({ name: 'scoped tying - element and data first, attribute last' }, async test => {
+	const sv = document.createElement('div');
+	const model = DataTier.ties.create(sv, { text: 'text' });
+
+	await test.waitNextMicrotask();
+	document.body.appendChild(sv);
+	test.assertEqual('', sv.textContent);
+
+	sv.dataset.tie = 'scope:text';
+	await test.waitNextMicrotask();
+
+	test.assertEqual(model.text, sv.textContent);
+});
+
 suite.runTest({ name: 'scoped in shadow - move around' }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
@@ -116,4 +153,30 @@ suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async
 	await test.waitNextMicrotask();
 	test.assertEqual('value2', model2.data.name);
 	test.assertEqual('value1', model1.data.name);
+});
+
+suite.runTest({ name: 'move scoped tie from view to view' }, async test => {
+	const sv1 = document.createElement('div');
+	const sv2 = document.createElement('div');
+	sv1.setAttribute('data-tie', 'scope:text');
+	sv2.setAttribute('data-tie', 'blablabla:text');
+	document.body.appendChild(sv1);
+	document.body.appendChild(sv2);
+	const m1 = DataTier.ties.create(sv1, { text: 'text' });
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual('text', sv1.textContent);
+	m1.text = 'text1';
+	test.assertEqual('text1', sv1.textContent);
+
+	const m2 = DataTier.ties.create('blablabla', { text: 'text3' });
+
+	//test.assertEqual(m1, m2);
+	test.assertEqual('text1', sv1.textContent);
+	test.assertEqual('text1', sv2.textContent);
+
+	m2.text = 'text2';
+	test.assertEqual('text2', sv1.textContent);
+	test.assertEqual('text2', sv2.textContent);
 });
