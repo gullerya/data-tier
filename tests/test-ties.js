@@ -1,6 +1,6 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import { Observable } from '../dist/object-observer.min.js';
-import { ties } from '../src/data-tier.js';
+import { ties } from '../dist/data-tier.js';
 
 const suite = getSuite({ name: 'Testing ties' });
 

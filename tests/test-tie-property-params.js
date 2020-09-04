@@ -1,5 +1,5 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import { extractViewParams } from '../src/utils.js';
+import { extractViewParams } from '../dist/utils.js';
 
 const suite = getSuite({ name: 'Testing tie properties params' });
 

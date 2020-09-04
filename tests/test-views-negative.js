@@ -1,5 +1,5 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import { ties } from '../src/data-tier.js';
+import { ties } from '../dist/data-tier.js';
 
 const
 	originalConsoleError = console.error,

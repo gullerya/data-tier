@@ -1,5 +1,5 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import * as DataTier from '../src/data-tier.js';
+import * as DataTier from '../dist/data-tier.js';
 
 const suite = getSuite({ name: 'Testing Performance (property tying)' });
 class Movable extends HTMLElement {

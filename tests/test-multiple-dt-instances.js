@@ -1,6 +1,6 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import * as DataTierA from '../src/data-tier.js?inst=a';
-import * as DataTierB from '../src/data-tier.js?inst=b';
+import * as DataTierA from '../dist/data-tier.js?inst=a';
+import * as DataTierB from '../dist/data-tier.js?inst=b';
 
 const suite = getSuite({ name: 'Testing multiple DataTier instances' });
 

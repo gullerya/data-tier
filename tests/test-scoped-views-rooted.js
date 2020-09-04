@@ -1,5 +1,5 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import * as DataTier from '../src/data-tier.js?inst=scope-rooted';
+import * as DataTier from '../dist/data-tier.js?inst=scope-rooted';
 
 const suite = getSuite({ name: 'Testing scoped views (rooted)' });
 
