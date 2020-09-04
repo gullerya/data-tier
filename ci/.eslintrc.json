@@ -1,26 +1,14 @@
 {
-	"extends": "standard",
+	"extends": "eslint:recommended",
 	"env": {
 		"browser": true,
-		"es6": true
+		"es2017": true
 	},
 	"parserOptions": {
 		"ecmaVersion": 11,
 		"sourceType": "module"
 	},
 	"rules": {
-		"indent": [
-			2,
-			"tab"
-		],
-		"no-tabs": 0,
-		"semi": "off",
-		"space-before-function-paren": "off",
-		"object-curly-spacing": "off",
-		"eol-last": "off",
-		"one-var": "off"
-	},
-	"globals": {
-		"Observable": true
+		"no-prototype-builtins": 0
 	}
 }

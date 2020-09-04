@@ -1,5 +1,5 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import * as DataTier from '../dist/data-tier.js';
+import * as DataTier from '../src/data-tier.js';
 
 const suite = getSuite({ name: 'Testing Performance (functional tying)' });
 
@@ -11,7 +11,7 @@ class Movable extends HTMLElement {
 
 customElements.define('movable-element-b', Movable);
 
-suite.runTest({ name: 'perf test - many changes in loop- functional tying', timeout: 72000 }, async test => {
+suite.runTest({ name: 'perf test - many changes in loop- functional tying', timeout: 72000 }, async () => {
 	const pg = document.createElement('div');
 	pg.style.cssText = 'position: relative;width: 200px;height: 200px; border: 1px solid #aaa';
 

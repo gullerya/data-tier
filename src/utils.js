@@ -107,7 +107,7 @@ function parseViewParams(multiParam, element, scopeRootKey) {
 		}
 		try {
 			if (fnext) {
-				parsedParam = parseFunctionParam(fnext, scopeRootKey);
+				parsedParam = parseFunctionParam(fnext);
 				fnext = null;
 			} else {
 				parsedParam = parsePropertyParam(next, element, scopeRootKey);
@@ -125,7 +125,7 @@ function parseViewParams(multiParam, element, scopeRootKey) {
 	return result;
 }
 
-function parseFunctionParam(rawParam, scopeRootKey) {
+function parseFunctionParam(rawParam) {
 	const parts = rawParam.split(/[()]/);
 	const fParams = parts[1].split(/\s*,\s*/).map(fp => {
 		const origin = fp.split(':');

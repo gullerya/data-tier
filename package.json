@@ -44,15 +44,10 @@
 		"test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
 	},
 	"dependencies": {
-		"object-observer": "^3.1.0"
+		"object-observer": "^3.2.0"
 	},
 	"devDependencies": {
-		"eslint": "^7.7.0",
-		"eslint-config-standard": "^14.1.1",
-		"eslint-plugin-standard": "^4.0.1",
-		"eslint-plugin-promise": "^4.2.1",
-		"eslint-plugin-import": "^2.22.0",
-		"eslint-plugin-node": "^11.1.0",
+		"eslint": "^7.8.1",
 		"just-test": "2.3.2",
 		"uglify-es": "^3.3.9",
 		"fs-extra": "^9.0.1"

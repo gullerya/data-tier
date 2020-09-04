@@ -1,6 +1,6 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import { ties } from '../dist/data-tier.js';
 import { Observable } from '../dist/object-observer.min.js';
+import { ties } from '../src/data-tier.js';
 
 const suite = getSuite({ name: 'Testing ties' });
 
@@ -95,11 +95,17 @@ suite.runTest({ name: 'setting a tie with an Observable' }, async test => {
 	test.assertEqual('text test E', o.text);
 });
 
-suite.runTest({ name: 'creating a tie with a NULL data - negative', expectError: 'initial model, when provided, MUST NOT be null' }, () => {
+suite.runTest({
+	name: 'creating a tie with a NULL data - negative',
+	expectError: 'initial model, when provided, MUST NOT be null'
+}, () => {
 	ties.create('tiesTestD', null);
 });
 
-suite.runTest({ name: 'setting a tie with a non object value - negative', expectError: 'observable MAY ONLY be created from a non-null object' }, test => {
+suite.runTest({
+	name: 'setting a tie with a non object value - negative',
+	expectError: 'observable MAY ONLY be created from a non-null object'
+}, () => {
 	ties.create('tiesTestE', 5);
 });
 

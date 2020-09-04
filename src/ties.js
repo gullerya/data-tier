@@ -55,6 +55,7 @@ class Tie {
 				if (apl === 1) {
 					changedPath = arrPath[0];
 				} else if (!apl) {
+					//	no-op
 				} else if (apl === 2) {
 					changedPath = arrPath[0] + '.' + arrPath[1];
 				} else {
@@ -152,7 +153,7 @@ export class Ties {
 		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootKey] : undefined);
 		const t = this.ties[k];
 		return t ? t.model : null;
-	};
+	}
 
 	create(key, model) {
 		if (this.ties[key]) {
@@ -179,7 +180,7 @@ export class Ties {
 		tie.processDataChanges([{ path: [] }]);
 
 		return tie.model;
-	};
+	}
 
 	update(key, model) {
 		if (!model || typeof model !== 'object') {
@@ -216,7 +217,7 @@ export class Ties {
 			delete this.ties[finalTieKeyToRemove];
 			this.dti.views.deleteTieViews(finalTieKeyToRemove);
 		}
-	};
+	}
 
 	validateTieKey(key) {
 		if (!key) {

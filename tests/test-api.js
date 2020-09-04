@@ -1,5 +1,5 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import * as DataTier from '../dist/data-tier.js';
+import * as DataTier from '../src/data-tier.js';
 
 const suite = getSuite({ name: 'Testing Tie APIs' });
 
@@ -27,24 +27,28 @@ suite.runTest({ name: 'create Tie - negative tests' }, test => {
 		DataTier.ties.create();
 		test.fail('should not be able to create tie without name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.create('');
 		test.fail('should not be able to create tie with empty name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.create('underscore_prohibited');
 		test.fail('should not be able to create tie with improper name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.create({});
 		test.fail('should not be able to create tie with improper name');
 	} catch (e) {
+		//
 	}
 
 	try {
@@ -60,6 +64,7 @@ suite.runTest({ name: 'create Tie - negative tests' }, test => {
 		DataTier.ties.create('validTieName', { observe: 'string and not a function' });
 		test.fail('should not be able to create tie with a non-Observable object which has some of Observable properties occupied');
 	} catch (e) {
+		//
 	}
 
 	try {
@@ -67,6 +72,7 @@ suite.runTest({ name: 'create Tie - negative tests' }, test => {
 		DataTier.ties.create('validTieA');
 		test.fail('should not be able to create tie with an already existing name');
 	} catch (e) {
+		//
 	} finally {
 		DataTier.ties.remove('validTieA');
 	}
@@ -77,24 +83,28 @@ suite.runTest({ name: 'get Tie - negative tests' }, test => {
 		DataTier.ties.get();
 		test.fail('should not be able to get tie without name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.get('');
 		test.fail('should not be able to get tie with empty name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.get('underscore_prohibited');
 		test.fail('should not be able to get tie with improper name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.get({});
 		test.fail('should not be able to get tie with improper name');
 	} catch (e) {
+		//
 	}
 });
 
@@ -103,24 +113,28 @@ suite.runTest({ name: 'remove Tie - negative tests' }, test => {
 		DataTier.ties.remove();
 		test.fail('should not be able to remove tie without name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.remove('');
 		test.fail('should not be able to remove tie with empty name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.remove('underscore_prohibited');
 		test.fail('should not be able to remove tie with improper name');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.ties.remove({});
 		test.fail('should not be able to remove tie with improper name');
 	} catch (e) {
+		//
 	}
 });
 
@@ -157,18 +171,21 @@ suite.runTest({ name: 'root APIs - negative tests' }, test => {
 		DataTier.addRootDocument();
 		test.fail('should not be able to add undefined root document');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.addRootDocument(null);
 		test.fail('should not be able to add null root document');
 	} catch (e) {
+		//
 	}
 
 	try {
 		DataTier.addRootDocument(document.createElement('span'));
 		test.fail('should not be able to add non-document');
 	} catch (e) {
+		//
 	}
 
 	const rootDocument = document.createDocumentFragment();

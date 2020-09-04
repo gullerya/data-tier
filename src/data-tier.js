@@ -51,7 +51,7 @@ class Instance {
 		addTree(rootDocument);
 		roots.add(rootDocument);
 		return true;
-	};
+	}
 
 	removeRootDocument(rootDocument) {
 		if (roots.has(rootDocument)) {
@@ -62,7 +62,7 @@ class Instance {
 			console.warn('no root document ' + rootDocument + ' known');
 			return false;
 		}
-	};
+	}
 }
 
 const instance = new Instance();
