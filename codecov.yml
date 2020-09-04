@@ -1,3 +1,2 @@
-coverage:
-  fixes:
-    - "dist/::src/"
+fixes:
+  - "/dist/::/src/"
