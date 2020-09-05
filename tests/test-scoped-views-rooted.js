@@ -64,13 +64,25 @@ suite.runTest({ name: 'scoped tying - element first, data last' }, async test =>
 	test.assertEqual(model.text, sv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying - element and data first, attribute last' }, async test => {
+suite.runTest({ name: 'scoped tying - data, element, attribute last' }, async test => {
 	const sv = document.createElement('div');
 	const model = DataTier.ties.create(sv, { text: 'text' });
 
-	await test.waitNextMicrotask();
 	document.body.appendChild(sv);
 	test.assertEqual('', sv.textContent);
+
+	sv.dataset.tie = 'scope:text';
+	await test.waitNextMicrotask();
+
+	test.assertEqual(model.text, sv.textContent);
+});
+
+suite.runTest({ name: 'scoped tying - element, data, attribute last' }, async test => {
+	const sv = document.createElement('div');
+	document.body.appendChild(sv);
+	test.assertEqual('', sv.textContent);
+
+	const model = DataTier.ties.create(sv, { text: 'text' });
 
 	sv.dataset.tie = 'scope:text';
 	await test.waitNextMicrotask();

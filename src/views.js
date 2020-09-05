@@ -1,4 +1,4 @@
-import { getRandomKey } from './utils.js';
+import { getRandomKey, SCOPE_TIE_KEY } from './utils.js';
 
 export class Views {
 	constructor(dtInstance) {
@@ -23,7 +23,7 @@ export class Views {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
 		let scopeRoot = false;
-		const scoped = typeof element[this.dti.scopeRootKey] !== 'undefined';
+		const scoped = typeof element[SCOPE_TIE_KEY] !== 'undefined';
 		while (i) {
 			tieParam = tieParams[--i];
 			if (tieParam.isFunctional) {
@@ -45,7 +45,7 @@ export class Views {
 		}
 		element[this.dti.paramsKey] = tieParams;
 		if (scopeRoot) {
-			element[this.dti.scopeRootKey] = getRandomKey(16);
+			element[SCOPE_TIE_KEY] = getRandomKey(16);
 		}
 	}
 
