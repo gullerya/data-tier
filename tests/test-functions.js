@@ -8,12 +8,10 @@ suite.runTest({ name: 'bind onclick logic' }, async test => {
 	const tn = test.getRandom(8);
 	const user = {
 		name: 'click me',
-		clickHandler: function (e) {
+		clickHandler: () => {
 			clickCounter++;
 			DataTier.ties.get(tn).name = 'click again';
-			DataTier.ties.get(tn).clickHandler = function () {
-				clickCounter += 2;
-			}
+			DataTier.ties.get(tn).clickHandler = () => clickCounter += 2;
 		}
 	};
 	const d = document.createElement('div');

@@ -32,7 +32,6 @@ class Instance {
 		this.params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
 
 		this.paramsKey = Symbol('view.params');
-		this.scopeRootKey = Symbol('scope.root');
 		this.ties = new Ties(this);
 		this.views = new Views(this);
 	}
@@ -51,7 +50,7 @@ class Instance {
 		addTree(rootDocument);
 		roots.add(rootDocument);
 		return true;
-	};
+	}
 
 	removeRootDocument(rootDocument) {
 		if (roots.has(rootDocument)) {
@@ -62,7 +61,7 @@ class Instance {
 			console.warn('no root document ' + rootDocument + ' known');
 			return false;
 		}
-	};
+	}
 }
 
 const instance = new Instance();
@@ -96,7 +95,7 @@ function changeListener(event) {
 
 function add(element) {
 	if (element.matches(':defined')) {
-		const viewParams = extractViewParams(element, instance.scopeRootKey);
+		const viewParams = extractViewParams(element);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
 			updateFromView(element, viewParams);
@@ -218,7 +217,7 @@ function onTieParamChange(element, oldParam, newParam) {
 	}
 
 	if (newParam) {
-		viewParams = extractViewParams(element, instance.scopeRootKey);
+		viewParams = extractViewParams(element);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
 			updateFromView(element, viewParams);

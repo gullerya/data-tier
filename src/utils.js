@@ -18,7 +18,8 @@ const
 		INPUT: 1, SELECT: 1, TEXTAREA: 1
 	},
 	randomKeySource = 'abcdefghijklmnopqrstuvwxyz0123456789',
-	randomKeySourceLen = randomKeySource.length;
+	randomKeySourceLen = randomKeySource.length,
+	SCOPE_ROOT_TIE_KEY = Symbol('scope.tie.key');
 
 export {
 	DEFAULT_TIE_TARGET_PROVIDER,
@@ -31,7 +32,8 @@ export {
 	getPath,
 	setPath,
 	callViewFunction,
-	getRandomKey
+	getRandomKey,
+	SCOPE_ROOT_TIE_KEY
 }
 
 class Parameter {
@@ -75,16 +77,16 @@ function getTargetProperty(element) {
 	return result;
 }
 
-function extractViewParams(element, scopeRootKey) {
+function extractViewParams(element) {
 	const rawParam = element.getAttribute('data-tie');
 	if (rawParam) {
-		return parseViewParams(rawParam, element, scopeRootKey);
+		return parseViewParams(rawParam, element);
 	} else {
 		return null;
 	}
 }
 
-function parseViewParams(multiParam, element, scopeRootKey) {
+function parseViewParams(multiParam, element) {
 	const
 		result = [],
 		keysTest = {},
@@ -107,10 +109,10 @@ function parseViewParams(multiParam, element, scopeRootKey) {
 		}
 		try {
 			if (fnext) {
-				parsedParam = parseFunctionParam(fnext, scopeRootKey);
+				parsedParam = parseFunctionParam(fnext);
 				fnext = null;
 			} else {
-				parsedParam = parsePropertyParam(next, element, scopeRootKey);
+				parsedParam = parsePropertyParam(next, element);
 			}
 			if (parsedParam.targetProperty in keysTest) {
 				console.error(`elements's property '${parsedParam.targetProperty}' tied more than once; all but first dismissed`);
@@ -125,7 +127,7 @@ function parseViewParams(multiParam, element, scopeRootKey) {
 	return result;
 }
 
-function parseFunctionParam(rawParam, scopeRootKey) {
+function parseFunctionParam(rawParam) {
 	const parts = rawParam.split(/[()]/);
 	const fParams = parts[1].split(/\s*,\s*/).map(fp => {
 		const origin = fp.split(':');
@@ -146,7 +148,7 @@ function parseFunctionParam(rawParam, scopeRootKey) {
 	return new Parameter(null, null, null, parts[0], true, fParams);
 }
 
-function parsePropertyParam(rawParam, element, scopeRootKey) {
+function parsePropertyParam(rawParam, element) {
 	const parts = rawParam.split(PARAM_SPLITTER);
 
 	//  add default 'to' property if needed
@@ -162,7 +164,7 @@ function parsePropertyParam(rawParam, element, scopeRootKey) {
 
 	let tieKey = origin[0];
 	if (origin[0] === 'scope') {
-		tieKey = getScopeTieKey(element, scopeRootKey);
+		tieKey = getScopeTieKey(element);
 	}
 
 	const rawPath = origin.length > 1 ? origin[1] : '';
@@ -175,15 +177,15 @@ function parsePropertyParam(rawParam, element, scopeRootKey) {
 	return result;
 }
 
-function getScopeTieKey(element, scopeRootKey) {
+function getScopeTieKey(element) {
 	let next = element,
-		result = next[scopeRootKey];
+		result = next[SCOPE_ROOT_TIE_KEY];
 	while (!result && next.parentNode) {
 		next = next.parentNode;
 		if (next.host) {
 			next = next.host;
 		}
-		result = next[scopeRootKey];
+		result = next[SCOPE_ROOT_TIE_KEY];
 	}
 	return result || null;
 }

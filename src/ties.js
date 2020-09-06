@@ -2,7 +2,8 @@ import {
 	ensureObservable,
 	getPath,
 	callViewFunction,
-	getRandomKey
+	getRandomKey,
+	SCOPE_ROOT_TIE_KEY
 } from './utils.js';
 
 const
@@ -55,6 +56,7 @@ class Tie {
 				if (apl === 1) {
 					changedPath = arrPath[0];
 				} else if (!apl) {
+					//	no-op
 				} else if (apl === 2) {
 					changedPath = arrPath[0] + '.' + arrPath[1];
 				} else {
@@ -149,29 +151,34 @@ export class Ties {
 	}
 
 	get(key) {
-		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootKey] : undefined);
+		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_TIE_KEY] : undefined);
 		const t = this.ties[k];
 		return t ? t.model : null;
-	};
+	}
 
 	create(key, model) {
-		if (this.ties[key]) {
-			throw new Error(`tie '${key}' already exists`);
-		}
 		if (model === null) {
 			throw new Error('initial model, when provided, MUST NOT be null');
 		}
 
-		this.validateTieKey(key);
-
-		let k = key;
-		if (typeof k !== 'string') {
-			k = key[this.dti.scopeRootKey];
+		let k;
+		if (typeof key === 'string') {
+			k = key;
+		} else if (key && key.nodeType && key.nodeType === Node.ELEMENT_NODE) {
+			k = key[SCOPE_ROOT_TIE_KEY];
 			if (!k) {
-				k = getRandomKey(16);
-				key[this.dti.scopeRootKey] = k;
+				k = key[SCOPE_ROOT_TIE_KEY] = getRandomKey(16);
 			}
 		}
+
+		Ties.validateTieKey(k);
+		if (this.ties[k]) {
+			throw new Error(`tie '${k}' already exists`);
+		}
+
+		//	in case of scoped tie creation should rescan the scope root tree to find the already existing views
+		//	should add them to the views
+		//	should do this in recursive fashion and stop adding the views below another scope
 
 		const tieViews = this.dti.views.obtainTieViews(k);
 		const tie = new Tie(k, model, this, tieViews);
@@ -179,14 +186,14 @@ export class Ties {
 		tie.processDataChanges([{ path: [] }]);
 
 		return tie.model;
-	};
+	}
 
 	update(key, model) {
 		if (!model || typeof model !== 'object') {
 			throw new Error('model MUST be a non-null object');
 		}
 
-		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootKey] : undefined);
+		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_TIE_KEY] : undefined);
 		const tie = this.ties[k];
 		if (tie) {
 			if (tie.model !== model) {
@@ -203,7 +210,7 @@ export class Ties {
 		let finalTieKeyToRemove = tieToRemove;
 		if (typeof tieToRemove === 'object') {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
-				finalTieKeyToRemove = tieToRemove[this.dti.scopeRootKey];
+				finalTieKeyToRemove = tieToRemove[SCOPE_ROOT_TIE_KEY];
 			} else {
 				finalTieKeyToRemove = Object.keys(this.ties).find(key => this.ties[key].model === tieToRemove);
 			}
@@ -216,21 +223,17 @@ export class Ties {
 			delete this.ties[finalTieKeyToRemove];
 			this.dti.views.deleteTieViews(finalTieKeyToRemove);
 		}
-	};
+	}
 
-	validateTieKey(key) {
-		if (!key) {
+	static validateTieKey(key) {
+		if (!key || typeof key !== 'string') {
 			throw new Error(`invalid key '${key}'`);
 		}
-		if (typeof key === 'string') {
-			if (!tieNameValidator.test(key)) {
-				throw new Error(`tie key MUST match ${tieNameValidator}; '${key}' doesn't`);
-			}
-			if (reservedTieNames.indexOf(key) >= 0) {
-				throw new Error(`tie key MUST NOT be one of those: ${reservedTieNames.join(', ')}`);
-			}
-		} else if (!key.nodeType || key.nodeType !== Node.ELEMENT_NODE) {
-			throw new Error(`invalid key '${key}'`);
+		if (!tieNameValidator.test(key)) {
+			throw new Error(`tie key MUST match ${tieNameValidator}; '${key}' doesn't`);
+		}
+		if (reservedTieNames.indexOf(key) >= 0) {
+			throw new Error(`tie key MUST NOT be one of those: ${reservedTieNames.join(', ')}`);
 		}
 	}
 }

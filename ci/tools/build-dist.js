@@ -1,5 +1,6 @@
 import os from 'os';
 import fs from 'fs';
+import process from 'process';
 import fsExtra from 'fs-extra';
 import uglifyES from 'uglify-es';
 
