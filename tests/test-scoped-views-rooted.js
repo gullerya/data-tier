@@ -41,55 +41,6 @@ suite.runTest({ name: 'scoped in shadow - flow b' }, async test => {
 	test.assertEqual('else', iv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying - data first, element last' }, async test => {
-	const sv = document.createElement('div');
-	sv.dataset.tie = 'scope:text';
-	const model = DataTier.ties.create(sv, { text: 'text' });
-
-	document.body.appendChild(sv);
-	await test.waitNextMicrotask();
-
-	test.assertEqual(model.text, sv.textContent);
-});
-
-suite.runTest({ name: 'scoped tying - element first, data last' }, async test => {
-	const sv = document.createElement('div');
-	sv.dataset.tie = 'scope:text';
-
-	document.body.appendChild(sv);
-	await test.waitNextMicrotask();
-
-	const model = DataTier.ties.create(sv, { text: 'text' });
-
-	test.assertEqual(model.text, sv.textContent);
-});
-
-suite.runTest({ name: 'scoped tying - data, element, attribute last' }, async test => {
-	const sv = document.createElement('div');
-	const model = DataTier.ties.create(sv, { text: 'text' });
-
-	document.body.appendChild(sv);
-	test.assertEqual('', sv.textContent);
-
-	sv.dataset.tie = 'scope:text';
-	await test.waitNextMicrotask();
-
-	test.assertEqual(model.text, sv.textContent);
-});
-
-suite.runTest({ name: 'scoped tying - element, data, attribute last' }, async test => {
-	const sv = document.createElement('div');
-	document.body.appendChild(sv);
-	test.assertEqual('', sv.textContent);
-
-	const model = DataTier.ties.create(sv, { text: 'text' });
-
-	sv.dataset.tie = 'scope:text';
-	await test.waitNextMicrotask();
-
-	test.assertEqual(model.text, sv.textContent);
-});
-
 suite.runTest({ name: 'scoped in shadow - move around' }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
@@ -167,7 +118,7 @@ suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async
 	test.assertEqual('value1', model1.data.name);
 });
 
-suite.runTest({ name: 'move scoped tie from view to view' }, async test => {
+suite.runTest({ name: 'move scoped tie from view to view', skip: true }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
 	sv1.setAttribute('data-tie', 'scope:text');

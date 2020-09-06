@@ -19,7 +19,7 @@ const
 	},
 	randomKeySource = 'abcdefghijklmnopqrstuvwxyz0123456789',
 	randomKeySourceLen = randomKeySource.length,
-	SCOPE_TIE_KEY = Symbol('scope.tie.key');
+	SCOPE_ROOT_TIE_KEY = Symbol('scope.tie.key');
 
 export {
 	DEFAULT_TIE_TARGET_PROVIDER,
@@ -33,7 +33,7 @@ export {
 	setPath,
 	callViewFunction,
 	getRandomKey,
-	SCOPE_TIE_KEY
+	SCOPE_ROOT_TIE_KEY
 }
 
 class Parameter {
@@ -179,13 +179,13 @@ function parsePropertyParam(rawParam, element) {
 
 function getScopeTieKey(element) {
 	let next = element,
-		result = next[SCOPE_TIE_KEY];
+		result = next[SCOPE_ROOT_TIE_KEY];
 	while (!result && next.parentNode) {
 		next = next.parentNode;
 		if (next.host) {
 			next = next.host;
 		}
-		result = next[SCOPE_TIE_KEY];
+		result = next[SCOPE_ROOT_TIE_KEY];
 	}
 	return result || null;
 }

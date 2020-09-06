@@ -3,7 +3,7 @@ import {
 	getPath,
 	callViewFunction,
 	getRandomKey,
-	SCOPE_TIE_KEY
+	SCOPE_ROOT_TIE_KEY
 } from './utils.js';
 
 const
@@ -151,7 +151,7 @@ export class Ties {
 	}
 
 	get(key) {
-		const k = typeof key === 'string' ? key : (key ? key[SCOPE_TIE_KEY] : undefined);
+		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_TIE_KEY] : undefined);
 		const t = this.ties[k];
 		return t ? t.model : null;
 	}
@@ -165,9 +165,9 @@ export class Ties {
 		if (typeof key === 'string') {
 			k = key;
 		} else if (key && key.nodeType && key.nodeType === Node.ELEMENT_NODE) {
-			k = key[SCOPE_TIE_KEY];
+			k = key[SCOPE_ROOT_TIE_KEY];
 			if (!k) {
-				k = key[SCOPE_TIE_KEY] = getRandomKey(16);
+				k = key[SCOPE_ROOT_TIE_KEY] = getRandomKey(16);
 			}
 		}
 
@@ -175,6 +175,10 @@ export class Ties {
 		if (this.ties[k]) {
 			throw new Error(`tie '${k}' already exists`);
 		}
+
+		//	in case of scoped tie creation should rescan the scope root tree to find the already existing views
+		//	should add them to the views
+		//	should do this in recursive fashion and stop adding the views below another scope
 
 		const tieViews = this.dti.views.obtainTieViews(k);
 		const tie = new Tie(k, model, this, tieViews);
@@ -189,7 +193,7 @@ export class Ties {
 			throw new Error('model MUST be a non-null object');
 		}
 
-		const k = typeof key === 'string' ? key : (key ? key[SCOPE_TIE_KEY] : undefined);
+		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_TIE_KEY] : undefined);
 		const tie = this.ties[k];
 		if (tie) {
 			if (tie.model !== model) {
@@ -206,7 +210,7 @@ export class Ties {
 		let finalTieKeyToRemove = tieToRemove;
 		if (typeof tieToRemove === 'object') {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
-				finalTieKeyToRemove = tieToRemove[SCOPE_TIE_KEY];
+				finalTieKeyToRemove = tieToRemove[SCOPE_ROOT_TIE_KEY];
 			} else {
 				finalTieKeyToRemove = Object.keys(this.ties).find(key => this.ties[key].model === tieToRemove);
 			}
