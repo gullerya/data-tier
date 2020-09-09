@@ -23,7 +23,7 @@ export class Views {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
 		let scopeRoot = false;
-		const scoped = typeof element[SCOPE_ROOT_TIE_KEY] !== 'undefined';
+		const isRootScope = typeof element[SCOPE_ROOT_TIE_KEY] !== 'undefined';
 		while (i) {
 			tieParam = tieParams[--i];
 			if (tieParam.isFunctional) {
@@ -32,13 +32,13 @@ export class Views {
 				while (l) {
 					fp = fParams[--l];
 					this.seekAndInsertView(fp, element);
-					if (!scoped && fp.targetProperty === 'scope') {
+					if (!isRootScope && fp.targetProperty === 'scope') {
 						scopeRoot = true;
 					}
 				}
 			} else {
 				this.seekAndInsertView(tieParam, element);
-				if (!scoped && tieParam.targetProperty === 'scope') {
+				if (!isRootScope && tieParam.targetProperty === 'scope') {
 					scopeRoot = true;
 				}
 			}
