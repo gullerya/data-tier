@@ -1,4 +1,4 @@
-import { getRandomKey, SCOPE_ROOT_TIE_KEY } from './utils.js';
+import { getRandomKey } from './utils.js';
 
 export class Views {
 	constructor(dtInstance) {
@@ -23,7 +23,8 @@ export class Views {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
 		let scopeRoot = false;
-		const isRootScope = typeof element[SCOPE_ROOT_TIE_KEY] !== 'undefined';
+		const isRootScope = typeof element[this.dti.scopeRootTieKey] !== 'undefined';
+		let added = false;
 		while (i) {
 			tieParam = tieParams[--i];
 			if (tieParam.isFunctional) {
@@ -31,21 +32,31 @@ export class Views {
 				l = fParams.length;
 				while (l) {
 					fp = fParams[--l];
+					if (!fp.tieKey) {
+						continue;
+					}
 					this.seekAndInsertView(fp, element);
+					added = true;
 					if (!isRootScope && fp.targetProperty === 'scope') {
 						scopeRoot = true;
 					}
 				}
 			} else {
+				if (!tieParam.tieKey) {
+					continue;
+				}
 				this.seekAndInsertView(tieParam, element);
+				added = true;
 				if (!isRootScope && tieParam.targetProperty === 'scope') {
 					scopeRoot = true;
 				}
 			}
 		}
-		element[this.dti.paramsKey] = tieParams;
+		if (added) {
+			element[this.dti.paramsKey] = tieParams;
+		}
 		if (scopeRoot) {
-			element[SCOPE_ROOT_TIE_KEY] = getRandomKey(16);
+			element[this.dti.scopeRootTieKey] = getRandomKey(16);
 		}
 	}
 

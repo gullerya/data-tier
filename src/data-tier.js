@@ -32,6 +32,7 @@ class Instance {
 		this.params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
 
 		this.paramsKey = Symbol('view.params');
+		this.scopeRootTieKey = Symbol('scope.root.tie.key');
 		this.ties = new Ties(this);
 		this.views = new Views(this);
 	}
@@ -78,6 +79,9 @@ function changeListener(event) {
 		viewParams = element[instance.paramsKey];
 	let tieParam, tie, newValue;
 
+	if (!viewParams) {
+		return;
+	}
 	let i = viewParams.length;
 	while (i--) {
 		tieParam = viewParams[i];
@@ -95,7 +99,7 @@ function changeListener(event) {
 
 function add(element) {
 	if (element.matches(':defined')) {
-		const viewParams = extractViewParams(element);
+		const viewParams = extractViewParams(element, instance.scopeRootTieKey);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
 			updateFromView(element, viewParams);
@@ -161,7 +165,7 @@ function updateFromView(element, viewParams) {
 	}
 }
 
-function addTree(root) {
+export function addTree(root) {
 	let list = [root], next;
 	if (root.childElementCount) {
 		list = Array.from(root.querySelectorAll('*'));
@@ -217,7 +221,7 @@ function onTieParamChange(element, oldParam, newParam) {
 	}
 
 	if (newParam) {
-		viewParams = extractViewParams(element);
+		viewParams = extractViewParams(element, instance.scopeRootTieKey);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
 			updateFromView(element, viewParams);
