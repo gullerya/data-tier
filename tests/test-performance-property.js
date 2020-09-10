@@ -22,7 +22,7 @@ class Movable extends HTMLElement {
 
 customElements.define('movable-element-a', Movable);
 
-suite.runTest({ name: 'perf test - many changes in loop - property tying', timeout: 72000 }, async () => {
+suite.runTest({ name: 'perf test - many changes in loop - property tying', timeout: 82000 }, async () => {
 	const pg = document.createElement('div');
 	pg.style.cssText = 'position: relative;width: 200px;height: 200px; border: 1px solid #aaa';
 
