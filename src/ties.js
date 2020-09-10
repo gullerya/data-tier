@@ -4,7 +4,6 @@ import {
 	callViewFunction,
 	getRandomKey
 } from './utils.js';
-import { addTree } from './data-tier.js';
 
 const
 	MODEL_KEY = Symbol('model.key'),
@@ -181,7 +180,7 @@ export class Ties {
 		//	should do this in recursive fashion and stop adding the views below another scope
 
 		if (key.nodeType) {
-			addTree(key);
+			this.dti.addTree(key);
 		}
 		const tieViews = this.dti.views.obtainTieViews(k);
 		const tie = new Tie(k, model, this, tieViews);

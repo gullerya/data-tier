@@ -25,43 +25,18 @@ const
 		characterData: false,
 		characterDataOldValue: false
 	},
-	roots = new WeakSet();
+	roots = new WeakSet(),
+	PARAMS_KEY = Symbol('view.params.key'),
+	SCOPE_ROOT_TIE_KEY = Symbol('scope.root.tie.key');
 
 class Instance {
 	constructor() {
 		this.params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
-
-		this.paramsKey = Symbol('view.params');
-		this.scopeRootTieKey = Symbol('scope.root.tie.key');
+		this.paramsKey = PARAMS_KEY;
+		this.scopeRootTieKey = SCOPE_ROOT_TIE_KEY;
 		this.ties = new Ties(this);
 		this.views = new Views(this);
-	}
-
-	addRootDocument(rootDocument) {
-		if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
-			throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
-		}
-		if (roots.has(rootDocument)) {
-			console.warn('any root document may be added only once');
-			return false;
-		}
-
-		new MutationObserver(processDomChanges).observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
-
-		addTree(rootDocument);
-		roots.add(rootDocument);
-		return true;
-	}
-
-	removeRootDocument(rootDocument) {
-		if (roots.has(rootDocument)) {
-			dropTree(rootDocument);
-			roots.delete(rootDocument);
-			return true;
-		} else {
-			console.warn('no root document ' + rootDocument + ' known');
-			return false;
-		}
+		this.addTree = addTree;
 	}
 }
 
@@ -69,14 +44,39 @@ const instance = new Instance();
 export const ties = instance.ties;
 export const DEFAULT_TIE_TARGET_PROVIDER = dttp;
 export const CHANGE_EVENT_NAME_PROVIDER = cenp;
-export const addRootDocument = instance.addRootDocument;
-export const removeRootDocument = instance.removeRootDocument;
+
+export const addRootDocument = function addRootDocument(rootDocument) {
+	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
+		throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
+	}
+	if (roots.has(rootDocument)) {
+		console.warn('any root document may be added only once');
+		return false;
+	}
+
+	new MutationObserver(processDomChanges).observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
+
+	addTree(rootDocument);
+	roots.add(rootDocument);
+	return true;
+};
+
+export const removeRootDocument = function removeRootDocument(rootDocument) {
+	if (roots.has(rootDocument)) {
+		dropTree(rootDocument);
+		roots.delete(rootDocument);
+		return true;
+	} else {
+		console.warn('no root document ' + rootDocument + ' known');
+		return false;
+	}
+};
 
 function changeListener(event) {
 	const
 		element = event.currentTarget,
 		targetProperty = getTargetProperty(element),
-		viewParams = element[instance.paramsKey];
+		viewParams = element[PARAMS_KEY];
 	let tieParam, tie, newValue;
 
 	if (!viewParams) {
@@ -89,7 +89,7 @@ function changeListener(event) {
 			continue;
 		}
 
-		tie = instance.ties.get(tieParam.tieKey);
+		tie = ties.get(tieParam.tieKey);
 		if (tie) {
 			newValue = element[targetProperty];
 			setPath(tie, tieParam.path, newValue);
@@ -99,7 +99,7 @@ function changeListener(event) {
 
 function add(element) {
 	if (element.matches(':defined')) {
-		const viewParams = extractViewParams(element, instance.scopeRootTieKey);
+		const viewParams = extractViewParams(element, SCOPE_ROOT_TIE_KEY);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
 			updateFromView(element, viewParams);
@@ -107,7 +107,7 @@ function add(element) {
 		}
 
 		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
-			instance.addRootDocument(element.shadowRoot);
+			addRootDocument(element.shadowRoot);
 		}
 	} else {
 		waitUndefined(element);
@@ -140,7 +140,7 @@ function updateFromView(element, viewParams) {
 			const args = [];
 			param.fParams.forEach(fp => {
 				let arg;
-				const tie = instance.ties.get(fp.tieKey);
+				const tie = ties.get(fp.tieKey);
 				if (tie) {
 					arg = getPath(tie, fp.path);
 					someData = true;
@@ -152,7 +152,7 @@ function updateFromView(element, viewParams) {
 				callViewFunction(element, param.targetProperty, args);
 			}
 		} else {
-			const tie = instance.ties.get(param.tieKey);
+			const tie = ties.get(param.tieKey);
 			if (!tie) {
 				continue;
 			}
@@ -176,7 +176,7 @@ export function addTree(root) {
 	for (let i = 0; i < l; i++) {
 		try {
 			next = list[i];
-			if (Node.ELEMENT_NODE === next.nodeType && !next[instance.paramsKey]) {
+			if (Node.ELEMENT_NODE === next.nodeType && !next[PARAMS_KEY]) {
 				add(next);
 			}
 		} catch (e) {
@@ -195,7 +195,7 @@ function dropTree(root) {
 	i = list.length;
 	while (i--) {
 		next = list[i];
-		viewParams = next[instance.paramsKey];
+		viewParams = next[PARAMS_KEY];
 
 		//	untie
 		if (viewParams) {
@@ -205,7 +205,7 @@ function dropTree(root) {
 
 		//	remove as root
 		if (next.shadowRoot && !next.hasAttribute('data-tie-blackbox')) {
-			instance.removeRootDocument(next.shadowRoot);
+			removeRootDocument(next.shadowRoot);
 		}
 	}
 }
@@ -213,7 +213,7 @@ function dropTree(root) {
 function onTieParamChange(element, oldParam, newParam) {
 	let viewParams;
 	if (oldParam) {
-		viewParams = element[instance.paramsKey];
+		viewParams = element[PARAMS_KEY];
 		if (viewParams) {
 			instance.views.delView(element, viewParams);
 			delChangeListener(element, changeListener);
@@ -221,7 +221,7 @@ function onTieParamChange(element, oldParam, newParam) {
 	}
 
 	if (newParam) {
-		viewParams = extractViewParams(element, instance.scopeRootTieKey);
+		viewParams = extractViewParams(element, SCOPE_ROOT_TIE_KEY);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
 			updateFromView(element, viewParams);
@@ -274,7 +274,7 @@ function processDomChanges(changes) {
 }
 
 if (instance.params.autostart !== 'false' && instance.params.autostart !== false) {
-	instance.addRootDocument(document);
+	addRootDocument(document);
 }
 
 console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
