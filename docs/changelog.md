@@ -3,6 +3,10 @@
 Modern
 ------
 
+* __2.10.0__
+  * implemented [issue #50](https://github.com/gullerya/data-tier/issues/50) - fixed a scoped views lifecycle, case when view added before the model
+  * upgraded dependencies
+
 * __2.9.5__
   * implemented [issue #49](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);` which misbehaved when non-existing **scoped** (element) key provided
   * upgraded dependencies

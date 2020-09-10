@@ -175,10 +175,6 @@ export class Ties {
 			throw new Error(`tie '${k}' already exists`);
 		}
 
-		//	in case of scoped tie creation should rescan the scope root tree to find the already existing views
-		//	should add them to the views
-		//	should do this in recursive fashion and stop adding the views below another scope
-
 		if (key.nodeType) {
 			this.dti.addTree(key);
 		}
