@@ -14,7 +14,7 @@ suite.runTest({ name: 'scoped tying root - data first, element last' }, async te
 	test.assertEqual(model.text, sv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying root - element first, data last', skip: true }, async test => {
+suite.runTest({ name: 'scoped tying root - element first, data last', skip: false }, async test => {
 	const sv = document.createElement('div');
 	sv.dataset.tie = 'scope:text';
 
@@ -67,7 +67,7 @@ suite.runTest({ name: 'scoped tying child - data first, element last' }, async t
 	test.assertEqual(model.text, cv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying child - element first, data last', skip: true }, async test => {
+suite.runTest({ name: 'scoped tying child - element first, data last', skip: false }, async test => {
 	const rv = document.createElement('div');
 	const cv = document.createElement('div');
 	cv.dataset.tie = 'scope:text';

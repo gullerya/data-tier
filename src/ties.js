@@ -2,8 +2,7 @@ import {
 	ensureObservable,
 	getPath,
 	callViewFunction,
-	getRandomKey,
-	SCOPE_ROOT_TIE_KEY
+	getRandomKey
 } from './utils.js';
 
 const
@@ -151,7 +150,7 @@ export class Ties {
 	}
 
 	get(key) {
-		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_TIE_KEY] : undefined);
+		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootTieKey] : undefined);
 		const t = this.ties[k];
 		return t ? t.model : null;
 	}
@@ -165,9 +164,9 @@ export class Ties {
 		if (typeof key === 'string') {
 			k = key;
 		} else if (key && key.nodeType && key.nodeType === Node.ELEMENT_NODE) {
-			k = key[SCOPE_ROOT_TIE_KEY];
+			k = key[this.dti.scopeRootTieKey];
 			if (!k) {
-				k = key[SCOPE_ROOT_TIE_KEY] = getRandomKey(16);
+				k = key[this.dti.scopeRootTieKey] = getRandomKey(16);
 			}
 		}
 
@@ -180,6 +179,9 @@ export class Ties {
 		//	should add them to the views
 		//	should do this in recursive fashion and stop adding the views below another scope
 
+		if (key.nodeType) {
+			this.dti.addTree(key);
+		}
 		const tieViews = this.dti.views.obtainTieViews(k);
 		const tie = new Tie(k, model, this, tieViews);
 		this.ties[k] = tie;
@@ -193,7 +195,7 @@ export class Ties {
 			throw new Error('model MUST be a non-null object');
 		}
 
-		const k = typeof key === 'string' ? key : (key ? key[SCOPE_ROOT_TIE_KEY] : undefined);
+		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootTieKey] : undefined);
 		const tie = this.ties[k];
 		if (tie) {
 			if (tie.model !== model) {
@@ -210,7 +212,7 @@ export class Ties {
 		let finalTieKeyToRemove = tieToRemove;
 		if (typeof tieToRemove === 'object') {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
-				finalTieKeyToRemove = tieToRemove[SCOPE_ROOT_TIE_KEY];
+				finalTieKeyToRemove = tieToRemove[this.dti.scopeRootTieKey];
 			} else {
 				finalTieKeyToRemove = Object.keys(this.ties).find(key => this.ties[key].model === tieToRemove);
 			}

@@ -7,9 +7,9 @@ customElements.define('ce-suite-view', class extends HTMLElement {
 	constructor() {
 		super();
 		this.attachShadow({ mode: 'open' }).innerHTML = `
-				<span data-tie="scope:total"></span>
-				<ce-test-view data-tie="scope:test => scope"></ce-test-view>
-			`;
+			<span data-tie="scope:total"></span>
+			<ce-test-view data-tie="scope:test => scope"></ce-test-view>
+		`;
 	}
 });
 
@@ -17,9 +17,9 @@ customElements.define('ce-test-view', class extends HTMLElement {
 	constructor() {
 		super();
 		this.attachShadow({ mode: 'open' }).innerHTML = `
-				<span data-tie="scope:status"></span>
-				<span data-tie="scope:result"></span>
-			`;
+			<span data-tie="scope:status"></span>
+			<span data-tie="scope:result"></span>
+		`;
 	}
 });
 
