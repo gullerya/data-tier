@@ -3,6 +3,8 @@
 Changelog of `data-tier` as per release.
 
 ## [Unreleased]
+### Added
+- security process to be used - [TideLift](https://tidelift.com/security)
 
 ## [2.10.0] - 2020-09-10
 ### Fixed
