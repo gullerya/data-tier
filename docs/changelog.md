@@ -1,62 +1,81 @@
-# Change log
+# Changelog
 
-Modern
-------
+Changelog of `data-tier` as per release.
 
-* __2.10.0__
-  * implemented [issue #50](https://github.com/gullerya/data-tier/issues/50) - fixed a scoped views lifecycle, case when view added before the model
-  * upgraded dependencies
+## [Unreleased]
 
-* __2.9.5__
-  * implemented [issue #49](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);` which misbehaved when non-existing **scoped** (element) key provided
-  * upgraded dependencies
+## [2.10.0] - 2020-09-10
+### Fixed
+- [Issue #50](https://github.com/gullerya/data-tier/issues/50) - fixed a scoped views lifecycle, case when view added before the model
+- upgraded dependencies
 
-* __2.9.4__
-  * implemented [issue #48](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);`
-  * upgraded dependencies
+## [2.9.5] - 2020-08-22
+### Fixed
+- [Issue #49](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);` which misbehaved when non-existing **scoped** (element) key provided
+- upgraded dependencies
 
-* __2.9.3__
-  * implemented [issue #42](https://github.com/gullerya/data-tier/issues/42) - added a possibility to update tie's model as a whole via new API: `DataTier.ties.update(key, newModel);`
-  * upgraded dependencies
+## [2.9.4] - 2020-08-04
+### Fixed
+- implemented [Issue #48](https://github.com/gullerya/data-tier/issues/48) - fixed a new API: `DataTier.ties.update(key, newModel);`
+- upgraded dependencies
 
-* __2.8.7__
-  * upgraded `object-observer` dependency, bearing an important, yet meanwhile experimental, functionality for a repeater like consumers
+## [2.9.3] - 2020-04-06
+### Added
+- [Issue #42](https://github.com/gullerya/data-tier/issues/42) - added a possibility to update tie's model as a whole via new API: `DataTier.ties.update(key, newModel);`
+- upgraded dependencies
 
-* __2.7.2__
-  * adding experimental __scoped__ tying capabilities - not yet publically available
+## [2.8.7] - 2020-02-24
+### Changed
+- upgraded `object-observer` dependency, bearing an important, yet meanwhile experimental, functionality for a repeater like consumers
 
-* __2.5.0__
-  * implemented [issue #40](https://github.com/gullerya/data-tier/issues/40) - documented all of the latest changes, verified functional tying documentation
-  * add full tutorial example and improved tutorials description (should add more use-cases in the future)
+## [2.7.2] - 2020-02-15
+### Added
+- adding experimental __scoped__ tying capabilities - not yet publically available
 
-* __2.4.0__
-  * implemented [issue #39](https://github.com/gullerya/data-tier/issues/39) - added support for a `classList` in a special manner
-  * changed behavior of the nested properties change when parent is watched - now parent is also notified
+## [2.5.0] - 2020-02-05
+### Added
+- [Issue #40](https://github.com/gullerya/data-tier/issues/40) - documented all of the latest changes, verified functional tying documentation
+- add full tutorial example and improved tutorials description (should add more use-cases in the future)
 
-* __2.3.0__
-  * implemented [issue #37](https://github.com/gullerya/data-tier/issues/37) - fixed mishandlings of the `data-tie` property changes
-  * attempting to push performance further (switched model change observer definition from `bind` to lambda syntax)
+## [2.4.0] - 2020-02-04
+### Added
+- [Issue #39](https://github.com/gullerya/data-tier/issues/39) - added support for a `classList` in a special manner
+### Changed
+- changed behavior of the nested properties change when parent is watched - now parent is also notified
 
-* __2.2.0__
-  * implemented [issue #36](https://github.com/gullerya/data-tier/issues/36) - method/function based tying
-  * enhanced tests coverage
-  * performance tunings
+## [2.3.0] - 2020-01-25
+### Fixed
+- [Issue #37](https://github.com/gullerya/data-tier/issues/37) - fixed mishandlings of the `data-tie` property changes
+- attempting to push performance further (switched model change observer definition from `bind` to lambda syntax)
 
-* __2.1.2__
-  * documentation improved and enhanced
-  * added full test coverage for a tie params
+## [2.2.0] - 2020-01-05
+### Added
+- [Issue #36](https://github.com/gullerya/data-tier/issues/36) - method/function based tying
+- enhanced tests coverage
+- performance tunings
 
-* __2.1.0__
-  * fixed [issue #34](https://github.com/gullerya/data-tier/issues/34) - tying the model at the root level
-  * minor documentation improvements
+## [2.1.2] - 2019-12-18
+### Added
+- documentation improved and enhanced
+- added full test coverage for a tie params
 
-* __2.0.2__
-  * documentation improvements and enhancements
+## [2.1.0] - 2019-12-17
+### Fixed
+- [Issue #34](https://github.com/gullerya/data-tier/issues/34) - tying the model at the root level
+- minor documentation improvements
 
-* __2.0.0__
-  * implemented [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
+## [2.0.2] - 2019-12-15
+### Fixed
+- documentation improvements and enhancements
+
+## [2.0.0] - 2019-12-14
+### Changed
+- [issue #29](https://github.com/gullerya/data-tier/issues/29) - removing non-convenience and ambiguity in API usage
 
 > This point (`2.0.0`) is an API breaking point! Please refer to the API documentation.
+
+---
+# Historical releases
 
 * __1.14.0__
   * upgrading `object-observer` dependency, which has a fix for a proper handling of an Error objects
