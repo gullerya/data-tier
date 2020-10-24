@@ -311,7 +311,7 @@ suite.runTest({ name: 'Shadow Dom already has inner element with Shadow DOM them
 	customElements.define('shadow-in-shadow-parent', class extends HTMLElement {
 		constructor() {
 			super();
-			this.attachShadow({ mode: 'open' }).innerHTML = '';
+			this.attachShadow({ mode: 'open' });
 		}
 
 		connectedCallback() {
