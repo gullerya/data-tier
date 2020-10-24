@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.OO_CI_AT }}
+          token: ${{ secrets.DT_CI_AT }}
 
       - name: Setup NodeJS 14
         uses: actions/setup-node@v1
