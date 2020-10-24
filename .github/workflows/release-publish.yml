@@ -1,4 +1,4 @@
-name: Release 'object-observer'
+name: Release 'data-tier'
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 14
 
-      - name: Install NPM
+      - name: Install
         run: npm install
 
       - name: Build
