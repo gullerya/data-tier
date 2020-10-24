@@ -1,8 +1,8 @@
 import { Ties } from './ties.js';
 import { Views } from './views.js';
 import {
-	DEFAULT_TIE_TARGET_PROVIDER as dttp,
-	CHANGE_EVENT_NAME_PROVIDER as cenp,
+	DEFAULT_TIE_TARGET_PROVIDER,
+	CHANGE_EVENT_NAME_PROVIDER,
 	getTargetProperty,
 	extractViewParams,
 	addChangeListener,
@@ -12,8 +12,19 @@ import {
 	callViewFunction
 } from './utils.js';
 
-console.info('DT: starting initialization...');
+export {
+	ties,
+	version,
+	addRootDocument,
+	removeRootDocument,
+	DEFAULT_TIE_TARGET_PROVIDER,
+	CHANGE_EVENT_NAME_PROVIDER
+}
+
 const initStartTime = performance.now();
+const version = 'DT-VERSION-PLACEHOLDER';
+
+console.info(`DT (${version}): starting initialization...`);
 
 const
 	MUTATION_OBSERVER_OPTIONS = {
@@ -41,11 +52,9 @@ class Instance {
 }
 
 const instance = new Instance();
-export const ties = instance.ties;
-export const DEFAULT_TIE_TARGET_PROVIDER = dttp;
-export const CHANGE_EVENT_NAME_PROVIDER = cenp;
+const ties = instance.ties;
 
-export const addRootDocument = function addRootDocument(rootDocument) {
+function addRootDocument(rootDocument) {
 	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
 		throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
 	}
@@ -59,9 +68,9 @@ export const addRootDocument = function addRootDocument(rootDocument) {
 	addTree(rootDocument);
 	roots.add(rootDocument);
 	return true;
-};
+}
 
-export const removeRootDocument = function removeRootDocument(rootDocument) {
+function removeRootDocument(rootDocument) {
 	if (roots.has(rootDocument)) {
 		dropTree(rootDocument);
 		roots.delete(rootDocument);
@@ -70,7 +79,7 @@ export const removeRootDocument = function removeRootDocument(rootDocument) {
 		console.warn('no root document ' + rootDocument + ' known');
 		return false;
 	}
-};
+}
 
 function changeListener(event) {
 	const
@@ -102,8 +111,8 @@ function add(element) {
 		const viewParams = extractViewParams(element, SCOPE_ROOT_TIE_KEY);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
-			updateFromView(element, viewParams);
 			addChangeListener(element, changeListener);
+			updateFromView(element, viewParams);
 		}
 
 		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
@@ -165,7 +174,7 @@ function updateFromView(element, viewParams) {
 	}
 }
 
-export function addTree(root) {
+function addTree(root) {
 	let list = [root], next;
 	if (root.childElementCount) {
 		list = Array.from(root.querySelectorAll('*'));
@@ -174,13 +183,9 @@ export function addTree(root) {
 
 	const l = list.length;
 	for (let i = 0; i < l; i++) {
-		try {
-			next = list[i];
-			if (Node.ELEMENT_NODE === next.nodeType && !next[PARAMS_KEY]) {
-				add(next);
-			}
-		} catch (e) {
-			console.error('failed to process/add element', e);
+		next = list[i];
+		if (Node.ELEMENT_NODE === next.nodeType && !next[PARAMS_KEY]) {
+			add(next);
 		}
 	}
 }
@@ -233,7 +238,6 @@ function onTieParamChange(element, oldParam, newParam) {
 function processDomChanges(changes) {
 	const l = changes.length;
 	let i = 0, node, nodeType, change, changeType, added, i2, removed, i3;
-	//	collect all the changes to process and then do the processing
 
 	for (; i < l; i++) {
 		change = changes[i];
@@ -277,4 +281,4 @@ if (instance.params.autostart !== 'false' && instance.params.autostart !== false
 	addRootDocument(document);
 }
 
-console.info('DT: ... initialization DONE (took ' + Math.floor((performance.now() - initStartTime) * 100) / 100 + 'ms)');
+console.info(`DT (${version}): ... initialization DONE (took ${(performance.now() - initStartTime).toFixed(2)}ms)`);
