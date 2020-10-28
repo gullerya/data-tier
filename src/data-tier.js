@@ -28,11 +28,11 @@ console.info(`DT (${version}): starting initialization...`);
 
 const
 	MUTATION_OBSERVER_OPTIONS = {
-		childList: true,
 		subtree: true,
+		childList: true,
 		attributes: true,
-		attributeOldValue: true,
 		attributeFilter: ['data-tie'],
+		attributeOldValue: true,
 		characterData: false,
 		characterDataOldValue: false
 	},
@@ -65,8 +65,10 @@ function addRootDocument(rootDocument) {
 
 	new MutationObserver(processDomChanges).observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
 
-	addTree(rootDocument);
 	roots.add(rootDocument);
+	for (let di = 0, dl = rootDocument.childElementCount; di < dl; di++) {
+		addTree(rootDocument.children[di]);
+	}
 	return true;
 }
 
@@ -76,14 +78,14 @@ function removeRootDocument(rootDocument) {
 		roots.delete(rootDocument);
 		return true;
 	} else {
-		console.warn('no root document ' + rootDocument + ' known');
+		console.warn(`no root document ${rootDocument} known`);
 		return false;
 	}
 }
 
-function changeListener(event) {
+function changeListener(changeEvent) {
 	const
-		element = event.currentTarget,
+		element = changeEvent.currentTarget,
 		targetProperty = getTargetProperty(element),
 		viewParams = element[PARAMS_KEY];
 	let tieParam, tie, newValue;
@@ -128,7 +130,7 @@ function waitUndefined(element) {
 	if (element.localName.indexOf('-') > 0) {
 		tag = element.localName;
 	} else {
-		const matches = /.*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
+		const matches = /\s*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
 		if (matches && matches.length > 1) {
 			tag = matches[1];
 		}
@@ -136,7 +138,7 @@ function waitUndefined(element) {
 	if (tag) {
 		customElements.whenDefined(tag).then(() => processCandidateView(element));
 	} else {
-		console.warn('failed to determine tag of yet undefined custom element ' + element + ', abandoning');
+		console.warn(`failed to determine tag of undefined custom element ${element}, abandoning`);
 	}
 }
 
@@ -175,12 +177,14 @@ function updateFromView(element, viewParams) {
 }
 
 function addTree(root) {
-	processCandidateView(root)
+	if (root.hasAttribute('data-tie')) {
+		processCandidateView(root);
+	}
 	if (root.childElementCount) {
 		const tw = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
 		let nextNode;
 		while ((nextNode = tw.nextNode())) {
-			if (!nextNode[PARAMS_KEY]) {
+			if (nextNode.hasAttribute('data-tie') && !nextNode[PARAMS_KEY]) {
 				processCandidateView(nextNode);
 			}
 		}
@@ -232,10 +236,32 @@ function onTieParamChange(element, oldParam, newParam) {
 	}
 }
 
+function skipAddChange(current, addedTrees) {
+	if (current.nodeType !== Node.ELEMENT_NODE) {
+		return true;
+	}
+
+	//	not a child of previously added tree
+	if (addedTrees.some(at => at.contains(current))) {
+		return true;
+	}
+}
+
+function skipDeleteChange(current, deletedTrees) {
+	if (current.nodeType !== Node.ELEMENT_NODE) {
+		return true;
+	}
+
+	//	not a child of previously deleted tree
+	if (deletedTrees.some(at => at.contains(current))) {
+		return true;
+	}
+}
+
 function processDomChanges(changes) {
 	const started = performance.now();
 
-	const l = changes.length;
+	const l = changes.length, added = [], deleted = [];
 	let i = 0, change, changeType;
 
 	for (; i < l; i++) {
@@ -251,15 +277,22 @@ function processDomChanges(changes) {
 				onTieParamChange(node, oldValue, newValue);
 			}
 		} else if (changeType === 'childList') {
-			//	todo: filter duplicates and not an elements
 			const an = change.addedNodes;
 			for (let ai = 0, al = an.length; ai < al; ai++) {
-				addTree(an[ai]);
+				let next = an[ai];
+				if (!skipAddChange(next, added)) {
+					addTree(next);
+					added.push(next);
+				}
 			}
 
 			const rn = change.removedNodes;
 			for (let di = 0, dl = rn.length; di < dl; di++) {
-				dropTree(rn[di]);
+				let next = rn[di];
+				if (!skipDeleteChange(next, deleted)) {
+					dropTree(next);
+					deleted.push(next);
+				}
 			}
 		}
 	}

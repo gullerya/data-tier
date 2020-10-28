@@ -128,13 +128,13 @@ function parseViewParams(multiParam, element, scopeRootTieKey) {
 function parseFunctionParam(rawParam) {
 	const parts = rawParam.split(/[()]/);
 	const fParams = parts[1].split(/\s*,\s*/).map(fp => {
-		const origin = fp.split(':');
-		if (!origin.length || origin.length > 2 || !origin[0]) {
+		const source = fp.split(':');
+		if (!source.length || source.length > 2 || !source[0]) {
 			throw new Error('invalid function tied value: ' + fp);
 		}
-		const rawPath = origin.length > 1 ? origin[1] : '';
+		const rawPath = source.length > 1 ? source[1] : '';
 		return {
-			tieKey: origin[0],
+			tieKey: source[0],
 			rawPath: rawPath,
 			path: rawPath.split('.').filter(node => node)
 		};
@@ -155,17 +155,17 @@ function parsePropertyParam(rawParam, element, scopeRootTieKey) {
 	}
 
 	//  process 'from' part
-	const origin = parts[0].split(':');
-	if (!origin.length || origin.length > 2 || !origin[0]) {
+	const source = parts[0].split(':');
+	if (!source.length || source.length > 2 || !source[0]) {
 		throw new Error(`invalid tie parameter '${rawParam}'; expected (example): "orders:0.address.street, orders:0.address.apt => title"`);
 	}
 
-	let tieKey = origin[0];
-	if (origin[0] === 'scope') {
+	let tieKey = source[0];
+	if (source[0] === 'scope') {
 		tieKey = getScopeTieKey(element, scopeRootTieKey);
 	}
 
-	const rawPath = origin.length > 1 ? origin[1] : '';
+	const rawPath = source.length > 1 ? source[1] : '';
 
 	const result = new Parameter(tieKey, rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
 	if (result.targetProperty === 'classList') {
@@ -253,11 +253,10 @@ function callViewFunction(elem, func, args) {
 	}
 }
 
-function getRandomKey(length) {
-	let result = '', i = length;
-	const random = crypto.getRandomValues(new Uint8Array(length));
-	while (i) {
-		i--;
+function getRandomKey(keyLength) {
+	let result = '', i = keyLength;
+	const random = crypto.getRandomValues(new Uint8Array(keyLength));
+	while (i--) {
 		result += randomKeySource.charAt(randomKeySourceLen * random[i] / 256);
 	}
 	return result;

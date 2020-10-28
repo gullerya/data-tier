@@ -3,16 +3,16 @@ import * as DataTier from '../dist/data-tier.js';
 
 const suite = getSuite({ name: 'Testing Performance (property tying)' });
 class Movable extends HTMLElement {
-	set top(top) {
-		this.style.top = top + 'px';
+	set top(v) {
+		this.style.top = v + 'px';
 	}
 
 	get top() {
 		return this.style.top;
 	}
 
-	set left(left) {
-		this.style.left = left + 'px';
+	set left(v) {
+		this.style.left = v + 'px';
 	}
 
 	get left() {
@@ -48,13 +48,13 @@ suite.runTest({ name: 'perf test - many changes in loop - property tying', timeo
 				movables.forEach(movable => {
 					const
 						m = movable.t,
-						top = m.top,
-						left = m.left;
-					if (top + 10 > 200 || top < 0) movable.xi *= -1;
-					if (left + 10 > 200 || left < 0) movable.yi *= -1;
+						t = m.top,
+						l = m.left;
+					if (t + 10 > 200 || t < 0) movable.xi *= -1;
+					if (l + 10 > 200 || l < 0) movable.yi *= -1;
 					Object.assign(m, {
-						top: top + movable.xi,
-						left: left + movable.yi
+						top: t + movable.xi,
+						left: l + movable.yi
 					});
 				});
 

@@ -9,6 +9,12 @@
 		"sourceType": "module"
 	},
 	"rules": {
-		"no-prototype-builtins": 0
+		"no-shadow": [
+			"error",
+			{
+				"builtinGlobals": true,
+				"hoist": "all"
+			}
+		]
 	}
 }

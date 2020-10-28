@@ -4,8 +4,8 @@ import * as DataTier from '../dist/data-tier.js';
 const suite = getSuite({ name: 'Testing Performance (functional tying)' });
 
 class Movable extends HTMLElement {
-	move(top, left) {
-		Object.assign(this.style, { top: top + 'px', left: left + 'px' });
+	move(t, l) {
+		Object.assign(this.style, { top: t + 'px', left: l + 'px' });
 	}
 }
 
@@ -37,13 +37,13 @@ suite.runTest({ name: 'perf test - many changes in loop- functional tying', time
 				movables.forEach(movable => {
 					const
 						m = movable.t,
-						top = m.top,
-						left = m.left;
-					if (top + 10 > 200 || top < 0) movable.xi *= -1;
-					if (left + 10 > 200 || left < 0) movable.yi *= -1;
+						t = m.top,
+						l = m.left;
+					if (t + 10 > 200 || t < 0) movable.xi *= -1;
+					if (l + 10 > 200 || l < 0) movable.yi *= -1;
 					Object.assign(m, {
-						top: top + movable.xi,
-						left: left + movable.yi
+						top: t + movable.xi,
+						left: l + movable.yi
 					});
 				});
 
