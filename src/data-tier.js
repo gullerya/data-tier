@@ -177,7 +177,7 @@ function updateFromView(element, viewParams) {
 }
 
 function addTree(root) {
-	if (root.hasAttribute('data-tie')) {
+	if (root.hasAttribute('data-tie') && !root[PARAMS_KEY]) {
 		processCandidateView(root);
 	}
 	if (root.childElementCount) {
