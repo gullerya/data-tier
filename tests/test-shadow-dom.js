@@ -300,11 +300,22 @@ suite.runTest({ name: 'Open ShadowDom should be propertly tied even if defined o
 	test.assertEqual(it, 'custom content');
 });
 
-suite.runTest({ name: 'Shadow Dom already has inner element with Shadow DOM themselves' }, async () => {
+suite.runTest({ name: 'Shadow Dom already has inner element with Shadow DOM themselves' }, async test => {
+	const tid = test.getRandom(8);
+	const tie = DataTier.ties.create(tid, { data: 'some' });
+	let child1;
+	let child2;
+	let touches = 0;
+
 	customElements.define('shadow-in-shadow-child', class extends HTMLElement {
 		constructor() {
 			super();
 			this.attachShadow({ mode: 'open' });
+		}
+
+		set data(data) {
+			touches++;
+			this.innerText = data;
 		}
 	});
 
@@ -315,10 +326,19 @@ suite.runTest({ name: 'Shadow Dom already has inner element with Shadow DOM them
 		}
 
 		connectedCallback() {
-			this.appendChild(document.createElement('shadow-in-shadow-child'));
-			this.appendChild(document.createElement('shadow-in-shadow-child'));
+			child1 = document.createElement('shadow-in-shadow-child');
+			child1.dataset.tie = `${tid}:data => data`;
+			child2 = document.createElement('shadow-in-shadow-child');
+			child2.dataset.tie = `${tid}:data => data`;
+			this.appendChild(child1);
+			this.appendChild(child2);
 		}
 	});
 
 	document.body.appendChild(document.createElement('shadow-in-shadow-parent'));
+
+	await test.waitNextMicrotask();
+	test.assertEqual(tie.data, child1.textContent);
+	test.assertEqual(tie.data, child2.textContent);
+	test.assertEqual(2, touches);
 });

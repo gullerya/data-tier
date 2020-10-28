@@ -17,7 +17,7 @@ const
 	DEFAULT_CHANGE_ELEMENTS = {
 		INPUT: 1, SELECT: 1, TEXTAREA: 1
 	},
-	randomKeySource = 'abcdefghijklmnopqrstuvwxyz0123456789',
+	randomKeySource = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 	randomKeySourceLen = randomKeySource.length;
 
 export {

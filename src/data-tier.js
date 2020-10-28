@@ -56,7 +56,7 @@ const ties = instance.ties;
 
 function addRootDocument(rootDocument) {
 	if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
-		throw new Error('invalid argument, NULL or not one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
+		throw new Error('invalid argument, must be one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
 	}
 	if (roots.has(rootDocument)) {
 		console.warn('any root document may be added only once');
@@ -106,7 +106,7 @@ function changeListener(event) {
 	}
 }
 
-function add(element) {
+function processCandidateView(element) {
 	if (element.matches(':defined')) {
 		const viewParams = extractViewParams(element, SCOPE_ROOT_TIE_KEY);
 		if (viewParams) {
@@ -134,7 +134,7 @@ function waitUndefined(element) {
 		}
 	}
 	if (tag) {
-		customElements.whenDefined(tag).then(() => add(element));
+		customElements.whenDefined(tag).then(() => processCandidateView(element));
 	} else {
 		console.warn('failed to determine tag of yet undefined custom element ' + element + ', abandoning');
 	}
@@ -175,17 +175,14 @@ function updateFromView(element, viewParams) {
 }
 
 function addTree(root) {
-	let list = [root], next;
+	processCandidateView(root)
 	if (root.childElementCount) {
-		list = Array.from(root.querySelectorAll('*'));
-		list.unshift(root);
-	}
-
-	const l = list.length;
-	for (let i = 0; i < l; i++) {
-		next = list[i];
-		if (Node.ELEMENT_NODE === next.nodeType && !next[PARAMS_KEY]) {
-			add(next);
+		const tw = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+		let nextNode;
+		while ((nextNode = tw.nextNode())) {
+			if (!nextNode[PARAMS_KEY]) {
+				processCandidateView(nextNode);
+			}
 		}
 	}
 }
@@ -236,8 +233,10 @@ function onTieParamChange(element, oldParam, newParam) {
 }
 
 function processDomChanges(changes) {
+	const started = performance.now();
+
 	const l = changes.length;
-	let i = 0, node, nodeType, change, changeType, added, i2, removed, i3;
+	let i = 0, change, changeType;
 
 	for (; i < l; i++) {
 		change = changes[i];
@@ -252,29 +251,20 @@ function processDomChanges(changes) {
 				onTieParamChange(node, oldValue, newValue);
 			}
 		} else if (changeType === 'childList') {
-			//	process added nodes
-			added = change.addedNodes;
-			i2 = added.length;
-			while (i2--) {
-				node = added[i2];
-				nodeType = node.nodeType;
-				if (Node.ELEMENT_NODE === nodeType) {
-					addTree(node);
-				}
+			//	todo: filter duplicates and not an elements
+			const an = change.addedNodes;
+			for (let ai = 0, al = an.length; ai < al; ai++) {
+				addTree(an[ai]);
 			}
 
-			//	process removed nodes
-			removed = change.removedNodes;
-			i3 = removed.length;
-			while (i3--) {
-				node = removed[i3];
-				nodeType = node.nodeType;
-				if (Node.ELEMENT_NODE === nodeType) {
-					dropTree(node);
-				}
+			const rn = change.removedNodes;
+			for (let di = 0, dl = rn.length; di < dl; di++) {
+				dropTree(rn[di]);
 			}
 		}
 	}
+
+	console.log(`${changes.length} changes processed in ${performance.now() - started}ms`);
 }
 
 if (instance.params.autostart !== 'false' && instance.params.autostart !== false) {
