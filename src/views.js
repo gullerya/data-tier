@@ -25,13 +25,13 @@ export class Views {
 		let scopeRoot = false;
 		const isRootScope = typeof element[this.dti.scopeRootTieKey] !== 'undefined';
 		let added = false;
-		while (i) {
-			tieParam = tieParams[--i];
+		while (i--) {
+			tieParam = tieParams[i];
 			if (tieParam.isFunctional) {
 				fParams = tieParam.fParams;
 				l = fParams.length;
-				while (l) {
-					fp = fParams[--l];
+				while (l--) {
+					fp = fParams[l];
 					if (!fp.tieKey) {
 						continue;
 					}

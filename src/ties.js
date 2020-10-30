@@ -66,8 +66,8 @@ class Tie {
 			cplen = changedPath.length;
 			pl = tiedPathsLength;
 			updateSet = new Map();
-			while (pl) {
-				tiedPath = tiedPaths[--pl];
+			while (pl--) {
+				tiedPath = tiedPaths[pl];
 				if (cplen > tiedPath.length) {
 					sst = tiedPath;
 					lst = changedPath;
@@ -79,8 +79,8 @@ class Tie {
 				if (lst.indexOf(sst) === 0) {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
-					while (pvl) {
-						view = pathViews[--pvl];
+					while (pvl--) {
+						view = pathViews[pvl];
 						let tmp = updateSet.get(view);
 						if (!tmp) {
 							tmp = {};
@@ -99,8 +99,8 @@ class Tie {
 		updateSet.forEach((paths, element) => {
 			viewParams = element[this.ties.dti.paramsKey];
 			i = viewParams.length;
-			while (i) {
-				const param = viewParams[--i];
+			while (i--) {
+				const param = viewParams[i];
 				if (param.isFunctional) {
 					if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath in paths)) {
 						let someData = false;
@@ -163,7 +163,7 @@ export class Ties {
 		let k;
 		if (typeof key === 'string') {
 			k = key;
-		} else if (key && key.nodeType && key.nodeType === Node.ELEMENT_NODE) {
+		} else if (key && key.nodeType === Node.ELEMENT_NODE) {
 			k = key[this.dti.scopeRootTieKey];
 			if (!k) {
 				k = key[this.dti.scopeRootTieKey] = getRandomKey(16);

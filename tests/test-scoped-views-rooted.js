@@ -118,7 +118,7 @@ suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async
 	test.assertEqual('value1', model1.data.name);
 });
 
-suite.runTest({ name: 'move scoped tie from view to view', skip: true }, async test => {
+suite.runTest({ name: 'move scoped tie from view to view' }, async test => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
 	sv1.setAttribute('data-tie', 'scope:text');

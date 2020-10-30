@@ -21,7 +21,6 @@ template.innerHTML = `
 customElements.define('chart-pie', class extends HTMLElement {
 	constructor() {
 		super();
-		this.setAttribute('data-tie-blackbox', '');
 		this.attachShadow({ mode: 'open' })
 			.appendChild(template.content.cloneNode(true));
 		DataTier.ties.create(this);

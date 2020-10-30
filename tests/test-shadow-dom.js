@@ -91,12 +91,12 @@ customElements.define('open-shadow-parent-test-b', class extends HTMLElement {
 });
 
 suite.runTest({ name: 'Open ShadowDom should be auto-tied (add element self)' }, async test => {
-	const tieName = 'tieForShadowDomA';
+	const tieName = test.getRandom(8);
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
 	//	test add element with shadow DOM
 	const ce = document.createElement('open-shadow-test');
-	ce.shadowRoot.innerHTML = '<span data-tie="tieForShadowDomA:data">default content</span>';
+	ce.shadowRoot.innerHTML = `<span data-tie="${tieName}:data">default content</span>`;
 
 	document.body.appendChild(ce);
 	await test.waitNextMicrotask();
@@ -112,13 +112,13 @@ suite.runTest({ name: 'Open ShadowDom should be auto-tied (add element self)' },
 });
 
 suite.runTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, async test => {
-	const tieName = 'tieForShadowDomB';
+	const tieName = test.getRandom(8);
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
 	//	test add element with shadow HOST as its child
 	const pe = document.createElement('div');
 	const ce = document.createElement('open-shadow-test');
-	ce.shadowRoot.innerHTML = '<span data-tie="tieForShadowDomB:data">default content</span>';
+	ce.shadowRoot.innerHTML = `<span data-tie="${tieName}:data">default content</span>`;
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
 	await test.waitNextMicrotask();
@@ -134,13 +134,13 @@ suite.runTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 });
 
 suite.runTest({ name: 'Open ShadowDom should observe DOM Mutations (self being child)' }, async test => {
-	const tieName = 'tieForShadowDomC';
+	const tieName = test.getRandom(8);
 	DataTier.ties.create(tieName, { data: 'data' });
 
 	//	first, validate all in place
 	const pe = document.createElement('div');
 	const ce = document.createElement('open-shadow-test');
-	ce.shadowRoot.innerHTML = '<span data-tie="tieForShadowDomC:data">default content</span>';
+	ce.shadowRoot.innerHTML = `<span data-tie="${tieName}:data">default content</span>`;
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
 	await test.waitNextMicrotask();
@@ -149,7 +149,7 @@ suite.runTest({ name: 'Open ShadowDom should observe DOM Mutations (self being c
 
 	//	now, append new child and see it being processed
 	const newChild = document.createElement('span');
-	newChild.dataset.tie = 'tieForShadowDomC:data';
+	newChild.dataset.tie = `${tieName}:data`;
 	ce.shadowRoot.appendChild(newChild);
 	await test.waitNextMicrotask();
 	c = ce.shadowRoot.lastElementChild.textContent;

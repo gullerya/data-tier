@@ -1,3 +1,4 @@
+import { DOMProcessor } from './dom-processor.js';
 import { Ties } from './ties.js';
 import { Views } from './views.js';
 import {
@@ -45,6 +46,7 @@ class Instance {
 		this.params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
 		this.paramsKey = PARAMS_KEY;
 		this.scopeRootTieKey = SCOPE_ROOT_TIE_KEY;
+		this.domProcessor = new DOMProcessor(this);
 		this.ties = new Ties(this);
 		this.views = new Views(this);
 		this.addTree = addTree;
@@ -108,8 +110,16 @@ function changeListener(changeEvent) {
 	}
 }
 
-function processCandidateView(element) {
-	if (element.matches(':defined')) {
+function addOne(element) {
+	if (instance.domProcessor.hasElement(element)) {
+		return;
+	} else {
+		instance.domProcessor.addElement(element);
+	}
+
+	if (element.localName.indexOf('-') > 0 && !element.matches(':defined')) {
+		waitDefined(element);
+	} else {
 		const viewParams = extractViewParams(element, SCOPE_ROOT_TIE_KEY);
 		if (viewParams) {
 			instance.views.addView(element, viewParams);
@@ -117,29 +127,17 @@ function processCandidateView(element) {
 			updateFromView(element, viewParams);
 		}
 
-		if (element.shadowRoot && !element.hasAttribute('data-tie-blackbox')) {
+		if (element.shadowRoot) {
 			addRootDocument(element.shadowRoot);
 		}
-	} else {
-		waitUndefined(element);
 	}
 }
 
-function waitUndefined(element) {
-	let tag;
-	if (element.localName.indexOf('-') > 0) {
-		tag = element.localName;
-	} else {
-		const matches = /\s*is\s*=\s*"([^"]+)"\s*.*/.exec(element.outerHTML);
-		if (matches && matches.length > 1) {
-			tag = matches[1];
-		}
-	}
-	if (tag) {
-		customElements.whenDefined(tag).then(() => processCandidateView(element));
-	} else {
-		console.warn(`failed to determine tag of undefined custom element ${element}, abandoning`);
-	}
+function waitDefined(element) {
+	customElements.whenDefined(element.localName).then(() => {
+		instance.domProcessor.delElement(element);
+		addOne(element);
+	});
 }
 
 function updateFromView(element, viewParams) {
@@ -177,42 +175,45 @@ function updateFromView(element, viewParams) {
 }
 
 function addTree(root) {
-	if (root.hasAttribute('data-tie') && !root[PARAMS_KEY]) {
-		processCandidateView(root);
-	}
+	addOne(root);
+
 	if (root.childElementCount) {
-		const tw = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
 		let nextNode;
+		const tw = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
 		while ((nextNode = tw.nextNode())) {
-			if (nextNode.hasAttribute('data-tie') && !nextNode[PARAMS_KEY]) {
-				processCandidateView(nextNode);
-			}
+			addOne(nextNode);
 		}
 	}
 }
 
 function dropTree(root) {
-	let list = [root], i, next, viewParams;
+	dropOne(root);
+
 	if (root.childElementCount) {
-		list = Array.from(root.querySelectorAll('*'));
-		list.unshift(root);
+		let nextNode;
+		const tw = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+		while ((nextNode = tw.nextNode())) {
+			dropOne(nextNode);
+		}
+	}
+}
+
+function dropOne(element) {
+	if (!instance.domProcessor.hasElement(element)) {
+		return;
+	} else {
+		instance.domProcessor.delElement(element);
 	}
 
-	i = list.length;
-	while (i--) {
-		next = list[i];
-		viewParams = next[PARAMS_KEY];
+	let viewParams = element[PARAMS_KEY];
 
-		//	untie
-		if (viewParams) {
-			instance.views.delView(next, viewParams);
-			delChangeListener(next, changeListener);
-		}
+	if (viewParams) {
+		instance.views.delView(element, viewParams);
+		delChangeListener(element, changeListener);
+	}
 
-		//	remove as root
-		if (next.shadowRoot && !next.hasAttribute('data-tie-blackbox')) {
-			removeRootDocument(next.shadowRoot);
-		}
+	if (element.shadowRoot) {
+		removeRootDocument(element.shadowRoot);
 	}
 }
 
@@ -236,32 +237,24 @@ function onTieParamChange(element, oldParam, newParam) {
 	}
 }
 
-function skipAddChange(current, addedTrees) {
+function skipAddChange(current) {
 	if (current.nodeType !== Node.ELEMENT_NODE) {
-		return true;
-	}
-
-	//	not a child of previously added tree
-	if (addedTrees.some(at => at.contains(current))) {
 		return true;
 	}
 }
 
-function skipDeleteChange(current, deletedTrees) {
+function skipDeleteChange(current) {
 	if (current.nodeType !== Node.ELEMENT_NODE) {
 		return true;
 	}
 
-	//	not a child of previously deleted tree
-	if (deletedTrees.some(at => at.contains(current))) {
+	if (!instance.domProcessor.hasElement(current)) {
 		return true;
 	}
 }
 
 function processDomChanges(changes) {
-	const started = performance.now();
-
-	const l = changes.length, added = [], deleted = [];
+	const l = changes.length;
 	let i = 0, change, changeType;
 
 	for (; i < l; i++) {
@@ -280,24 +273,20 @@ function processDomChanges(changes) {
 			const an = change.addedNodes;
 			for (let ai = 0, al = an.length; ai < al; ai++) {
 				let next = an[ai];
-				if (!skipAddChange(next, added)) {
+				if (!skipAddChange(next)) {
 					addTree(next);
-					added.push(next);
 				}
 			}
 
 			const rn = change.removedNodes;
 			for (let di = 0, dl = rn.length; di < dl; di++) {
 				let next = rn[di];
-				if (!skipDeleteChange(next, deleted)) {
+				if (!skipDeleteChange(next)) {
 					dropTree(next);
-					deleted.push(next);
 				}
 			}
 		}
 	}
-
-	console.log(`${changes.length} changes processed in ${performance.now() - started}ms`);
 }
 
 if (instance.params.autostart !== 'false' && instance.params.autostart !== false) {
