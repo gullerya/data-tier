@@ -185,7 +185,7 @@ function getScopeTieKey(element, scopeRootTieKey) {
 		}
 		result = next[scopeRootTieKey];
 	}
-	return result || null;
+	return result || 'scope';
 }
 
 function addChangeListener(element, changeListener) {

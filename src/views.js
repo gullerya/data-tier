@@ -1,5 +1,3 @@
-import { getRandomKey } from './utils.js';
-
 export class Views {
 	constructor(dtInstance) {
 		this.dti = dtInstance;
@@ -22,8 +20,6 @@ export class Views {
 	addView(element, tieParams) {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
-		let scopeRoot = false;
-		const isRootScope = typeof element[this.dti.scopeRootTieKey] !== 'undefined';
 		let added = false;
 		while (i--) {
 			tieParam = tieParams[i];
@@ -32,31 +28,16 @@ export class Views {
 				l = fParams.length;
 				while (l--) {
 					fp = fParams[l];
-					if (!fp.tieKey) {
-						continue;
-					}
 					this.seekAndInsertView(fp, element);
 					added = true;
-					if (!isRootScope && fp.targetProperty === 'scope') {
-						scopeRoot = true;
-					}
 				}
 			} else {
-				if (!tieParam.tieKey) {
-					continue;
-				}
 				this.seekAndInsertView(tieParam, element);
 				added = true;
-				if (!isRootScope && tieParam.targetProperty === 'scope') {
-					scopeRoot = true;
-				}
 			}
 		}
 		if (added) {
 			element[this.dti.paramsKey] = tieParams;
-		}
-		if (scopeRoot) {
-			element[this.dti.scopeRootTieKey] = getRandomKey(16);
 		}
 	}
 

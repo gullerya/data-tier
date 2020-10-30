@@ -167,6 +167,8 @@ export class Ties {
 			k = key[this.dti.scopeRootTieKey];
 			if (!k) {
 				k = key[this.dti.scopeRootTieKey] = getRandomKey(16);
+			} else {
+				console.log('inspect this');
 			}
 		}
 
@@ -176,7 +178,8 @@ export class Ties {
 		}
 
 		if (key.nodeType) {
-			this.dti.addTree(key);
+			//	TODO: should go and link all unlinked scoped views which  are contained in it
+			//	TODO: should take into consideration nested scopes
 		}
 		const tieViews = this.dti.views.obtainTieViews(k);
 		const tie = new Tie(k, model, this, tieViews);
