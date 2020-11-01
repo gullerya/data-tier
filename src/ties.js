@@ -144,8 +144,8 @@ class Tie {
 }
 
 export class Ties {
-	constructor(dtInstance) {
-		this.dti = dtInstance;
+	constructor(dataTierInstance) {
+		this.dti = dataTierInstance;
 		this.ties = {};
 	}
 
