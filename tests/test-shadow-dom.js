@@ -170,7 +170,7 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (ele
 	test.assertEqual(c, 'default content');
 
 	//	add it explicitly to the DataTier
-	DataTier.addRootDocument(ce.ownShadowRootProp);
+	DataTier.addDocument(ce.ownShadowRootProp);
 	tie.data = 'other content';
 	c = e.textContent;
 	test.assertEqual(c, 'other content');
@@ -183,7 +183,7 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (ele
 	test.assertEqual(c, 'one more time');
 
 	//	remove explicitly from DataTier
-	DataTier.removeRootDocument(ce.ownShadowRootProp);
+	DataTier.removeDocument(ce.ownShadowRootProp);
 	tie.data = 'now should not change';
 	c = e.textContent;
 	test.assertEqual(c, 'one more time');
@@ -205,7 +205,7 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as 
 	test.assertEqual(c, 'default content');
 
 	//	add it explicitly to the DataTier
-	DataTier.addRootDocument(ce.ownShadowRootProp);
+	DataTier.addDocument(ce.ownShadowRootProp);
 	tie.data = 'other content';
 	c = e.textContent;
 	test.assertEqual(c, 'other content');
@@ -218,7 +218,7 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as 
 	test.assertEqual(c, 'one more time');
 
 	//	remove explicitly from DataTier
-	DataTier.removeRootDocument(ce.ownShadowRootProp);
+	DataTier.removeDocument(ce.ownShadowRootProp);
 	tie.data = 'now should not change';
 	c = e.textContent;
 	test.assertEqual(c, 'one more time');
@@ -233,7 +233,7 @@ suite.runTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being
 	const ce = document.createElement('closed-shadow-test-c');
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
-	DataTier.addRootDocument(ce.ownShadowRootProp);
+	DataTier.addDocument(ce.ownShadowRootProp);
 	await test.waitNextMicrotask();
 	let c = ce.ownShadowRootProp.firstElementChild.textContent;
 	test.assertEqual(c, 'data');

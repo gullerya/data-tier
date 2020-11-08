@@ -21,7 +21,7 @@ class Instance {
 		this.views = new Views(this);
 
 		if (this.params.autostart !== 'false' && this.params.autostart !== false) {
-			this.domProcessor.addRootDocument(document);
+			this.domProcessor.addDocument(document);
 		}
 	}
 }
@@ -29,7 +29,11 @@ class Instance {
 const instance = new Instance();
 
 export const ties = instance.ties;
-export const addRootDocument = instance.domProcessor.addRootDocument.bind(instance.domProcessor);
-export const removeRootDocument = instance.domProcessor.removeRootDocument.bind(instance.domProcessor);
+export const addDocument = instance.domProcessor.addDocument.bind(instance.domProcessor);
+export const removeDocument = instance.domProcessor.removeDocument.bind(instance.domProcessor);
+
+//	deprecated APIs
+export const addRootDocument = addDocument;
+export const removeRootDocument = removeDocument;
 
 console.info(`DT (${version}): ... initialization DONE (took ${(performance.now() - initStartTime).toFixed(2)}ms)`);

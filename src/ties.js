@@ -176,13 +176,11 @@ export class Ties {
 		if (this.ties[k]) {
 			throw new Error(`tie '${k}' already exists`);
 		}
-
 		if (key.nodeType) {
-			//	TODO: should go and link all unlinked scoped views which  are contained in it
-			//	TODO: should take into consideration nested scopes
+			this.dti.views.addScope(key);
 		}
-		const tieViews = this.dti.views.obtainTieViews(k);
-		const tie = new Tie(k, model, this, tieViews);
+
+		const tie = new Tie(k, model, this);
 		this.ties[k] = tie;
 		tie.processDataChanges([{ path: [] }]);
 

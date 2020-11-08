@@ -1,7 +1,10 @@
+import { getRandomKey } from './utils.js';
+
 export class Views {
 	constructor(dtInstance) {
 		this.dti = dtInstance;
 		this.views = {};
+		this.scopes = {};
 	}
 
 	obtainTieViews(tieKey) {
@@ -28,11 +31,11 @@ export class Views {
 				l = fParams.length;
 				while (l--) {
 					fp = fParams[l];
-					this.seekAndInsertView(fp, element);
+					this._seekAndInsertView(fp, element);
 					added = true;
 				}
 			} else {
-				this.seekAndInsertView(tieParam, element);
+				this._seekAndInsertView(tieParam, element);
 				added = true;
 			}
 		}
@@ -44,23 +47,44 @@ export class Views {
 	delView(element, tieParams) {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
-		while (i) {
-			tieParam = tieParams[--i];
+		while (i--) {
+			tieParam = tieParams[i];
 			if (tieParam.isFunctional) {
 				fParams = tieParam.fParams;
 				l = fParams.length;
-				while (l) {
-					fp = fParams[--l];
-					this.seekAndRemoveView(fp, element);
+				while (l--) {
+					fp = fParams[l];
+					this._seekAndRemoveView(fp, element);
 				}
 			} else {
-				this.seekAndRemoveView(tieParam, element);
+				this._seekAndRemoveView(tieParam, element);
 			}
 		}
 		delete element[this.dti.paramsKey];
 	}
 
-	seekAndInsertView(tieParam, element) {
+	addScope(element) {
+		let scopeKey = element.getAttribute('data-tie-scope');
+		if (!scopeKey) {
+			//	TODO: review this one
+			element.setAttribute('data-tie-scope', getRandomKey(16));
+			return;
+		}
+		if (scopeKey in this.scopes && this.scopes[scopeKey] !== element) {
+			throw new Error(`scope key '${scopeKey} already claimed by another element`);
+		}
+		if (this.scopes[scopeKey] === element) {
+			return;
+		}
+		this.scopes[scopeKey] = element;
+		//	go over all views under 'scope' name and add to this scope
+	}
+
+	delScope() {
+		throw new Error('not implemented');
+	}
+
+	_seekAndInsertView(tieParam, element) {
 		const tieKey = tieParam.tieKey;
 		const rawPath = tieParam.rawPath;
 		const tieViews = this.obtainTieViews(tieKey);
@@ -75,7 +99,7 @@ export class Views {
 		}
 	}
 
-	seekAndRemoveView(tieParam, element) {
+	_seekAndRemoveView(tieParam, element) {
 		const tieKey = tieParam.tieKey;
 		const rawPath = tieParam.rawPath;
 		const tieViews = this.views[tieKey];
@@ -90,6 +114,7 @@ export class Views {
 		}
 	}
 
+	//	TOOD: this function may become stateless, see remark below
 	setViewProperty(elem, param, value) {
 		const targetProperty = param.targetProperty;
 		try {
@@ -99,10 +124,12 @@ export class Views {
 		}
 	}
 
+	//	TOOD: this function may become stateless, see remark below
 	_unsafeSetProperty(elem, param, value, targetProperty) {
 		if (targetProperty === 'href' && typeof elem.href === 'object') {
 			elem.href.baseVal = value;
 		} else if (targetProperty === 'scope') {
+			//	TODO: this is the ONLY line that refers to a state
 			this.dti.ties.update(elem, value);
 		} else if (targetProperty === 'classList') {
 			const classes = param.iClasses.slice(0);

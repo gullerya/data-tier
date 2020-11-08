@@ -34,7 +34,7 @@ suite.runTest({ name: 'iFrame added as root to DataTier' }, test => {
 	test.assertEqual('default content', c);
 
 	//  adding the shadowed iframe to the game
-	DataTier.addRootDocument(iframe.contentDocument);
+	DataTier.addDocument(iframe.contentDocument);
 	c = e.textContent;
 	test.assertEqual('data', c);
 
@@ -44,7 +44,7 @@ suite.runTest({ name: 'iFrame added as root to DataTier' }, test => {
 	test.assertEqual('change', c);
 
 	//  removing the iframe should cleanup things
-	DataTier.removeRootDocument(iframe.contentDocument);
+	DataTier.removeDocument(iframe.contentDocument);
 	document.body.removeChild(iframe);
 	tie.data = 'one more time';
 	c = e.textContent;

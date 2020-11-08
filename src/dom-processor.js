@@ -13,7 +13,7 @@ const
 		subtree: true,
 		childList: true,
 		attributes: true,
-		attributeFilter: ['data-tie'],
+		attributeFilter: ['data-tie', 'data-tie-scope'],
 		attributeOldValue: true,
 		characterData: false,
 		characterDataOldValue: false
@@ -30,7 +30,7 @@ export class DOMProcessor {
 		this[BOUND_CHANGE_LISTENER_KEY] = this._changeListener.bind(this);
 	}
 
-	addRootDocument(rootDocument) {
+	addDocument(rootDocument) {
 		if (!rootDocument || (Node.DOCUMENT_NODE !== rootDocument.nodeType && Node.DOCUMENT_FRAGMENT_NODE !== rootDocument.nodeType)) {
 			throw new Error('invalid argument, must be one of: DOCUMENT_NODE, DOCUMENT_FRAGMENT_NODE');
 		}
@@ -48,7 +48,7 @@ export class DOMProcessor {
 		return true;
 	}
 
-	removeRootDocument(rootDocument) {
+	removeDocument(rootDocument) {
 		if (!this._roots.has(rootDocument)) {
 			console.warn(`no root document ${rootDocument} known`);
 			return false;
@@ -76,7 +76,11 @@ export class DOMProcessor {
 					oldValue = change.oldValue,
 					newValue = node.getAttribute(attributeName);
 				if (oldValue !== newValue) {
-					this._onTieParamChange(node, oldValue, newValue);
+					if (attributeName === 'data-tie') {
+						this._onTieParamChange(node, newValue, oldValue);
+					} else if (attributeName === 'data-tie-scope') {
+						this._onScopeParamChange(node, newValue, oldValue);
+					}
 				}
 			} else if (changeType === 'childList') {
 				const an = change.addedNodes;
@@ -98,7 +102,7 @@ export class DOMProcessor {
 		}
 	}
 
-	_onTieParamChange(element, oldParam, newParam) {
+	_onTieParamChange(element, newParam, oldParam) {
 		let viewParams;
 		if (oldParam) {
 			viewParams = element[this._dtInstance.paramsKey];
@@ -115,6 +119,15 @@ export class DOMProcessor {
 				this._updateFromView(element, viewParams);
 				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
 			}
+		}
+	}
+
+	_onScopeParamChange(element, newParam, oldParam) {
+		if (!oldParam && newParam) {
+			this._dtInstance.views.addScope(element);
+		} else if (oldParam && !newParam) {
+			console.warn(`data-tie-scope emptied (was '${oldParam}')`);
+			//	TODO: detach?
 		}
 	}
 
@@ -149,7 +162,7 @@ export class DOMProcessor {
 			this._elementsMap.add(element);
 		}
 
-		if (element.localName.indexOf('-') > 0 && !element.matches(':defined')) {
+		if (element.tagName.indexOf('-') > 0 && !element.matches(':defined')) {
 			this._waitDefined(element);
 		} else {
 			const viewParams = extractViewParams(element, this._dtInstance.scopeRootTieKey);
@@ -160,13 +173,13 @@ export class DOMProcessor {
 			}
 
 			if (element.shadowRoot) {
-				this.addRootDocument(element.shadowRoot);
+				this.addDocument(element.shadowRoot);
 			}
 		}
 	}
 
 	_waitDefined(element) {
-		customElements.whenDefined(element.localName).then(() => {
+		customElements.whenDefined(element.tagName.toLowerCase()).then(() => {
 			this._elementsMap.delete(element);
 			this._addOne(element);
 		});
@@ -187,7 +200,7 @@ export class DOMProcessor {
 		}
 
 		if (element.shadowRoot) {
-			this.removeRootDocument(element.shadowRoot);
+			this.removeDocument(element.shadowRoot);
 		}
 	}
 

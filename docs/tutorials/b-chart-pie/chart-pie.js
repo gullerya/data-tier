@@ -24,7 +24,7 @@ customElements.define('chart-pie', class extends HTMLElement {
 		this.attachShadow({ mode: 'open' })
 			.appendChild(template.content.cloneNode(true));
 		DataTier.ties.create(this);
-		DataTier.addRootDocument(this.shadowRoot);
+		DataTier.addDocument(this.shadowRoot);
 	}
 
 	set legend(legend) {

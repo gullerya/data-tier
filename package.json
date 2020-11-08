@@ -2,6 +2,21 @@
 	"name": "data-tier",
 	"version": "2.10.1",
 	"description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
+	"type": "module",
+	"main": "dist/data-tier.min.js",
+	"browser": "dist/data-tier.min.js",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "node ./ci/tools/build-dist.js",
+		"lint": "eslint -c ./ci/.eslintrc.json ./src/*.js ./tests/*.js ./ci/**/*.js",
+		"test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gullerya/data-tier"
+	},
 	"keywords": [
 		"two",
 		"way",
@@ -17,22 +32,16 @@
 		"mutation",
 		"observe"
 	],
-	"homepage": "https://github.com/gullerya/data-tier",
-	"bugs": {
-		"url": "https://github.com/gullerya/data-tier/issues",
-		"email": "gullerya@gmail.com"
-	},
-	"license": "MIT",
-	"files": [
-		"dist"
-	],
-	"main": "dist/data-tier.min.js",
-	"browser": "dist/data-tier.min.js",
-	"type": "module",
 	"author": {
 		"name": "Guller Yuri",
 		"email": "gullerya@gmail.com"
 	},
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/gullerya/data-tier/issues",
+		"email": "gullerya@gmail.com"
+	},
+	"homepage": "https://github.com/gullerya/data-tier",
 	"funding": [
 		{
 			"url": "https://paypal.me/gullerya?locale.x=en_US"
@@ -41,15 +50,6 @@
 			"url": "https://tidelift.com/funding/github/npm/data-tier"
 		}
 	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/gullerya/data-tier"
-	},
-	"scripts": {
-		"build": "node ./ci/tools/build-dist.js",
-		"lint": "eslint -c ./ci/.eslintrc.json ./src/*.js ./tests/*.js ./ci/**/*.js",
-		"test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
-	},
 	"dependencies": {
 		"object-observer": "^4.0.2"
 	},
