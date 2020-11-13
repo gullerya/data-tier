@@ -65,7 +65,7 @@ class Tie {
 
 			cplen = changedPath.length;
 			pl = tiedPathsLength;
-			updateSet = new Map();
+			updateSet = [];
 			while (pl--) {
 				tiedPath = tiedPaths[pl];
 				if (cplen > tiedPath.length) {
@@ -81,12 +81,7 @@ class Tie {
 					pvl = pathViews.length;
 					while (pvl--) {
 						view = pathViews[pvl];
-						let tmp = updateSet.get(view);
-						if (!tmp) {
-							tmp = {};
-							updateSet.set(view, tmp);
-						}
-						tmp[tiedPath] = same;
+						updateSet.push([view, tiedPath, same]);
 					}
 				}
 			}
@@ -96,13 +91,13 @@ class Tie {
 
 	updateViews(updateSet, change) {
 		let viewParams, i;
-		updateSet.forEach((paths, element) => {
+		for (const [element, tiedPath, useChangeValue] of updateSet) {
 			viewParams = element[this.ties.dti.paramsKey];
 			i = viewParams.length;
 			while (i--) {
 				const param = viewParams[i];
 				if (param.isFunctional) {
-					if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath in paths)) {
+					if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath === tiedPath)) {
 						let someData = false;
 						const args = [];
 						param.fParams.forEach(fp => {
@@ -120,15 +115,12 @@ class Tie {
 						}
 					}
 				} else {
-					if (param.tieKey !== this.key) {
-						continue;
-					}
-					if (!(param.rawPath in paths)) {
+					if (param.tieKey !== this.key || param.rawPath !== tiedPath) {
 						continue;
 					}
 
 					let newValue;
-					if (change && typeof change.value !== 'undefined' && paths[param.rawPath]) {
+					if (change && typeof change.value !== 'undefined' && useChangeValue) {
 						newValue = change.value;
 					} else {
 						newValue = getPath(this[MODEL_KEY], param.path);
@@ -139,7 +131,7 @@ class Tie {
 					this.ties.dti.views.setViewProperty(element, param, newValue);
 				}
 			}
-		});
+		}
 	}
 }
 
