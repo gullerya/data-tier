@@ -6,8 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.11.0] - 2020-11-13
 ### Added
 - [Issue #53](https://github.com/gullerya/data-tier/issues/53) - version to the runtime
+### Changed
+- [Issue #41](https://github.com/gullerya/data-tier/issues/41) - thoroughtly revised DOM processing mechanics
+- updated dependencies
 ### Deprecated
 - `addRootDocument` API, (use `addDocument` instead)
 - `removeRootDocument` API, (use `removeDocument` instead)

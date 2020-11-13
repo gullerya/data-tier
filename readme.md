@@ -17,6 +17,13 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __2.11.0__
+  * implemented [Issue #53](https://github.com/gullerya/data-tier/issues/53) - version to the runtime
+  * implemented [Issue #41](https://github.com/gullerya/data-tier/issues/41) - thoroughtly revised DOM processing mechanics
+  * deprecated `addRootDocument` API, (use `addDocument` instead)
+  * deprecated `removeRootDocument` API, (use `removeDocument` instead)
+  * updated dependencies
+
 * __2.10.1__
   * updated dependencies
   * added release automation
@@ -24,10 +31,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 * __2.10.0__
   * implemented [issue #50](https://github.com/gullerya/data-tier/issues/50) - fixed a scoped views lifecycle, case when view added before the model
-  * upgraded dependencies
-
-* __2.9.5__
-  * implemented [issue #49](https://github.com/gullerya/data-tier/issues/49) - fixed a new API: `DataTier.ties.update(key, newModel);` which misbehaved when non-existing **scoped** (element) key provided
   * upgraded dependencies
 
 ## Loading the library
