@@ -8,12 +8,7 @@ export class Views {
 	}
 
 	obtainTieViews(tieKey) {
-		let tieViews = this.views[tieKey];
-		if (!tieViews) {
-			tieViews = { _pathsCache: [] };
-			this.views[tieKey] = tieViews;
-		}
-		return tieViews;
+		return this.views[tieKey] || (this.views[tieKey] = { _pathsCache: [] });
 	}
 
 	deleteTieViews(tieKey) {
@@ -23,7 +18,6 @@ export class Views {
 	addView(element, tieParams) {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
-		let added = false;
 		while (i--) {
 			tieParam = tieParams[i];
 			if (tieParam.isFunctional) {
@@ -32,16 +26,12 @@ export class Views {
 				while (l--) {
 					fp = fParams[l];
 					this._seekAndInsertView(fp, element);
-					added = true;
 				}
 			} else {
 				this._seekAndInsertView(tieParam, element);
-				added = true;
 			}
 		}
-		if (added) {
-			element[this.dti.paramsKey] = tieParams;
-		}
+		element[this.dti.paramsKey] = tieParams;
 	}
 
 	delView(element, tieParams) {

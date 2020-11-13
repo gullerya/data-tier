@@ -103,20 +103,19 @@ export class DOMProcessor {
 	}
 
 	_onTieParamChange(element, newParam, oldParam) {
-		let viewParams;
 		if (oldParam) {
-			viewParams = element[this._dtInstance.paramsKey];
-			if (viewParams) {
-				this._dtInstance.views.delView(element, viewParams);
+			const viewParamsOld = element[this._dtInstance.paramsKey];
+			if (viewParamsOld) {
+				this._dtInstance.views.delView(element, viewParamsOld);
 				delChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
 			}
 		}
 
 		if (newParam) {
-			viewParams = extractViewParams(element, this._dtInstance.scopeRootTieKey);
-			if (viewParams) {
-				this._dtInstance.views.addView(element, viewParams);
-				this._updateFromView(element, viewParams);
+			const viewParamsNew = extractViewParams(element, this._dtInstance.scopeRootTieKey);
+			if (viewParamsNew) {
+				this._dtInstance.views.addView(element, viewParamsNew);
+				this._updateFromView(element, viewParamsNew);
 				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
 			}
 		}

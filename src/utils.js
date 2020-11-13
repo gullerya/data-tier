@@ -78,7 +78,8 @@ function getTargetProperty(element) {
 function extractViewParams(element, scopeRootTieKey) {
 	const rawParam = element.getAttribute('data-tie');
 	if (rawParam) {
-		return parseViewParams(rawParam, element, scopeRootTieKey);
+		const parsed = parseViewParams(rawParam, element, scopeRootTieKey);
+		return parsed.length ? parsed : null;
 	} else {
 		return null;
 	}
