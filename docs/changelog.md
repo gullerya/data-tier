@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - [Issue #53](https://github.com/gullerya/data-tier/issues/53) - version to the runtime
+### Deprecated
+- `addRootDocument` API, (use `addDocument` instead)
+- `removeRootDocument` API, (use `removeDocument` instead)
 
 ## [2.10.1] - 2020-10-24
 ### Added

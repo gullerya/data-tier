@@ -66,8 +66,8 @@ class Tie {
 			cplen = changedPath.length;
 			pl = tiedPathsLength;
 			updateSet = new Map();
-			while (pl) {
-				tiedPath = tiedPaths[--pl];
+			while (pl--) {
+				tiedPath = tiedPaths[pl];
 				if (cplen > tiedPath.length) {
 					sst = tiedPath;
 					lst = changedPath;
@@ -79,8 +79,8 @@ class Tie {
 				if (lst.indexOf(sst) === 0) {
 					pathViews = tieViews[tiedPath];
 					pvl = pathViews.length;
-					while (pvl) {
-						view = pathViews[--pvl];
+					while (pvl--) {
+						view = pathViews[pvl];
 						let tmp = updateSet.get(view);
 						if (!tmp) {
 							tmp = {};
@@ -99,8 +99,8 @@ class Tie {
 		updateSet.forEach((paths, element) => {
 			viewParams = element[this.ties.dti.paramsKey];
 			i = viewParams.length;
-			while (i) {
-				const param = viewParams[--i];
+			while (i--) {
+				const param = viewParams[i];
 				if (param.isFunctional) {
 					if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath in paths)) {
 						let someData = false;
@@ -144,13 +144,15 @@ class Tie {
 }
 
 export class Ties {
-	constructor(dtInstance) {
-		this.dti = dtInstance;
+	constructor(dataTierInstance) {
+		this.dti = dataTierInstance;
 		this.ties = {};
 	}
 
 	get(key) {
-		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootTieKey] : undefined);
+		const k = typeof key === 'string'
+			? key
+			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
 		const t = this.ties[k];
 		return t ? t.model : null;
 	}
@@ -163,10 +165,13 @@ export class Ties {
 		let k;
 		if (typeof key === 'string') {
 			k = key;
-		} else if (key && key.nodeType && key.nodeType === Node.ELEMENT_NODE) {
-			k = key[this.dti.scopeRootTieKey];
+		} else if (key && key.nodeType === Node.ELEMENT_NODE) {
+			k = key.getAttribute('data-tie-scope');
 			if (!k) {
-				k = key[this.dti.scopeRootTieKey] = getRandomKey(16);
+				k = getRandomKey(16);
+				key.setAttribute('data-tie-scope', k);
+			} else {
+				console.log('inspect this');
 			}
 		}
 
@@ -174,12 +179,11 @@ export class Ties {
 		if (this.ties[k]) {
 			throw new Error(`tie '${k}' already exists`);
 		}
-
 		if (key.nodeType) {
-			this.dti.addTree(key);
+			this.dti.views.addScope(key);
 		}
-		const tieViews = this.dti.views.obtainTieViews(k);
-		const tie = new Tie(k, model, this, tieViews);
+
+		const tie = new Tie(k, model, this);
 		this.ties[k] = tie;
 		tie.processDataChanges([{ path: [] }]);
 
@@ -191,7 +195,9 @@ export class Ties {
 			throw new Error('model MUST be a non-null object');
 		}
 
-		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootTieKey] : undefined);
+		const k = typeof key === 'string'
+			? key
+			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
 		const tie = this.ties[k];
 		if (tie) {
 			if (tie.model !== model) {
@@ -208,7 +214,7 @@ export class Ties {
 		let finalTieKeyToRemove = tieToRemove;
 		if (typeof tieToRemove === 'object') {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
-				finalTieKeyToRemove = tieToRemove[this.dti.scopeRootTieKey];
+				finalTieKeyToRemove = tieToRemove.getAttribute('data-tie-scope');
 			} else {
 				finalTieKeyToRemove = Object.keys(this.ties).find(key => this.ties[key].model === tieToRemove);
 			}

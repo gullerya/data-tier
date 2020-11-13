@@ -23,10 +23,9 @@ customElements.define('ce-test-view', class extends HTMLElement {
 	}
 });
 
-const tieKey = 'scopedCustomElements';
-DataTier.ties.create(tieKey);
-
 suite.runTest({ name: 'custom elements - cascading' }, async test => {
+	const tieKey = test.getRandom(8);
+	DataTier.ties.create(tieKey);
 	const model = DataTier.ties.update(tieKey, {
 		total: 7,
 		test: {

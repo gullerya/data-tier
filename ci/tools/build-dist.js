@@ -6,7 +6,7 @@ import uglifyES from 'uglify-es';
 
 const
 	fsEncOpts = { encoding: 'utf8' },
-	filesToCopy = ['data-tier.js', 'ties.js', 'utils.js', 'views.js'],
+	filesToCopy = ['data-tier.js', 'dom-processor.js', 'ties.js', 'utils.js', 'views.js'],
 	filesToMinify = filesToCopy;
 
 process.stdout.write(`\x1B[32mStarting the build...\x1B[0m${os.EOL}${os.EOL}`);

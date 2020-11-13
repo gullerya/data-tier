@@ -168,34 +168,34 @@ suite.runTest({ name: 'create/remove Tie - plain array provided' }, test => {
 
 suite.runTest({ name: 'root APIs - negative tests' }, test => {
 	try {
-		DataTier.addRootDocument();
+		DataTier.addDocument();
 		test.fail('should not be able to add undefined root document');
 	} catch (e) {
 		//
 	}
 
 	try {
-		DataTier.addRootDocument(null);
+		DataTier.addDocument(null);
 		test.fail('should not be able to add null root document');
 	} catch (e) {
 		//
 	}
 
 	try {
-		DataTier.addRootDocument(document.createElement('span'));
+		DataTier.addDocument(document.createElement('span'));
 		test.fail('should not be able to add non-document');
 	} catch (e) {
 		//
 	}
 
 	const rootDocument = document.createDocumentFragment();
-	let addResult = DataTier.addRootDocument(rootDocument);
+	let addResult = DataTier.addDocument(rootDocument);
 	test.assertTrue(addResult);
-	addResult = DataTier.addRootDocument(rootDocument);
+	addResult = DataTier.addDocument(rootDocument);
 	test.assertFalse(addResult);
 
-	let removeResult = DataTier.removeRootDocument(rootDocument);
+	let removeResult = DataTier.removeDocument(rootDocument);
 	test.assertTrue(removeResult);
-	removeResult = DataTier.removeRootDocument(rootDocument);
+	removeResult = DataTier.removeDocument(rootDocument);
 	test.assertFalse(removeResult);
 });

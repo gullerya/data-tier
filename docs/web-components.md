@@ -28,8 +28,8 @@ It is quite straight forward, except one special case, which is IMHO quite a cor
 
 - __`open`__ shadow DOM will be __auto-tied__ upon adding a host element into the living DOM (in itself or as a part of a bigger DOM tree) and also __auto-untied__ in the same manner
 - __`closed`__ shadow DOM will __NOT__ be automatically processed, obviously, but there are 2 API to do that explicitly:
-  - __`DataTier.addRootDocument(<shadowRoot>)`__ will add the shadow root to the `data-tier` playground, thus enabling all the features of tying to it
-  - __`DataTier.removeRootDocument(<shadowRoot>)`__ will untie the shadow root, so that `data-tier` will not handle it anymore
+  - __`DataTier.addDocument(<shadowRoot>)`__ will add the shadow root to the `data-tier` playground, thus enabling all the features of tying to it
+  - __`DataTier.removeDocument(<shadowRoot>)`__ will untie the shadow root, so that `data-tier` will not handle it anymore
 - when shadow DOM attached to an element already found in the living DOM, it should also be treated explicitly by an above mentioned APIs, since there is no any formal event about this action (see [this SO thread](https://stackoverflow.com/questions/43217178/detect-attachshadow-event) for more info)
 
 > Pro node: `contentDocument` of an `iframe` element MAY be handled by the same APIs as above; yet it won't be auto-tied/untied as of now.

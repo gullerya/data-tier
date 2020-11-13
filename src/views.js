@@ -1,86 +1,113 @@
-import { getRandomKey } from './utils.js';
+/**
+ * lifecycle of the DOM elements:
+ * - scan upon: init | add | remove | attribute changed
+ * - add | del as view
+ * 
+ * lifecycle as View of DT:
+ * - when model change: update				- lookup by tie + path
+ * - when change event - update model
+ */
+
+import { extractViewParams, getRandomKey } from './utils.js';
 
 export class Views {
 	constructor(dtInstance) {
 		this.dti = dtInstance;
 		this.views = {};
+		this.scopes = {};
+		this.unscoped = [];
 	}
 
 	obtainTieViews(tieKey) {
-		let tieViews = this.views[tieKey];
-		if (!tieViews) {
-			tieViews = { _pathsCache: [] };
-			this.views[tieKey] = tieViews;
-		}
-		return tieViews;
+		return this.views[tieKey] || (this.views[tieKey] = { _pathsCache: [] });
 	}
 
 	deleteTieViews(tieKey) {
 		delete this.views[tieKey];
 	}
 
-	addView(element, tieParams) {
+	addView(element) {
+		const tieParams = extractViewParams(element);
+		if (!tieParams) {
+			return null;
+		}
+
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
-		let scopeRoot = false;
-		const isRootScope = typeof element[this.dti.scopeRootTieKey] !== 'undefined';
-		let added = false;
-		while (i) {
-			tieParam = tieParams[--i];
+		while (i--) {
+			tieParam = tieParams[i];
 			if (tieParam.isFunctional) {
 				fParams = tieParam.fParams;
 				l = fParams.length;
-				while (l) {
-					fp = fParams[--l];
-					if (!fp.tieKey) {
-						continue;
-					}
-					this.seekAndInsertView(fp, element);
-					added = true;
-					if (!isRootScope && fp.targetProperty === 'scope') {
-						scopeRoot = true;
-					}
+				while (l--) {
+					fp = fParams[l];
+					this._seekAndInsertView(fp, element);
 				}
 			} else {
-				if (!tieParam.tieKey) {
-					continue;
-				}
-				this.seekAndInsertView(tieParam, element);
-				added = true;
-				if (!isRootScope && tieParam.targetProperty === 'scope') {
-					scopeRoot = true;
-				}
+				this._seekAndInsertView(tieParam, element);
 			}
 		}
-		if (added) {
-			element[this.dti.paramsKey] = tieParams;
-		}
-		if (scopeRoot) {
-			element[this.dti.scopeRootTieKey] = getRandomKey(16);
-		}
+		element[this.dti.paramsKey] = tieParams;
+		return tieParams;
 	}
 
 	delView(element, tieParams) {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
-		while (i) {
-			tieParam = tieParams[--i];
+		while (i--) {
+			tieParam = tieParams[i];
 			if (tieParam.isFunctional) {
 				fParams = tieParam.fParams;
 				l = fParams.length;
-				while (l) {
-					fp = fParams[--l];
-					this.seekAndRemoveView(fp, element);
+				while (l--) {
+					fp = fParams[l];
+					this._seekAndRemoveView(fp, element);
 				}
 			} else {
-				this.seekAndRemoveView(tieParam, element);
+				this._seekAndRemoveView(tieParam, element);
 			}
 		}
 		delete element[this.dti.paramsKey];
 	}
 
-	seekAndInsertView(tieParam, element) {
-		const tieKey = tieParam.tieKey;
+	addScope(element) {
+		let scopeKey = element.getAttribute('data-tie-scope');
+		if (!scopeKey) {
+			//	TODO: review this one
+			element.setAttribute('data-tie-scope', getRandomKey(16));
+			return;
+		}
+		if (scopeKey in this.scopes && this.scopes[scopeKey] !== element) {
+			throw new Error(`scope key '${scopeKey} already claimed by another element`);
+		}
+		if (this.scopes[scopeKey] === element) {
+			return;
+		}
+		this.scopes[scopeKey] = element;
+		for (const unscoped of this.unscoped) {
+			if (element.contains(unscoped)) {
+				this.addView(unscoped);
+				this.unscoped.splice(this.unscoped.indexOf(unscoped), 1);
+			}
+		}
+	}
+
+	delScope() {
+		throw new Error('not implemented');
+	}
+
+	_seekAndInsertView(tieParam, element) {
+		let tieKey = tieParam.tieKey;
+		if (tieKey === 'scope') {
+			tieKey = this._lookupClosestScopeKey(element);
+			if (!tieKey) {
+				this.unscoped.push(element);
+				return;
+			} else {
+				tieParam.tieKey = tieKey;
+			}
+		}
+
 		const rawPath = tieParam.rawPath;
 		const tieViews = this.obtainTieViews(tieKey);
 		let pathViews = tieViews[rawPath];
@@ -94,7 +121,7 @@ export class Views {
 		}
 	}
 
-	seekAndRemoveView(tieParam, element) {
+	_seekAndRemoveView(tieParam, element) {
 		const tieKey = tieParam.tieKey;
 		const rawPath = tieParam.rawPath;
 		const tieViews = this.views[tieKey];
@@ -109,6 +136,7 @@ export class Views {
 		}
 	}
 
+	//	TOOD: this function may become stateless, see remark below
 	setViewProperty(elem, param, value) {
 		const targetProperty = param.targetProperty;
 		try {
@@ -118,10 +146,12 @@ export class Views {
 		}
 	}
 
+	//	TOOD: this function may become stateless, see remark below
 	_unsafeSetProperty(elem, param, value, targetProperty) {
 		if (targetProperty === 'href' && typeof elem.href === 'object') {
 			elem.href.baseVal = value;
 		} else if (targetProperty === 'scope') {
+			//	TODO: this is the ONLY line that refers to a state
 			this.dti.ties.update(elem, value);
 		} else if (targetProperty === 'classList') {
 			const classes = param.iClasses.slice(0);
@@ -153,5 +183,19 @@ export class Views {
 		} else {
 			elem[targetProperty] = value;
 		}
+	}
+
+	_lookupClosestScopeKey(element) {
+		let tmp = element, result;
+		do {
+			result = tmp.getAttribute('data-tie-scope');
+			if (!result) {
+				tmp = tmp.parentNode;
+				if (tmp.host) {
+					tmp = tmp.host;
+				}
+			}
+		} while (!result && tmp && tmp.nodeType !== Node.DOCUMENT_NODE);
+		return result;
 	}
 }
