@@ -1,6 +1,5 @@
 import {
 	getTargetProperty,
-	extractViewParams,
 	addChangeListener,
 	delChangeListener,
 	getPath,
@@ -13,7 +12,7 @@ const
 		subtree: true,
 		childList: true,
 		attributes: true,
-		attributeFilter: ['data-tie', 'data-tie-scope'],
+		attributeFilter: ['data-tie'],
 		attributeOldValue: true,
 		characterData: false,
 		characterDataOldValue: false
@@ -78,8 +77,6 @@ export class DOMProcessor {
 				if (oldValue !== newValue) {
 					if (attributeName === 'data-tie') {
 						this._onTieParamChange(node, newValue, oldValue);
-					} else if (attributeName === 'data-tie-scope') {
-						this._onScopeParamChange(node, newValue, oldValue);
 					}
 				}
 			} else if (changeType === 'childList') {
@@ -112,21 +109,11 @@ export class DOMProcessor {
 		}
 
 		if (newParam) {
-			const viewParamsNew = extractViewParams(element, this._dtInstance.scopeRootTieKey);
-			if (viewParamsNew) {
-				this._dtInstance.views.addView(element, viewParamsNew);
-				this._updateFromView(element, viewParamsNew);
+			const viewParams = this._dtInstance.views.addView(element);
+			if (viewParams) {
+				this._updateFromView(element, viewParams);
 				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
 			}
-		}
-	}
-
-	_onScopeParamChange(element, newParam, oldParam) {
-		if (!oldParam && newParam) {
-			this._dtInstance.views.addScope(element);
-		} else if (oldParam && !newParam) {
-			console.warn(`data-tie-scope emptied (was '${oldParam}')`);
-			//	TODO: detach?
 		}
 	}
 
@@ -164,9 +151,8 @@ export class DOMProcessor {
 		if (element.tagName.indexOf('-') > 0 && !element.matches(':defined')) {
 			this._waitDefined(element);
 		} else {
-			const viewParams = extractViewParams(element, this._dtInstance.scopeRootTieKey);
+			const viewParams = this._dtInstance.views.addView(element);
 			if (viewParams) {
-				this._dtInstance.views.addView(element, viewParams);
 				this._updateFromView(element, viewParams);
 				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
 			}
@@ -192,7 +178,6 @@ export class DOMProcessor {
 		}
 
 		let viewParams = element[this._dtInstance.paramsKey];
-
 		if (viewParams) {
 			this._dtInstance.views.delView(element, viewParams);
 			delChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);

@@ -118,28 +118,33 @@ suite.runTest({ name: 'scoped in shadow - move around and changes flow' }, async
 	test.assertEqual('value1', model1.data.name);
 });
 
-suite.runTest({ name: 'move scoped tie from view to view' }, async test => {
-	const sv1 = document.createElement('div');
-	const sv2 = document.createElement('div');
-	sv1.setAttribute('data-tie', 'scope:text');
-	sv2.setAttribute('data-tie', 'blablabla:text');
-	document.body.appendChild(sv1);
-	document.body.appendChild(sv2);
-	const m1 = DataTier.ties.create(sv1, { text: 'text' });
+suite.runTest({ name: 'move scoped view from scope to scope' }, async test => {
+	//	create scope 1
+	const s1 = document.createElement('div');
+	DataTier.ties.create(s1, { data: 'scope1' });
+	document.body.appendChild(s1);
 
+	//	create scope 2
+	const s2 = document.createElement('div');
+	DataTier.ties.create(s2, { data: 'scope2' });
+	document.body.appendChild(s2);
+
+	//	create scoped view
+	const sv = document.createElement('span');
+	sv.dataset.tie = 'scope:data';
+
+	//	1. append to body - no effect expected
+	document.body.appendChild(sv);
 	await test.waitNextMicrotask();
+	test.assertEqual('', sv.textContent);
 
-	test.assertEqual('text', sv1.textContent);
-	m1.text = 'text1';
-	test.assertEqual('text1', sv1.textContent);
+	//	2. append to scope A - assert value
+	s1.appendChild(sv);
+	await test.waitNextMicrotask();
+	test.assertEqual('scope1', sv.textContent);
 
-	const m2 = DataTier.ties.create('blablabla', { text: 'text3' });
-
-	//test.assertEqual(m1, m2);
-	test.assertEqual('text1', sv1.textContent);
-	test.assertEqual('text1', sv2.textContent);
-
-	m2.text = 'text2';
-	test.assertEqual('text2', sv1.textContent);
-	test.assertEqual('text2', sv2.textContent);
+	//	3. append to scope B - assert value
+	s2.appendChild(sv);
+	await test.waitNextMicrotask();
+	test.assertEqual('scope2', sv.textContent);
 });

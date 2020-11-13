@@ -1,10 +1,21 @@
-import { getRandomKey } from './utils.js';
+/**
+ * lifecycle of the DOM elements:
+ * - scan upon: init | add | remove | attribute changed
+ * - add | del as view
+ * 
+ * lifecycle as View of DT:
+ * - when model change: update				- lookup by tie + path
+ * - when change event - update model
+ */
+
+import { extractViewParams, getRandomKey } from './utils.js';
 
 export class Views {
 	constructor(dtInstance) {
 		this.dti = dtInstance;
 		this.views = {};
 		this.scopes = {};
+		this.unscoped = [];
 	}
 
 	obtainTieViews(tieKey) {
@@ -15,7 +26,12 @@ export class Views {
 		delete this.views[tieKey];
 	}
 
-	addView(element, tieParams) {
+	addView(element) {
+		const tieParams = extractViewParams(element);
+		if (!tieParams) {
+			return null;
+		}
+
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
 		while (i--) {
@@ -32,6 +48,7 @@ export class Views {
 			}
 		}
 		element[this.dti.paramsKey] = tieParams;
+		return tieParams;
 	}
 
 	delView(element, tieParams) {
@@ -67,7 +84,12 @@ export class Views {
 			return;
 		}
 		this.scopes[scopeKey] = element;
-		//	go over all views under 'scope' name and add to this scope
+		for (const unscoped of this.unscoped) {
+			if (element.contains(unscoped)) {
+				this.addView(unscoped);
+				this.unscoped.splice(this.unscoped.indexOf(unscoped), 1);
+			}
+		}
 	}
 
 	delScope() {
@@ -75,7 +97,17 @@ export class Views {
 	}
 
 	_seekAndInsertView(tieParam, element) {
-		const tieKey = tieParam.tieKey;
+		let tieKey = tieParam.tieKey;
+		if (tieKey === 'scope') {
+			tieKey = this._lookupClosestScopeKey(element);
+			if (!tieKey) {
+				this.unscoped.push(element);
+				return;
+			} else {
+				tieParam.tieKey = tieKey;
+			}
+		}
+
 		const rawPath = tieParam.rawPath;
 		const tieViews = this.obtainTieViews(tieKey);
 		let pathViews = tieViews[rawPath];
@@ -151,5 +183,19 @@ export class Views {
 		} else {
 			elem[targetProperty] = value;
 		}
+	}
+
+	_lookupClosestScopeKey(element) {
+		let tmp = element, result;
+		do {
+			result = tmp.getAttribute('data-tie-scope');
+			if (!result) {
+				tmp = tmp.parentNode;
+				if (tmp.host) {
+					tmp = tmp.host;
+				}
+			}
+		} while (!result && tmp && tmp.nodeType !== Node.DOCUMENT_NODE);
+		return result;
 	}
 }

@@ -150,7 +150,9 @@ export class Ties {
 	}
 
 	get(key) {
-		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootTieKey] : undefined);
+		const k = typeof key === 'string'
+			? key
+			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
 		const t = this.ties[k];
 		return t ? t.model : null;
 	}
@@ -164,9 +166,10 @@ export class Ties {
 		if (typeof key === 'string') {
 			k = key;
 		} else if (key && key.nodeType === Node.ELEMENT_NODE) {
-			k = key[this.dti.scopeRootTieKey];
+			k = key.getAttribute('data-tie-scope');
 			if (!k) {
-				k = key[this.dti.scopeRootTieKey] = getRandomKey(16);
+				k = getRandomKey(16);
+				key.setAttribute('data-tie-scope', k);
 			} else {
 				console.log('inspect this');
 			}
@@ -192,7 +195,9 @@ export class Ties {
 			throw new Error('model MUST be a non-null object');
 		}
 
-		const k = typeof key === 'string' ? key : (key ? key[this.dti.scopeRootTieKey] : undefined);
+		const k = typeof key === 'string'
+			? key
+			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
 		const tie = this.ties[k];
 		if (tie) {
 			if (tie.model !== model) {
@@ -209,7 +214,7 @@ export class Ties {
 		let finalTieKeyToRemove = tieToRemove;
 		if (typeof tieToRemove === 'object') {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
-				finalTieKeyToRemove = tieToRemove[this.dti.scopeRootTieKey];
+				finalTieKeyToRemove = tieToRemove.getAttribute('data-tie-scope');
 			} else {
 				finalTieKeyToRemove = Object.keys(this.ties).find(key => this.ties[key].model === tieToRemove);
 			}

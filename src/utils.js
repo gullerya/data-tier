@@ -75,17 +75,17 @@ function getTargetProperty(element) {
 	return result;
 }
 
-function extractViewParams(element, scopeRootTieKey) {
+function extractViewParams(element) {
 	const rawParam = element.getAttribute('data-tie');
 	if (rawParam) {
-		const parsed = parseViewParams(rawParam, element, scopeRootTieKey);
+		const parsed = parseViewParams(rawParam, element);
 		return parsed.length ? parsed : null;
 	} else {
 		return null;
 	}
 }
 
-function parseViewParams(multiParam, element, scopeRootTieKey) {
+function parseViewParams(multiParam, element) {
 	const
 		result = [],
 		keysTest = {},
@@ -111,7 +111,7 @@ function parseViewParams(multiParam, element, scopeRootTieKey) {
 				parsedParam = parseFunctionParam(fnext);
 				fnext = null;
 			} else {
-				parsedParam = parsePropertyParam(next, element, scopeRootTieKey);
+				parsedParam = parsePropertyParam(next, element);
 			}
 			if (parsedParam.targetProperty in keysTest) {
 				console.error(`elements's property '${parsedParam.targetProperty}' tied more than once; all but first dismissed`);
@@ -147,7 +147,7 @@ function parseFunctionParam(rawParam) {
 	return new Parameter(null, null, null, parts[0], true, fParams);
 }
 
-function parsePropertyParam(rawParam, element, scopeRootTieKey) {
+function parsePropertyParam(rawParam, element) {
 	const parts = rawParam.split(PARAM_SPLITTER);
 
 	//  add default 'to' property if needed
@@ -162,10 +162,6 @@ function parsePropertyParam(rawParam, element, scopeRootTieKey) {
 	}
 
 	let tieKey = source[0];
-	if (source[0] === 'scope') {
-		tieKey = getScopeTieKey(element, scopeRootTieKey);
-	}
-
 	const rawPath = source.length > 1 ? source[1] : '';
 
 	const result = new Parameter(tieKey, rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
@@ -174,19 +170,6 @@ function parsePropertyParam(rawParam, element, scopeRootTieKey) {
 	}
 
 	return result;
-}
-
-function getScopeTieKey(element, scopeRootTieKey) {
-	let next = element,
-		result = next[scopeRootTieKey];
-	while (!result && next.parentNode) {
-		next = next.parentNode;
-		if (next.host) {
-			next = next.host;
-		}
-		result = next[scopeRootTieKey];
-	}
-	return result || 'scope';
 }
 
 function addChangeListener(element, changeListener) {

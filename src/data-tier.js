@@ -15,7 +15,6 @@ class Instance {
 	constructor() {
 		this.params = Object.freeze(Array.from(new URL(import.meta.url).searchParams).reduce((a, c) => { a[c[0]] = c[1]; return a; }, {}));
 		this.paramsKey = Symbol('view.params.key');
-		this.scopeRootTieKey = Symbol('scope.root.tie.key');
 		this.domProcessor = new DOMProcessor(this);
 		this.ties = new Ties(this);
 		this.views = new Views(this);
