@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.1] - 2020-11-18
+### Changed
+- updated dependencies
+
 ## [2.11.0] - 2020-11-13
 ### Added
 - [Issue #53](https://github.com/gullerya/data-tier/issues/53) - version to the runtime

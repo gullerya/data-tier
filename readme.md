@@ -17,6 +17,9 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __2.11.1__
+  * upgaded `object-observer`
+
 * __2.11.0__
   * implemented [Issue #53](https://github.com/gullerya/data-tier/issues/53) - version to the runtime
   * implemented [Issue #41](https://github.com/gullerya/data-tier/issues/41) - thoroughtly revised DOM processing mechanics
@@ -28,10 +31,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
   * updated dependencies
   * added release automation
   * removed Travis CI (in favor of GitHub actions)
-
-* __2.10.0__
-  * implemented [issue #50](https://github.com/gullerya/data-tier/issues/50) - fixed a scoped views lifecycle, case when view added before the model
-  * upgraded dependencies
 
 ## Loading the library
 
