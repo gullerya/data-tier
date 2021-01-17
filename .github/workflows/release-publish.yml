@@ -16,20 +16,49 @@ jobs:
           token: ${{ secrets.DT_CI_AT }}
 
       - name: Setup NodeJS 14
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: 14
 
+      # Prepare
       - name: Install
         run: npm install
 
       - name: Build
         run: npm run build
 
+      # Publish to NPM
       - name: Publish
         run: |
           echo registry=https://registry.npmjs.org/ > .npmrc
           echo //registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN} >> .npmrc
           npm publish
+          rm .npmrc
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      # Publish to GitHub
+      - name: Publish
+        run: |
+          echo registry=https://npm.pkg.github.com/ > .npmrc
+          echo //npm.pkg.github.com/:_authToken=${GITHUB_AUTH_TOKEN} >> .npmrc
+          npm publish
+          rm .npmrc
+        env:
+          GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Bump version to next snapshot
+      - name: Bump snapshot version
+        run: |
+          npm run bump -- --version=patch --snapshot
+          npm install
+          echo "SNAPSHOT_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
+
+      - name: Push changes
+        run: |
+          git fetch
+          git config user.email "gullerya@gmail.com"
+          git config user.name "data-tier CI"
+          git add --all
+          git commit -m "set version to ${{ env.SNAPSHOT_VERSION }}"
+          git push origin HEAD:master

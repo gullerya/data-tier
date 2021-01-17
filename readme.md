@@ -17,6 +17,10 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __2.12.0__
+  * upgaded dependencies
+  * implemented [Issue #61](https://github.com/gullerya/data-tier/issues/61) - release version automation
+
 * __2.11.1__
   * upgaded `object-observer`
 
@@ -27,12 +31,9 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
   * deprecated `removeRootDocument` API, (use `removeDocument` instead)
   * updated dependencies
 
-* __2.10.1__
-  * updated dependencies
-  * added release automation
-  * removed Travis CI (in favor of GitHub actions)
-
 ## Loading the library
+
+`data-tier` provided as an ES6 module:
 
 ```javascript
 import * as DataTier from './dist/data-tier.min.js';
