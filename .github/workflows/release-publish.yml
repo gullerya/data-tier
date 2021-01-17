@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14
+          registry-url: 'https://registry.npmjs.org'
 
       # Prepare
       - name: Install
@@ -28,26 +29,28 @@ jobs:
         run: npm run build
 
       # Publish to NPM
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+
       - name: Publish to NPM
         run: |
-          echo always-auth=true > .npmrc
-          echo registry=https://registry.npmjs.org/ > .npmrc
-          echo //registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN} >> .npmrc
           npm publish
-          rm .npmrc
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       # Publish to GitHub
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          registry-url: 'https://npm.pkg.github.com'
+
       - name: Publish to GitHub
         run: |
-          echo always-auth=true > .npmrc
-          echo registry=https://npm.pkg.github.com/ >> .npmrc
-          echo //npm.pkg.github.com/:_authToken=${GITHUB_AUTH_TOKEN} >> .npmrc
           npm publish
-          rm .npmrc
         env:
-          GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Bump version to next snapshot
       - name: Bump snapshot version
