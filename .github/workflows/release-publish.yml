@@ -28,8 +28,9 @@ jobs:
         run: npm run build
 
       # Publish to NPM
-      - name: Publish
+      - name: Publish to NPM
         run: |
+          echo always-auth=true > .npmrc
           echo registry=https://registry.npmjs.org/ > .npmrc
           echo //registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN} >> .npmrc
           npm publish
@@ -38,9 +39,10 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       # Publish to GitHub
-      - name: Publish
+      - name: Publish to GitHub
         run: |
-          echo registry=https://npm.pkg.github.com/ > .npmrc
+          echo always-auth=true > .npmrc
+          echo registry=https://npm.pkg.github.com/ >> .npmrc
           echo //npm.pkg.github.com/:_authToken=${GITHUB_AUTH_TOKEN} >> .npmrc
           npm publish
           rm .npmrc
