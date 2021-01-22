@@ -2,10 +2,6 @@ import { DOMProcessor } from './dom-processor.js';
 import { Ties } from './ties.js';
 import { Views } from './views.js';
 
-export {
-	DEFAULT_TIE_TARGET_PROVIDER,
-	CHANGE_EVENT_NAME_PROVIDER
-} from './utils.js';
 export const version = 'DT-VERSION-PLACEHOLDER';
 
 const initStartTime = performance.now();

@@ -1,7 +1,5 @@
 import {
 	getTargetProperty,
-	addChangeListener,
-	delChangeListener,
 	getPath,
 	setPath,
 	callViewFunction
@@ -104,7 +102,9 @@ export class DOMProcessor {
 			const viewParamsOld = element[this._dtInstance.paramsKey];
 			if (viewParamsOld) {
 				this._dtInstance.views.delView(element, viewParamsOld);
-				delChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+				if (viewParamsOld.changeEvent) {
+					element.removeEventListener(viewParamsOld.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+				}
 			}
 		}
 
@@ -112,7 +112,9 @@ export class DOMProcessor {
 			const viewParams = this._dtInstance.views.addView(element);
 			if (viewParams) {
 				this._updateFromView(element, viewParams);
-				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+				if (viewParams.changeEvent) {
+					element.addEventListener(viewParams.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+				}
 			}
 		}
 	}
@@ -154,7 +156,9 @@ export class DOMProcessor {
 			const viewParams = this._dtInstance.views.addView(element);
 			if (viewParams) {
 				this._updateFromView(element, viewParams);
-				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+				if (viewParams.changeEvent) {
+					element.addEventListener(viewParams.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+				}
 			}
 
 			if (element.shadowRoot) {
@@ -180,7 +184,9 @@ export class DOMProcessor {
 		let viewParams = element[this._dtInstance.paramsKey];
 		if (viewParams) {
 			this._dtInstance.views.delView(element, viewParams);
-			delChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+			if (viewParams.changeEvent) {
+				element.removeEventListener(viewParams.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+			}
 		}
 
 		if (element.shadowRoot) {
