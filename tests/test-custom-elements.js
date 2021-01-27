@@ -24,11 +24,6 @@ class CustomElement extends HTMLElement {
 
 customElements.define('custom-element', CustomElement);
 
-class CustomInput extends HTMLInputElement {
-}
-
-customElements.define('custom-input', CustomInput, { extends: 'input' });
-
 suite.runTest({ name: 'testing basic controllers: binding value of custom element' }, async test => {
 	const e = document.createElement('custom-element');
 	e.dataset.tie = 'testCustomsA:text => value';
@@ -37,28 +32,5 @@ suite.runTest({ name: 'testing basic controllers: binding value of custom elemen
 
 	await test.waitNextMicrotask();
 
-	if (e.value !== model.text.toUpperCase()) test.fail('textContent of the element expected to be ' + model.text.toUpperCase() + ', found: ' + e.value);
-});
-
-suite.runTest({ name: 'testing basic controllers: custom input' }, async test => {
-	const
-		e = document.createElement('input', { is: 'custom-input' }),
-		tie = DataTier.ties.create('customInsTie', [
-			{ text: 'some' },
-			{ text: 'more' }
-		]);
-	e.dataset.tie = 'customInsTie:0.text => value';
-	document.body.appendChild(e);
-
-	await test.waitNextMicrotask();
-
-	if (e.value !== tie[0].text) test.fail('value of the element expected to be ' + tie[0].text.toUpperCase() + ', found: ' + e.value);
-
-	e.value = 'lowercase';
-	const ev = new Event('change');
-	e.dispatchEvent(ev);
-
-	await test.waitNextMicrotask();
-
-	if (tie[0].text !== 'lowercase') test.fail('value of the model expected to be ' + e.value + ' but found ' + tie[0].text);
+	test.assertEqual(e.value, model.text.toUpperCase());
 });

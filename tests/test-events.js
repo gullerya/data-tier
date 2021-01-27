@@ -18,7 +18,7 @@ suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 	e = new Event('change');
 	i.dispatchEvent(e);
 
-	test.assertEqual(testTie.someA, 'text');
+	test.assertEqual('text', testTie.someA);
 
 	//  removal of element should untie
 	document.body.removeChild(i);
@@ -29,7 +29,7 @@ suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 	e = new Event('change');
 	i.dispatchEvent(e);
 
-	test.assertEqual(testTie.someA, 'text');
+	test.assertEqual('text', testTie.someA);
 });
 
 suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test => {
@@ -62,8 +62,7 @@ suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test
 
 suite.runTest({ name: 'binding/unbinding custom event default value property' }, async test => {
 	const i = document.createElement('input');
-	i[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
-	i.dataset.tie = 'eventsTest:someB';
+	i.dataset.tie = 'eventsTest:someB => => customChange';
 	document.body.appendChild(i);
 
 	await test.waitNextMicrotask();
@@ -92,10 +91,8 @@ suite.runTest({ name: 'binding custom event custom value property' }, async test
 
 	const d = document.createElement('div');
 	testTie.someC = 'new value';
-	d[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
-	d[DataTier.DEFAULT_TIE_TARGET_PROVIDER] = 'customValue';
 	d.customValue = '';
-	d.dataset.tie = 'eventsTest:someC';
+	d.dataset.tie = 'eventsTest:someC => customValue => customChange';
 	document.body.appendChild(d);
 
 	await test.waitNextMicrotask();
@@ -104,7 +101,7 @@ suite.runTest({ name: 'binding custom event custom value property' }, async test
 	d.customValue = 'text';
 	d.dispatchEvent(new Event('customChange'));
 
-	test.assertEqual(testTie.someC, 'text');
+	test.assertEqual('text', testTie.someC);
 });
 
 suite.runTest({ name: 'regular event/value multiple bindings' }, async test => {
@@ -132,9 +129,7 @@ suite.runTest({ name: 'custom event/value multiple bindings' }, async test => {
 	const t = DataTier.ties.create(tieName, { test: 'some', other: 'thing' });
 
 	const d = document.createElement('input');
-	d[DataTier.CHANGE_EVENT_NAME_PROVIDER] = 'customChange';
-	d[DataTier.DEFAULT_TIE_TARGET_PROVIDER] = 'customValue';
-	d.dataset.tie = `${tieName}:test, ${tieName}:other => customProp`;
+	d.dataset.tie = `${tieName}:test => customValue => customChange, ${tieName}:other => customProp`;
 	document.body.appendChild(d);
 
 	await test.waitNextMicrotask();

@@ -1,7 +1,6 @@
 import { Observable } from './object-observer.min.js';
 
 const
-	// DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget',
 	PARAM_LIST_SPLITTER = /\s*[,;]\s*/,
 	PARAM_SPLITTER = /\s*=>\s*/,
 	DEFAULT_TARGET = {
@@ -27,7 +26,6 @@ const
 
 export {
 	ensureObservable,
-	getDefaultTargetProperty as getTargetProperty,
 	extractViewParams,
 	getPath,
 	setPath,
@@ -133,12 +131,14 @@ function parseFunctionParam(rawParam) {
  * example 4:	tieKey
  */
 function parsePropertyParam(rawParam, element) {
-	const [
+	let [
 		fromPart,
-		toPart = getDefaultTargetProperty(element),
-		eventPart = getDefaultChangeEvent(element)
+		toPart,
+		eventPart
 	] = rawParam.split(PARAM_SPLITTER);
 	const { tieKey, rawPath, path } = parseFromPart(fromPart);
+	toPart = toPart ? toPart : getDefaultTargetProperty(element);
+	eventPart = eventPart ? eventPart : getDefaultChangeEvent(element);
 
 	const result = new Parameter(tieKey, rawPath, path, toPart, eventPart, false, null);
 
