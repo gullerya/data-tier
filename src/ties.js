@@ -32,7 +32,7 @@ class Tie {
 			tiedPaths = tieViews._pathsCache,
 			tiedPathsLength = tiedPaths.length;
 		let i, l, change, changedObject, arrPath, apl, changedPath = '', pl, tiedPath, pathViews, pvl;
-		let cplen, sst, lst, fullArrayUpdate, same, view, updateSet;
+		let cplen, sst, lst, fullArrayUpdate, same, view;
 
 		if (!tiedPathsLength) return;
 
@@ -65,7 +65,6 @@ class Tie {
 
 			cplen = changedPath.length;
 			pl = tiedPathsLength;
-			updateSet = [];
 			while (pl--) {
 				tiedPath = tiedPaths[pl];
 				if (cplen > tiedPath.length) {
@@ -81,55 +80,51 @@ class Tie {
 					pvl = pathViews.length;
 					while (pvl--) {
 						view = pathViews[pvl];
-						updateSet.push([view, tiedPath, same]);
+						this.updateView(view, tiedPath, same, change);
 					}
 				}
 			}
-			this.updateViews(updateSet, change);
 		}
 	}
 
-	updateViews(updateSet, change) {
-		let viewParams, i;
-		for (const [element, tiedPath, useChangeValue] of updateSet) {
-			viewParams = element[this.ties.dti.paramsKey];
-			i = viewParams.length;
-			while (i--) {
-				const param = viewParams[i];
-				if (param.isFunctional) {
-					if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath === tiedPath)) {
-						let someData = false;
-						const args = [];
-						param.fParams.forEach(fp => {
-							let arg;
-							const tie = this.ties.get(fp.tieKey);
-							if (tie) {
-								arg = getPath(tie, fp.path);
-								someData = true;
-							}
-							args.push(arg);
-						});
-						if (someData) {
-							args.push([change]);
-							callViewFunction(element, param.targetProperty, args);
+	updateView(element, tiedPath, useChangeValue, change) {
+		const viewParams = element[this.ties.dti.paramsKey];
+		let i = viewParams.length;
+		while (i--) {
+			const param = viewParams[i];
+			if (param.isFunctional) {
+				if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath === tiedPath)) {
+					let someData = false;
+					const args = [];
+					param.fParams.forEach(fp => {
+						let arg;
+						const tie = this.ties.get(fp.tieKey);
+						if (tie) {
+							arg = getPath(tie, fp.path);
+							someData = true;
 						}
+						args.push(arg);
+					});
+					if (someData) {
+						args.push([change]);
+						callViewFunction(element, param.targetProperty, args);
 					}
-				} else {
-					if (param.tieKey !== this.key || param.rawPath !== tiedPath) {
-						continue;
-					}
-
-					let newValue;
-					if (change && typeof change.value !== 'undefined' && useChangeValue) {
-						newValue = change.value;
-					} else {
-						newValue = getPath(this[MODEL_KEY], param.path);
-					}
-					if (typeof newValue === 'undefined') {
-						newValue = '';
-					}
-					this.ties.dti.views.setViewProperty(element, param, newValue);
 				}
+			} else {
+				if (param.tieKey !== this.key || param.rawPath !== tiedPath) {
+					continue;
+				}
+
+				let newValue;
+				if (change.value !== undefined && useChangeValue) {
+					newValue = change.value;
+				} else {
+					newValue = getPath(this[MODEL_KEY], param.path);
+				}
+				if (newValue === undefined) {
+					newValue = '';
+				}
+				this.ties.dti.views.setViewProperty(element, param, newValue);
 			}
 		}
 	}

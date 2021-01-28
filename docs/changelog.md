@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2021-01-28
+### Changed
+- [Issue #60](https://github.com/gullerya/data-tier/issues/60):
+  - removed `defaultTieTarget` property support (less intrusive approach aggenda)
+  - removed `changeEvent` property support (less intrusive approach aggenda)
+  - added new syntax to specify the event to listen to per tied property
+  - added support for multiple events as per multiple properties tied
+
 ## [2.12.0] - 2021-01-17
 ### Changed
 - updated dependencies
