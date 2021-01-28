@@ -1,33 +1,32 @@
 import { Observable } from './object-observer.min.js';
 
 const
-	DEFAULT_TIE_TARGET_PROVIDER = 'defaultTieTarget',
-	CHANGE_EVENT_NAME_PROVIDER = 'changeEventName',
+	PARAM_LIST_SPLITTER = /\s*[,;]\s*/,
 	PARAM_SPLITTER = /\s*=>\s*/,
-	MULTI_PARAMS_SPLITTER = /\s*[,;]\s*/,
-	DEFAULT_VALUE_ELEMENTS = {
-		INPUT: 1, SELECT: 1, TEXTAREA: 1
+	DEFAULT_TARGET = {
+		A: 'href',
+		ANIMATE: 'href',
+		AREA: 'href',
+		BASE: 'href',
+		DISCARD: 'href',
+		IFRAME: 'src',
+		IMAGE: 'href',
+		IMG: 'src',
+		INPUT: 'value',
+		LINK: 'href',
+		PATTERN: 'href',
+		SELECT: 'value',
+		SOURCE: 'src',
+		TEXTAREA: 'value',
+		use: 'href'
 	},
-	DEFAULT_SRC_ELEMENTS = {
-		IMG: 1, IFRAME: 1, SOURCE: 1
-	},
-	DEFAULT_HREF_ELEMENTS = {
-		A: 1, ANIMATE: 1, AREA: 1, BASE: 1, DISCARD: 1, IMAGE: 1, LINK: 1, PATTERN: 1, use: 1
-	},
-	DEFAULT_CHANGE_ELEMENTS = {
-		INPUT: 1, SELECT: 1, TEXTAREA: 1
-	},
+	DEFAULT_EVENTS_CHANGE = ['INPUT', 'SELECT', 'TEXTAREA'],
 	randomKeySource = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 	randomKeySourceLen = randomKeySource.length;
 
 export {
-	DEFAULT_TIE_TARGET_PROVIDER,
 	ensureObservable,
-	getTargetProperty,
 	extractViewParams,
-	CHANGE_EVENT_NAME_PROVIDER,
-	addChangeListener,
-	delChangeListener,
 	getPath,
 	setPath,
 	callViewFunction,
@@ -35,11 +34,12 @@ export {
 }
 
 class Parameter {
-	constructor(tieKey, rawPath, path, targetProperty, isFunctional, fParams) {
+	constructor(tieKey, rawPath, path, targetProperty, changeEvent, isFunctional, fParams) {
 		this.tieKey = tieKey;
 		this.rawPath = rawPath;
 		this.path = path;
 		this.targetProperty = targetProperty;
+		this.changeEvent = changeEvent;
 		this.isFunctional = isFunctional;
 		this.fParams = fParams;
 		this.iClasses = null;
@@ -49,59 +49,40 @@ class Parameter {
 function ensureObservable(o) {
 	if (!o) {
 		return Observable.from({});
-	} else if (!Observable.isObservable(o)) {
-		return Observable.from(o);
-	} else {
+	} else if (Observable.isObservable(o)) {
 		return o;
+	} else {
+		return Observable.from(o);
 	}
-}
-
-function getTargetProperty(element) {
-	let result = element[DEFAULT_TIE_TARGET_PROVIDER];
-	if (!result) {
-		const eName = element.nodeName;
-		if (eName === 'INPUT' && element.type === 'checkbox') {
-			result = 'checked';
-		} else if (eName in DEFAULT_VALUE_ELEMENTS) {
-			result = 'value';
-		} else if (eName in DEFAULT_SRC_ELEMENTS) {
-			result = 'src';
-		} else if (eName in DEFAULT_HREF_ELEMENTS) {
-			result = 'href';
-		} else {
-			result = 'textContent';
-		}
-	}
-	return result;
 }
 
 function extractViewParams(element) {
-	const rawParam = element.getAttribute('data-tie');
-	if (rawParam) {
-		const parsed = parseViewParams(rawParam, element);
+	const paramList = element.getAttribute('data-tie');
+	if (paramList) {
+		const parsed = parseParamList(paramList, element);
 		return parsed.length ? parsed : null;
 	} else {
 		return null;
 	}
 }
 
-function parseViewParams(multiParam, element) {
+function parseParamList(paramList, element) {
 	const
 		result = [],
 		keysTest = {},
-		rawParams = multiParam.split(MULTI_PARAMS_SPLITTER),
+		rawParams = paramList.trim().split(PARAM_LIST_SPLITTER),
 		l = rawParams.length;
-	let i = 0, next, fnext, parsedParam;
+	let i = 0, rawParam, fnext, parsedParam;
 	for (; i < l; i++) {
-		next = rawParams[i];
-		if (!next) {
+		rawParam = rawParams[i];
+		if (!rawParam) {
 			continue;
 		}
 		if (fnext) {
-			fnext += ',' + next;
+			fnext += ',' + rawParam;
 		}
-		if (next.indexOf('(') > 0) {
-			fnext = next;
+		if (rawParam.indexOf('(') > 0) {
+			fnext = rawParam;
 			if (fnext.indexOf(')') < 0) {
 				continue;
 			}
@@ -111,89 +92,89 @@ function parseViewParams(multiParam, element) {
 				parsedParam = parseFunctionParam(fnext);
 				fnext = null;
 			} else {
-				parsedParam = parsePropertyParam(next, element);
+				parsedParam = parsePropertyParam(rawParam, element);
 			}
 			if (parsedParam.targetProperty in keysTest) {
-				console.error(`elements's property '${parsedParam.targetProperty}' tied more than once; all but first dismissed`);
+				console.error(`elements's property '${parsedParam.targetProperty}' tied more than once; all but first tie dismissed`);
 			} else {
 				result.push(parsedParam);
 				keysTest[parsedParam.targetProperty] = true;
 			}
 		} catch (e) {
-			console.error(`failed to parse one of a multi param parts (${next}), skipping it`, e)
+			console.error(`failed to parse one of a multi param parts (${rawParam}), skipping it`, e);
 		}
 	}
 	return result;
 }
 
 function parseFunctionParam(rawParam) {
-	const parts = rawParam.split(/[()]/);
-	const fParams = parts[1].split(/\s*,\s*/).map(fp => {
-		const source = fp.split(':');
-		if (!source.length || source.length > 2 || !source[0]) {
-			throw new Error('invalid function tied value: ' + fp);
-		}
-		const rawPath = source.length > 1 ? source[1] : '';
-		return {
-			tieKey: source[0],
-			rawPath: rawPath,
-			path: rawPath.split('.').filter(node => node)
-		};
-	});
+	const [targetFunction, args] = rawParam.split(/[()]/);
+	const fParams = args.trim()
+		.split(/\s*,\s*/)
+		.map(parseFromPart);
 	if (!fParams.length) {
 		throw new Error(`functional tie parameter MUST have at least one tied argument, '${rawParam}' doesn't`);
 	}
 
-	return new Parameter(null, null, null, parts[0], true, fParams);
+	return new Parameter(null, null, null, targetFunction, null, true, fParams);
 }
 
+/**
+ * MVVM:		from [=> to [=> event]]
+ * from:		tieKey:path
+ * to:			property
+ * event:		eventName
+ * 
+ * example 1:	tieKey:path.to.data => data => datachange
+ * example 2:	tieKey:path.to.data => data
+ * example 3:	tieKey:path.to.data
+ * example 4:	tieKey
+ */
 function parsePropertyParam(rawParam, element) {
-	const parts = rawParam.split(PARAM_SPLITTER);
+	let [
+		fromPart,
+		toPart,
+		eventPart
+	] = rawParam.split(PARAM_SPLITTER);
+	const { tieKey, rawPath, path } = parseFromPart(fromPart);
+	toPart = toPart ? toPart : getDefaultTargetProperty(element);
+	eventPart = eventPart ? eventPart : getDefaultChangeEvent(element);
 
-	//  add default 'to' property if needed
-	if (parts.length === 1) {
-		parts.push(getTargetProperty(element));
-	}
+	const result = new Parameter(tieKey, rawPath, path, toPart, eventPart, false, null);
 
-	//  process 'from' part
-	const source = parts[0].split(':');
-	if (!source.length || source.length > 2 || !source[0]) {
-		throw new Error(`invalid tie parameter '${rawParam}'; expected (example): "orders:0.address.street, orders:0.address.apt => title"`);
-	}
-
-	let tieKey = source[0];
-	const rawPath = source.length > 1 ? source[1] : '';
-
-	const result = new Parameter(tieKey, rawPath, rawPath.split('.').filter(node => node), parts[1], false, null);
-	if (result.targetProperty === 'classList') {
+	//	TODO: this should be generalized better
+	if (toPart === 'classList') {
 		result.iClasses = Array.from(element.classList);
 	}
 
 	return result;
 }
 
-function addChangeListener(element, changeListener) {
-	const cen = obtainChangeEventName(element);
-	if (cen) {
-		element.addEventListener(cen, changeListener);
+function parseFromPart(fromPart) {
+	const [tieKey, rawPath = ''] = fromPart.split(':');
+	if (!tieKey) {
+		throw new Error(`tie key missing in tie parameter '${fromPart}'; expected example: "orders:0.address.apt => title"`);
 	}
+	const path = rawPath.split('.').filter(Boolean);
+	return { tieKey, rawPath, path };
 }
 
-function delChangeListener(element, changeListener) {
-	const cen = obtainChangeEventName(element);
-	if (cen) {
-		element.removeEventListener(cen, changeListener);
+function getDefaultTargetProperty(element) {
+	let result = DEFAULT_TARGET[element.nodeName];
+	if (!result) {
+		result = 'textContent';
+	} else if (element.type === 'checkbox') {
+		result = 'checked';
 	}
+	return result;
 }
 
-function obtainChangeEventName(element) {
-	let changeEventName = element[CHANGE_EVENT_NAME_PROVIDER];
-	if (!changeEventName) {
-		if (element.nodeName in DEFAULT_CHANGE_ELEMENTS) {
-			changeEventName = 'change';
-		}
+function getDefaultChangeEvent(element) {
+	let result = null;
+	if (DEFAULT_EVENTS_CHANGE.includes(element.nodeName)) {
+		result = 'change';
 	}
-	return changeEventName;
+	return result;
 }
 
 function getPath(ref, path) {

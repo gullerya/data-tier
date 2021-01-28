@@ -103,9 +103,8 @@ suite.runTest({ name: 'mapping element to 2 different ties' }, async test => {
 
 suite.runTest({ name: 'native element with customized default property' }, async test => {
 	const newEl = document.createElement('div');
-	newEl[DataTier.DEFAULT_TIE_TARGET_PROVIDER] = 'data';
 	DataTier.ties.create('customTargetProperty', { test: 'custom target property' });
-	newEl.dataset.tie = 'customTargetProperty:test';
+	newEl.dataset.tie = 'customTargetProperty:test => data';
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();

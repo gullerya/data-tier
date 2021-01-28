@@ -1,7 +1,4 @@
 import {
-	getTargetProperty,
-	addChangeListener,
-	delChangeListener,
 	getPath,
 	setPath,
 	callViewFunction
@@ -104,7 +101,11 @@ export class DOMProcessor {
 			const viewParamsOld = element[this._dtInstance.paramsKey];
 			if (viewParamsOld) {
 				this._dtInstance.views.delView(element, viewParamsOld);
-				delChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+				for (const viewParamOld of viewParamsOld) {
+					if (viewParamOld.changeEvent) {
+						element.removeEventListener(viewParamOld.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+					}
+				}
 			}
 		}
 
@@ -112,7 +113,11 @@ export class DOMProcessor {
 			const viewParams = this._dtInstance.views.addView(element);
 			if (viewParams) {
 				this._updateFromView(element, viewParams);
-				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+				for (const viewParam of viewParams) {
+					if (viewParam.changeEvent) {
+						element.addEventListener(viewParam.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+					}
+				}
 			}
 		}
 	}
@@ -154,7 +159,11 @@ export class DOMProcessor {
 			const viewParams = this._dtInstance.views.addView(element);
 			if (viewParams) {
 				this._updateFromView(element, viewParams);
-				addChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+				for (const viewParam of viewParams) {
+					if (viewParam.changeEvent) {
+						element.addEventListener(viewParam.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+					}
+				}
 			}
 
 			if (element.shadowRoot) {
@@ -180,7 +189,11 @@ export class DOMProcessor {
 		let viewParams = element[this._dtInstance.paramsKey];
 		if (viewParams) {
 			this._dtInstance.views.delView(element, viewParams);
-			delChangeListener(element, this[BOUND_CHANGE_LISTENER_KEY]);
+			for (const viewParam of viewParams) {
+				if (viewParam.changeEvent) {
+					element.removeEventListener(viewParam.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
+				}
+			}
 		}
 
 		if (element.shadowRoot) {
@@ -190,24 +203,25 @@ export class DOMProcessor {
 
 	_changeListener(changeEvent) {
 		const
+			changeEventType = changeEvent.type,
 			element = changeEvent.currentTarget,
-			targetProperty = getTargetProperty(element),
 			viewParams = element[this._dtInstance.paramsKey];
-		let tieParam, tie, newValue;
 
 		if (!viewParams) {
 			return;
 		}
+
+		let tieParam, tie, newValue;
 		let i = viewParams.length;
 		while (i--) {
 			tieParam = viewParams[i];
-			if (tieParam.targetProperty !== targetProperty) {
+			if (tieParam.changeEvent !== changeEventType) {
 				continue;
 			}
 
 			tie = this._dtInstance.ties.get(tieParam.tieKey);
 			if (tie) {
-				newValue = element[targetProperty];
+				newValue = element[tieParam.targetProperty];
 				setPath(tie, tieParam.path, newValue);
 			}
 		}

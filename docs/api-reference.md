@@ -1,18 +1,18 @@
 # API
 
-Here I'll detail the API, which splits into the __functional__ (JS) part and the __declarative__ tying syntax found in HTML.
+`data-tier` APIs split into the __functional__ (JS) part and the __declarative__ tying syntax in HTML.
 
 While Model-to-View data flow is pretty simple and straightforward, the opposite direction, View-to-Model, relys on some pre-conditions. I'll touch this part below as well.
 
 Beside the actual API's signatures, there is much of importance of understaning `data-tier`'s lifecycle and its runtime capabilities/limitations. See [Lifecycle](./lifecycle.md) documentation dedicated just to that part.
 
-> In the snippets below I'll assume, that the following statement was used to import the library: `import * as DataTier from './dist/data-tier.min.js';`
+> In the snippets below I'll assume, that the following statement was used to import the library: `import { ties } from './dist/data-tier.min.js';`
 
 ## JavaScript - model definitions and operations
-Imported `DataTier` object has a `ties` property.
+
 `ties` is a data management namespace, holding model related APIs.
 
-### __A__. `const tiedModel = DataTier.ties.create(key[, model]);`
+### __A__. `const tiedModel = ties.create(key[, model]);`
 Creates (internally) a new tie, processes the `model`, updates the views if any (synchronously) and returns the processed `model` ready for further usage by application.
 
 Parameters:
@@ -31,27 +31,27 @@ const band = {
     kind: 'progressive metal',
     since: 1985
 };
-const bandModel = DataTier.ties.create('bandModel', band);
+const bandModel = ties.create('bandModel', band);
 console.log(bandModel === band);
 //  false - source model is cloned
 
 //  default empty model - object
-const userSettings = DataTier.ties.create('userSettings');
+const userSettings = ties.create('userSettings');
 
 //  insist on Array model (empty one in this case)
-const albums = DataTier.ties.create('albums', []);
+const albums = ties.create('albums', []);
 
-//  creating from an already crafted Observable (rare use-cases)
+//  creating from an already crafted Observable (rare use-cases, but perfectly valid)
 const oUser = Observable.from({
     firstName: 'Uria',
     lastName: 'Guller'
 });
-const tiedUser = DataTier.ties.create('userModel', oUser);
+const tiedUser = ties.create('userModel', oUser);
 console.log(tiedUser === oUser);
 //  true - if an Observable provided, it's taken as it is
 ```
 
-### __B__. `const tiedModel = DataTier.ties.update(key[, model]);`
+### __B__. `const tiedModel = ties.update(key[, model]);`
 Updates a tie's model. If the tie is not found, if will be created via fallback to the method `create` (see above).
 During the update all the flow of model pre-processing (observation) and views update is performed.
 
@@ -63,7 +63,7 @@ Result:
 * __`tiedModel`__ `[Observable]` - updated or created tied model (see the remarks about model processing/creation in the method `create` definition)
 
 
-### __C__. `void DataTier.ties.remove(tieToRemove);`
+### __C__. `void ties.remove(tieToRemove);`
 Discards/unties the specified tie.
 
 Note: untying won't have any effect on the views, the will remain at their last state. If views cleanup desired, one should explicitly reset tie's properties (to `null`, for example) or delete them.
@@ -80,19 +80,19 @@ If no tie found by the given `tieToRemove`, nothing will happen.
 Examples (continue with examples above):
 ```javascript
 //  remove providing the tie's model
-DataTier.ties.remove(bandModel);
+ties.remove(bandModel);
 console.log(bandModel.name);
 //  Error - model was revoked
 
 //  or by key
-DataTier.ties.remove('userSettings');
+ties.remove('userSettings');
 
-DataTier.ties.remove(tiedUser);
+ties.remove(tiedUser);
 console.log(tiedUser.firstName);
 //  Uria - provided Observable won't be revoked upon removal
 ```
 
-### __C__. `const tiedModel = DataTier.ties.get(key);`
+### __C__. `const tiedModel = ties.get(key);`
 
 Retrieves tie by key.
 
@@ -104,7 +104,7 @@ Result:
 
 Example:
 ```javascript
-const settingsTie = DataTier.ties.get('userSettings');
+const settingsTie = ties.get('userSettings');
 ```
 
 ## `HTML` - tying declaration

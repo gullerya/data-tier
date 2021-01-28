@@ -1,6 +1,6 @@
 {
 	"name": "data-tier",
-	"version": "2.12.1-snapshot",
+	"version": "3.0.0-snapshot",
 	"description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
 	"type": "module",
 	"main": "dist/data-tier.min.js",

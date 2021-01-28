@@ -5,6 +5,7 @@ const suite = getSuite({ name: 'Testing tie properties params' });
 
 //	tie param structure is defined as following:
 //	{
+//		changeEvent: <string>,
 //		tieKey: <string>,
 //		rawPath: <string>,
 //		path: <string[]>,
@@ -269,7 +270,7 @@ suite.runTest({ name: 'multi param - duplicate target (explicit) - negative' }, 
 
 	const vps = extractViewParams(el);
 	test.assertEqual(1, consoleErrorMessages.length);
-	test.assertTrue(consoleErrorMessages[0].endsWith('property \'data\' tied more than once; all but first dismissed'));
+	test.assertTrue(consoleErrorMessages[0].endsWith('property \'data\' tied more than once; all but first tie dismissed'));
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
@@ -296,7 +297,7 @@ suite.runTest({ name: 'multi param - duplicate target (implicit) - negative' }, 
 
 	const vps = extractViewParams(el);
 	test.assertEqual(1, consoleErrorMessages.length);
-	test.assertTrue(consoleErrorMessages[0].endsWith('property \'textContent\' tied more than once; all but first dismissed'));
+	test.assertTrue(consoleErrorMessages[0].endsWith('property \'textContent\' tied more than once; all but first tie dismissed'));
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
@@ -323,7 +324,7 @@ suite.runTest({ name: 'multi param - duplicate target (mixed) - negative' }, tes
 
 	const vps = extractViewParams(el);
 	test.assertEqual(1, consoleErrorMessages.length);
-	test.assertTrue(consoleErrorMessages[0].endsWith('property \'textContent\' tied more than once; all but first dismissed'));
+	test.assertTrue(consoleErrorMessages[0].endsWith('property \'textContent\' tied more than once; all but first tie dismissed'));
 	test.assertTrue(Array.isArray(vps));
 	test.assertEqual(1, vps.length);
 
