@@ -108,16 +108,31 @@ const settingsTie = ties.get('userSettings');
 ```
 
 ## `HTML` - tying declaration
-In order to turn a DOM element into `data-tier`'s view, or putting it in other words, to tie it to the __model__, a `data-tie` attribute declaration is used.
+In order to turn a DOM element into a `data-tier`'s view, or in other words, to tie it to the __model__, a `data-tie` attribute declaration is used.
 One may tie between a model and a view's __properties__ and/or __methods__.
+
+> As of now, `data-tier` is not supporting attributes tying.
 
 ### __A__. properties tying
 
-This kind of tying perfectly suites simple properties assignment, either native ones like `textContent`, `src`, `innerHTML` etc. or customly implemented, usually via `get`/`set` syntax in custom element's `class`.
+This kind of tying perfectly suites simple properties assignment, either native ones like `textContent`, `src`, `innerHTML` etc. or customly implemented, usually via `getter`/`setter` in the custom element's `class`.
 
-Let's start from examples of __properties__ tying:
+#### Syntax
+
+Tying attribute, or tying declaration, is a value of `data-tie` attribute set on any HTML element and having the following syntax:
+
+```
+tieKey[:path] [=> [targetProperty] [=> changeEvent] ] [, ...]
+```
+
+#### Examples
+
+Let's start from an examples of __properties__ tying:
 ```html
-<!-- full syntax (including target property) - single parameter -->
+<!-- full syntax: model, view, event -->
+<input data-tie="user:firstName => value => input"></span>
+
+<!-- shorter syntax: model, view (no event or default event) -->
 <span data-tie="user:firstName => textContent"></span>
 
 <!-- short syntax (tying to the default target property) -->
@@ -144,14 +159,15 @@ Let's take a closer look onto the single tie parameter/s parts:
     * as of now, this part may only be of a depth of 1 (flat)
     * in a multi-param definition, any target property MAY NOT be used more than once
     * target property is separated by the `=>` (fat arrow) surrounded by zero or more spaces
+* `=> input` - event to add listener and which occurance will cause update of the related model from the given property
 
 > Pro note: tying method properties (like `click`, `input` or a custom ones) is about __assignment__, NOT invokation. To achieve invokation of view's method/s upon model change see __methods tying__ section below.
 
 As we've seen in the examples above, the target property may be omitted, leaving `data-tier` to resolve the target property by default. This is done by the following steps (in the exact order):
-* if the element has `defaultTieTarget` property defined and returning a non-empty string - this string will be taken as the target property name
-* else `value` will be used for `INPUT`, `SELECT` and `TEXTAREA`
-* else `src` will be used for `IFRAME`, `IMG` and `SOURCE`
-* else `href` will be used for `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
+* take target property from `data-tie` attribute
+* else `value` for: `INPUT`, `SELECT`, `TEXTAREA`
+* else `src` for: `IFRAME`, `IMG`, `SOURCE`
+* else `href` for: `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
 * else `textContent`
 
 `classList` property deserved a special treatment. When `classList` is being tied, the following happens:
