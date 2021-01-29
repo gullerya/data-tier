@@ -8,7 +8,9 @@ Beside the actual API's signatures, there is much of importance of understaning 
 
 > In the snippets below I'll assume, that the following statement was used to import the library: `import { ties } from './dist/data-tier.min.js';`
 
-## JavaScript - model definitions and operations
+---
+
+## JavaScript part - model definitions and operations
 
 `ties` is a data management namespace, holding model related APIs.
 
@@ -107,93 +109,108 @@ Example:
 const settingsTie = ties.get('userSettings');
 ```
 
-## `HTML` - tying declaration
-In order to turn a DOM element into a `data-tier`'s view, or in other words, to tie it to the __model__, a `data-tie` attribute declaration is used.
-One may tie between a model and a view's __properties__ and/or __methods__.
+---
 
-> As of now, `data-tier` is not supporting attributes tying.
+## HTML part - tying declaration
 
-### __A__. properties tying
+In order to tie an HTML element to model, the `data-tie` attribute to be used.
 
-This kind of tying perfectly suites simple properties assignment, either native ones like `textContent`, `src`, `innerHTML` etc. or customly implemented, usually via `getter`/`setter` in the custom element's `class`.
+Model can be tied to an element's __properties__ and __methods__.
+Additionally, tie declaration may specify, which event should be used to bind the 'view' back to model.
 
-#### Syntax
+> As of now, `data-tier` doesn't support attributes tying.
 
-Tying attribute, or tying declaration, is a value of `data-tie` attribute set on any HTML element and having the following syntax:
+### Formal syntax
 
+`data-tie` attribute can have 1 or more tying declarations:
 ```
-tieKey[:path] [=> [targetProperty] [=> changeEvent] ] [, ...]
+<tying declaration>[, <tying declaration>[, ...] ]
 ```
-
-#### Examples
-
-Let's start from an examples of __properties__ tying:
-```html
-<!-- full syntax: model, view, event -->
-<input data-tie="user:firstName => value => input"></span>
-
-<!-- shorter syntax: model, view (no event or default event) -->
-<span data-tie="user:firstName => textContent"></span>
-
-<!-- short syntax (tying to the default target property) -->
-<span data-tie="user:firstName"></span>
-
-<!-- mixed syntaxes - multi parameter -->
-<span data-tie="user:firstName, user:editFirstName => click">
-<!-- firstName property will be tied to the default textContent -->
-<!-- editFirstName function will be set on the element's 'click' -->
+where a single declaration is:
+```
+tieKey[:path] [=> [target] [=> event] ]
 ```
 
-It is also perfectly valid to operate the same thing via JavaScript and element's `dataset` property:
-```javascript
-const ve = document.querySelector('.field .first-name');
-ve.dataset.tie = 'user:address.city';
-```
+| Part name | Optional | Description                             |
+|-----------|----------| ----------------------------------------|
+| `tieKey`  | no       | tie key (see JS APIs description above) |
+| `path`    | yes      | dot (`.`) separated path into the model object; when provided, MUST follow `tieKey` and prefixed by colon (`:`); when not specified, the whole model used as a tied value |
+| `target`  | yes      | element's property that the model will be assigned to or taken from; when not specified, resolved as explained below |
+| `event`   | yes      | event to be used to update model from the view; when not specified, resoved as explained below |
 
-Let's take a closer look onto the single tie parameter/s parts:
-* `user` - tie's __key__
-* `:address.city` - __path__ to the __source property__ within the tied model
-    * path can be of any depth; path separated from tie's key by the `:` (colon)
-    * view's update may be triggered by both, the (any) ancestor change or the (any deep) child change along the path
-* `=> textContent` - view's __target property__ tied to the given model
-    * as of now, this part may only be of a depth of 1 (flat)
-    * in a multi-param definition, any target property MAY NOT be used more than once
-    * target property is separated by the `=>` (fat arrow) surrounded by zero or more spaces
-* `=> input` - event to add listener and which occurance will cause update of the related model from the given property
+> Attention! `=>` sequence is used as separator (with 0 or more spaces around). When specifying `event` while omitting `target`, 2 sequental separators must be used.
 
-> Pro note: tying method properties (like `click`, `input` or a custom ones) is about __assignment__, NOT invokation. To achieve invokation of view's method/s upon model change see __methods tying__ section below.
+#### Target property - default resolution
 
-As we've seen in the examples above, the target property may be omitted, leaving `data-tier` to resolve the target property by default. This is done by the following steps (in the exact order):
-* take target property from `data-tie` attribute
-* else `value` for: `INPUT`, `SELECT`, `TEXTAREA`
+Target property, when omitted, resolved thus:
+* `value` if element one of: `INPUT`, `SELECT`, `TEXTAREA`
 * else `src` for: `IFRAME`, `IMG`, `SOURCE`
 * else `href` for: `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
 * else `textContent`
 
-`classList` property deserved a special treatment. When `classList` is being tied, the following happens:
-* any classes found on the tied view before `data-tier` processes the view are taken as a __baseline__ state
-* tied data may be of types `string`, `object` and `Array`:
-    * `string` is taken simple as a class to add
-    * `Array` - each of its elements taken as a class; __all__ of'em added to the view; if some of the members are removed - those classes are removed from the view correspondingly
-    * `object` - each of its __keys__ taken as a class; those with truthy values are added and the falsish ones - removed to/from the view; this way one may force removal of the __baseline__ class
-* each time the view's `classList` is updated, upon initiation or upon model change, the __baseline__ classes are merged with the model's classes as per rules above and the merged result is set as a view's new classes state
+#### Change event - default resolution
 
-### __B__. methods tying
+Naturally, event property mostly will be omitted, meaning `data-tier` won't do view-to-model binding vector for this declaration.
+The only exception here are the elements below, for which `change` event is listened by default, if not specified otherwise: `INPUT`, `SELECT`, `TEXTAREA`.
 
-Sometimes there is a need to tie a model to a method/s. Usually it'll happen when dealing with ready to use components, that already have their API designed via functions. This flavor is also convenient in cases where a component relies on several/many data bits and it is more effective/convenient to just pass them all in a bunch to a single function / method of the component.
+### Properties tying
 
-Additional benefit of method tying is the fact, that `data-tier` will supply the changes array as the last argument to the tied method call, allowing more finely grained data handling than just a state representation.
+General rule here is simple - `data-tier` will perform assignment of model (resolving path, if any) to element's property upon initialization or any change of former.
 
-```html
-<!-- one may define as many parameters... -->
-<custom-view data-tie="render(user:firstName, user:lastName)"></custom-view>
+Examples of usages:
 
-<!-- ... or compact them, as much more effective in this case... -->
-<custom-view data-tie="update(user)"></custom-view>
-<!-- ... all according to the target method's signature -->
+`<span data-tie="userTie:firstName"></span>`
+* `firstName` property of `userTie` to be tied to the `textContent` property (default) of the `span`
+
+`<user-view data-tie="userTie => data"></user-view>`
+* the whole `userTie` is tied to `data` property of element `user-view`
+
+`<input data-tie="userTie:address.city"></input>`
+* in this case `address.city` property of model will be tied to `value` propety (default) of `input`
+* additionally, `change` event (default) listener will be set up sync `input`'s value back to `address.city` model
+
+`<textarea data-tie="userTie:description => => input"></textarea>`
+* the tied property is `value`, default for `textarea` elements
+* the view-to-model tying event explicitly set to `input` (instead of the default `change`)
+
+`<date-input data-tie="userTie:birthday => data => change"></date-input>`
+* ties `data` property of custom input component to the `birthday` property of model
+* `change` event is listened for the view changes to be reflected in model
+
+#### Remark A - `dataset`
+
+Tying declaration may also be scripted via `dataset` property:
+```javascript
+inputElement.dataset.tie = 'user:address.city';
 ```
 
-It is possible, of course to mix the __property__ and __method__ tying in the single statement. I've not exemplified it here for the brevity.
+#### Remark B - `classList`
+
+`classList` property deserved a special treatment.
+When `classList` tied, the following happens:
+* classes found on the tied view upon initialization are taken as the __baseline__ state
+* each time the view's `classList` updated, the __baseline__ classes are merged with the model and the result becomes the new classes state
+* `classList` model may be `string`, `object` or `Array`:
+    * `string` is taken simply as a class to add
+    * `Array` - each of its elements taken as a class; __all__ of'em added to the view; if some of the members are removed - those classes are removed from the view correspondingly
+    * `object` - each of its __keys__ taken as a class; those with truthy values are added and the falsish ones - removed to/from the view; this way one may force removal of the __baseline__ class
+
+### Methods
+
+Sometimes it is more convenient to tie model via element's method.
+
+Additional benefit of method tying is the fact, that `data-tier` will supply the changes array as the last argument to the tied method call, allowing more finely grained data handling, than just a state recalculation.
+
+```html
+<!-- multiple parameters -->
+<custom-view data-tie="render(userTie:firstName, userTie:lastName)"></custom-view>
+
+<!-- full model as a whole -->
+<custom-view data-tie="update(userTie)"></custom-view>
+```
+
+It is possible, of course to mix __property__ and __method__ tying declarations in the single one.
+I've not exemplified it here for the brevity.
 
 Let's go over a quite simple syntax:
 * `update` - view's __target method__; it resembles the target property in that this method will be looked for on the view/element
@@ -206,15 +223,6 @@ Let's go over a quite simple syntax:
 
 > Pro note: as of now, due to synchronous changes delivery, all but some specific `Array` mutations will be delivered as a single synchronous change. Yet the API is designed as __always__ providing an Array of changes for possible future compatibility with async changes aggregation as well as with Arrays massive mutations.
 
-### __C__. general notes
+---
 
-Worthy to mention, that it is perfectly valid to tie a view to the whole tie's model (as in the example with `render(user)`). In this case `path` part is omitted, of course. Since it is not possible to re-assign tie's model as a whole, this is a __one-time__ binding. It may be good, actually, for a cases like binding some immutable model to the read-only views, data for a charting widgets, for example:
-```html
-<!-- longer syntax to explicitly specify target property -->
-<chart-widget data-tie="chartModel => data"></chart-widget>
-
-<!-- shorter syntax if the element has 'defaultTieTarget' property set to 'data' -->
-<chart-widget data-tie="chartModel"></chart-widget>
-```
-
-For the more detailed explanation about when those attributes are scanned, their observation and changes propagation see [Lifecycle](./lifecycle.md) documentation.
+For the more detailed explanation about when tie declaration attributes are scanned, their observation and changes propagation see [Lifecycle](./lifecycle.md) documentation.
