@@ -22,59 +22,35 @@ suite.runTest({ name: 'add/remove Tie - positive simple flow' }, test => {
 	DataTier.ties.remove('someNonExistingTieNameShouldNotFailTheFlow');
 });
 
+suite.runTest({ name: 'create tie - negative - no key', expectError: 'invalid key' }, () => {
+	DataTier.ties.create();
+});
+
+suite.runTest({ name: 'create tie - negative - empty key', expectError: 'invalid key' }, () => {
+	DataTier.ties.create('');
+});
+
+suite.runTest({ name: 'create tie - negative - underscore in key', expectError: 'tie key MUST match' }, () => {
+	DataTier.ties.create('underscore_prohibited');
+});
+
+suite.runTest({ name: 'create tie - negative - object key', expectError: 'invalid key' }, () => {
+	DataTier.ties.create({});
+});
+
+suite.runTest({ name: 'create tie - negative - duplicate key', expectError: 'already exists' }, () => {
+	DataTier.ties.create('validTieA', {});
+	DataTier.ties.create('validTieA');
+});
+
 suite.runTest({ name: 'create Tie - negative tests' }, test => {
-	try {
-		DataTier.ties.create();
-		test.fail('should not be able to create tie without name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.create('');
-		test.fail('should not be able to create tie with empty name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.create('underscore_prohibited');
-		test.fail('should not be able to create tie with improper name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.create({});
-		test.fail('should not be able to create tie with improper name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.create('validTieName', 'not an object');
-		test.fail('should not be able to create tie with not-an-object');
-	} catch (e) {
-		if (DataTier.ties.get('validTieName')) {
-			test.fail('should not have the corrupted tie in the bag');
-		}
-	}
-
 	try {
 		DataTier.ties.create('validTieName', { observe: 'string and not a function' });
 		test.fail('should not be able to create tie with a non-Observable object which has some of Observable properties occupied');
 	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.create('validTieA', {});
-		DataTier.ties.create('validTieA');
-		test.fail('should not be able to create tie with an already existing name');
-	} catch (e) {
-		//
-	} finally {
-		DataTier.ties.remove('validTieA');
+		if (e.message.startsWith('should not be able')) {
+			throw new Error('validation failed');
+		}
 	}
 });
 

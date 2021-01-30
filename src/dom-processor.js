@@ -249,11 +249,8 @@ export class DOMProcessor {
 				}
 			} else {
 				const tie = this._dtInstance.ties.get(param.tieKey);
-				if (tie) {
-					let value = getPath(tie, param.path);
-					if (typeof value === 'undefined') {
-						value = '';
-					}
+				if (tie !== undefined) {
+					const value = getPath(tie, param.path);
 					this._dtInstance.views.setViewProperty(element, param, value);
 				}
 			}

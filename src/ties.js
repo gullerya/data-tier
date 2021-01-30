@@ -1,9 +1,5 @@
-import {
-	ensureObservable,
-	getPath,
-	callViewFunction,
-	getRandomKey
-} from './utils.js';
+import { Observable } from './object-observer.min.js';
+import { getPath, callViewFunction, getRandomKey } from './utils.js';
 
 const
 	MODEL_KEY = Symbol('model.key'),
@@ -18,8 +14,11 @@ class Tie {
 	}
 
 	set model(model) {
-		this[MODEL_KEY] = ensureObservable(model);
-		this[MODEL_KEY].observe(changes => this.processDataChanges(changes));
+		const [postModel, isObservable] = ensureObservable(model);
+		this[MODEL_KEY] = postModel;
+		if (isObservable) {
+			this[MODEL_KEY].observe(changes => this.processDataChanges(changes));
+		}
 	}
 
 	get model() {
@@ -121,9 +120,6 @@ class Tie {
 				} else {
 					newValue = getPath(this[MODEL_KEY], param.path);
 				}
-				if (newValue === undefined) {
-					newValue = '';
-				}
 				this.ties.dti.views.setViewProperty(element, param, newValue);
 			}
 		}
@@ -141,14 +137,10 @@ export class Ties {
 			? key
 			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
 		const t = this.ties[k];
-		return t ? t.model : null;
+		return t ? t.model : undefined;
 	}
 
 	create(key, model) {
-		if (model === null) {
-			throw new Error('initial model, when provided, MUST NOT be null');
-		}
-
 		let k;
 		if (typeof key === 'string') {
 			k = key;
@@ -178,10 +170,6 @@ export class Ties {
 	}
 
 	update(key, model) {
-		if (!model || typeof model !== 'object') {
-			throw new Error('model MUST be a non-null object');
-		}
-
 		const k = typeof key === 'string'
 			? key
 			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
@@ -226,5 +214,15 @@ export class Ties {
 		if (reservedTieNames.indexOf(key) >= 0) {
 			throw new Error(`tie key MUST NOT be one of those: ${reservedTieNames.join(', ')}`);
 		}
+	}
+}
+
+function ensureObservable(o = {}) {
+	if (Observable.isObservable(o)) {
+		return [o, true];
+	} else if (o && typeof o === 'object') {
+		return [Observable.from(o), true];
+	} else {
+		return [o, false];
 	}
 }

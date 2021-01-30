@@ -147,12 +147,12 @@ export class Views {
 	}
 
 	//	TOOD: this function may become stateless, see remark below
-	_unsafeSetProperty(elem, param, value, targetProperty) {
-		if (targetProperty === 'href' && typeof elem.href === 'object') {
-			elem.href.baseVal = value;
+	_unsafeSetProperty(view, param, value, targetProperty) {
+		if (targetProperty === 'href' && typeof view.href === 'object') {
+			view.href.baseVal = value;
 		} else if (targetProperty === 'scope') {
 			//	TODO: this is the ONLY line that refers to a state
-			this.dti.ties.update(elem, value);
+			this.dti.ties.update(view, value);
 		} else if (targetProperty === 'classList') {
 			const classes = param.iClasses.slice(0);
 			if (value) {
@@ -179,9 +179,15 @@ export class Views {
 					}
 				}
 			}
-			elem.className = classes.join(' ');
+			view.className = classes.join(' ');
+		} else if (targetProperty === 'textContent') {
+			if (value === undefined || value === null) {
+				view[targetProperty] = '';
+			} else {
+				view[targetProperty] = value;
+			}
 		} else {
-			elem[targetProperty] = value;
+			view[targetProperty] = value;
 		}
 	}
 
