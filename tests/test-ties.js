@@ -36,7 +36,7 @@ suite.runTest({ name: 'adding a view and then a tie' }, async test => {
 	if (newEl.textContent !== text) test.fail(new Error('expected the content to be "' + text + '", found: ' + newEl.textContent));
 });
 
-suite.runTest({ name: 'creating a tie with an undefined data' }, async test => {
+suite.runTest({ name: 'tying undefined to ' }, async test => {
 	const
 		newEl = document.createElement('div'),
 		o = { text: 'text test C' },
@@ -60,17 +60,13 @@ suite.runTest({ name: 'setting a tie with a non Observable' }, async test => {
 		o = { text: 'text test E' },
 		t = ties.create(tieName, o);
 
-	test.assertTrue(Observable.isObservable(t));
-	test.assertNotEqual(o, t);
-
-	newEl.dataset.tie = tieName + ':text => textContent';
+	newEl.dataset.tie = `${tieName}:text => textContent`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
 	test.assertEqual(newEl.textContent, t.text);
 
 	ties.remove(tieName);
-
 	test.assertEqual('text test E', t.text);
 });
 
@@ -78,64 +74,20 @@ suite.runTest({ name: 'setting a tie with an Observable' }, async test => {
 	const
 		tieName = test.getRandom(8),
 		newEl = document.createElement('div'),
-		o = Observable.from({ text: 'text test E' }),
-		t = ties.create(tieName, o);
+		o = Observable.from({ text: 'text test E' });
 
-	test.assertTrue(Observable.isObservable(t));
-	test.assertEqual(o, t);
-
-	newEl.dataset.tie = tieName + ':text';
+	ties.create(tieName, o);
+	newEl.dataset.tie = `${tieName}:text`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
 	test.assertEqual(newEl.textContent, o.text);
 
 	ties.remove(tieName);
-
 	test.assertEqual('text test E', o.text);
 });
 
-suite.runTest({
-	name: 'creating a tie with a NULL data - negative',
-	expectError: 'initial model, when provided, MUST NOT be null'
-}, () => {
-	ties.create('tiesTestD', null);
-});
-
-suite.runTest({
-	name: 'setting a tie with a non object value - negative',
-	expectError: 'observable MAY ONLY be created from a non-null object'
-}, () => {
-	ties.create('tiesTestE', 5);
-});
-
-suite.runTest({ name: 'update tie - plain' }, test => {
-	const t = ties.create('testUpdateA');
-	test.assertTrue(Observable.isObservable(t));
-
-	const tu1 = ties.update('testUpdateA', { update: 'a' });
-	test.assertTrue(Observable.isObservable(tu1));
-	test.assertEqual('a', tu1.update);
-
-	const tnu = ties.update('testUpdateA', tu1);
-	test.assertEqual(tu1, tnu);
-});
-
-suite.runTest({ name: 'update tie - observable' }, test => {
-	const t = ties.create('testUpdateB');
-	test.assertTrue(Observable.isObservable(t));
-
-	const oo = Observable.from({ test: 'b' });
-	const tu1 = ties.update('testUpdateB', oo);
-	test.assertTrue(Observable.isObservable(tu1));
-	test.assertEqual(oo, tu1);
-});
-
-suite.runTest({ name: 'update tie - create non-existing - string key' }, test => {
-	const t = ties.update('testUpdateC', {});
-	test.assertTrue(Observable.isObservable(t));
-});
-
+//	TODO: move this test to scoping area or else, when scope is officially supported
 suite.runTest({ name: 'update tie - create non-existing - scope/element key' }, test => {
 	const e = document.createElement('div');
 	const t = ties.update(e, {});

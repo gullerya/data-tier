@@ -136,6 +136,20 @@ export class Views {
 		}
 	}
 
+	_lookupClosestScopeKey(element) {
+		let tmp = element, result;
+		do {
+			result = tmp.getAttribute('data-tie-scope');
+			if (!result) {
+				tmp = tmp.parentNode;
+				if (tmp.host) {
+					tmp = tmp.host;
+				}
+			}
+		} while (!result && tmp && tmp.nodeType !== Node.DOCUMENT_NODE);
+		return result;
+	}
+
 	//	TOOD: this function may become stateless, see remark below
 	setViewProperty(elem, param, value) {
 		const targetProperty = param.targetProperty;
@@ -148,7 +162,11 @@ export class Views {
 
 	//	TOOD: this function may become stateless, see remark below
 	_unsafeSetProperty(view, param, value, targetProperty) {
-		if (targetProperty === 'href' && typeof view.href === 'object') {
+		if (targetProperty === 'textContent') {
+			this._setTextContentProperty(view, value);
+		} else if (targetProperty === 'value') {
+			this._setValueProperty(view, value);
+		} else if (targetProperty === 'href' && typeof view.href === 'object') {
 			view.href.baseVal = value;
 		} else if (targetProperty === 'scope') {
 			//	TODO: this is the ONLY line that refers to a state
@@ -180,28 +198,23 @@ export class Views {
 				}
 			}
 			view.className = classes.join(' ');
-		} else if (targetProperty === 'textContent') {
-			if (value === undefined || value === null) {
-				view[targetProperty] = '';
-			} else {
-				view[targetProperty] = value;
-			}
 		} else {
 			view[targetProperty] = value;
 		}
 	}
 
-	_lookupClosestScopeKey(element) {
-		let tmp = element, result;
-		do {
-			result = tmp.getAttribute('data-tie-scope');
-			if (!result) {
-				tmp = tmp.parentNode;
-				if (tmp.host) {
-					tmp = tmp.host;
-				}
+	_setTextContentProperty(view, value) {
+		view.textContent = value === undefined || value === null ? '' : value;
+	}
+
+	_setValueProperty(view, value) {
+		let v = value;
+		if (value === undefined || value === null) {
+			const viewName = view.nodeName;
+			if (viewName === 'INPUT' || viewName === 'SELECT' || viewName === 'TEXTAREA') {
+				v = '';
 			}
-		} while (!result && tmp && tmp.nodeType !== Node.DOCUMENT_NODE);
-		return result;
+		}
+		view.value = v;
 	}
 }

@@ -170,6 +170,10 @@ export class Ties {
 	}
 
 	update(key, model) {
+		if (model === undefined) {
+			throw new Error(`illegal model '${model}'`);
+		}
+
 		const k = typeof key === 'string'
 			? key
 			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);

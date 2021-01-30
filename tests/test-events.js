@@ -13,7 +13,7 @@ suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 
 	await test.waitNextMicrotask();
 
-	test.assertEqual(i.value, '');
+	test.assertEqual('', i.value);
 	i.value = 'text';
 	e = new Event('change');
 	i.dispatchEvent(e);

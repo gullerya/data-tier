@@ -133,3 +133,55 @@ suite.runTest({ name: 'deep model, NULL IN path' }, async test => {
 	test.assertEqual('', d2.textContent);
 	test.assertEqual('', d3.textContent);
 });
+
+//	nullish values should turn to empty string for
+//	* textContent target
+//	* value target of INPUT, SELECT, TEXTAREA
+for (const nullish of [undefined, null]) {
+	suite.runTest({ name: `'${nullish}' to empty string - textContent` }, async test => {
+		const tn = test.getRandom(8);
+		DataTier.ties.create(tn, { p: nullish });
+
+		const e1 = document.createElement('span');
+		e1.dataset.tie = `${tn}:p`;
+		document.body.appendChild(e1);
+		await test.waitNextMicrotask();
+		test.assertEqual('', e1.textContent);
+
+		const e2 = document.createElement('div');
+		e2.dataset.tie = `${tn}:p => textContent`;
+		document.body.appendChild(e2);
+		await test.waitNextMicrotask();
+		test.assertEqual('', e2.textContent);
+	});
+
+	for (const inputish of ['input', 'select', 'textarea']) {
+		suite.runTest({ name: `'${nullish}' to empty string - value - ${inputish}` }, async test => {
+			const tn = test.getRandom(8);
+			DataTier.ties.create(tn, { v: nullish });
+
+			const e1 = document.createElement(inputish);
+			e1.dataset.tie = `${tn}:v`;
+			document.body.appendChild(e1);
+			await test.waitNextMicrotask();
+			test.assertEqual('', e1.textContent);
+
+			const e2 = document.createElement(inputish);
+			e2.dataset.tie = `${tn}:v => value`;
+			document.body.appendChild(e2);
+			await test.waitNextMicrotask();
+			test.assertEqual('', e2.textContent);
+		});
+	}
+
+	suite.runTest({ name: `'${nullish}' preserved - value - non-input-like` }, async test => {
+		const tn = test.getRandom(8);
+		DataTier.ties.create(tn, { p: nullish });
+
+		const e = document.createElement('div');
+		e.dataset.tie = `${tn}:p => value`;
+		document.body.appendChild(e);
+		await test.waitNextMicrotask();
+		test.assertEqual(nullish, e.value);
+	});
+}
