@@ -17,6 +17,13 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __3.1.0__
+  * implemented [Issue #58](https://github.com/gullerya/data-tier/issues/58) - allowed to create/update ties with primitive model (`boolean`, `number`, `string`)
+  * implemented [Issue #59](https://github.com/gullerya/data-tier/issues/59) - capable of create/update ties with null
+  * nullish model values (`null`, `undefined`) transformation into an empty string is now limited to only:
+    * `textContent` target property for any element
+	* `value` target property for these: `INPUT`, `SELECT`, `TEXTAREA`
+
 * __3.0.0__
   * implemented [Issue #60](https://github.com/gullerya/data-tier/issues/60):
     * removed `defaultTieTarget` property support (less intrusive approach aggenda)
@@ -27,9 +34,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 * __2.12.0__
   * upgaded dependencies
   * implemented [Issue #61](https://github.com/gullerya/data-tier/issues/61) - release version automation
-
-* __2.11.1__
-  * upgaded `object-observer`
 
 ## Loading the library
 

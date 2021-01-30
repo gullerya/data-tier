@@ -1,5 +1,3 @@
-import { Observable } from './object-observer.min.js';
-
 const
 	PARAM_LIST_SPLITTER = /\s*[,;]\s*/,
 	PARAM_SPLITTER = /\s*=>\s*/,
@@ -25,13 +23,17 @@ const
 	randomKeySourceLen = randomKeySource.length;
 
 export {
-	ensureObservable,
 	extractViewParams,
 	getPath,
 	setPath,
 	callViewFunction,
 	getRandomKey
-}
+};
+
+export {
+	DEFAULT_TARGET,
+	DEFAULT_EVENTS_CHANGE
+};
 
 class Parameter {
 	constructor(tieKey, rawPath, path, targetProperty, changeEvent, isFunctional, fParams) {
@@ -43,16 +45,6 @@ class Parameter {
 		this.isFunctional = isFunctional;
 		this.fParams = fParams;
 		this.iClasses = null;
-	}
-}
-
-function ensureObservable(o) {
-	if (!o) {
-		return Observable.from({});
-	} else if (Observable.isObservable(o)) {
-		return o;
-	} else {
-		return Observable.from(o);
 	}
 }
 
@@ -178,16 +170,16 @@ function getDefaultChangeEvent(element) {
 }
 
 function getPath(ref, path) {
-	if (!ref) return null;
+	if (!ref) return ref;
 	const p = path, l = p.length;
 	if (!l) return ref;
 	let r = ref, i = 0, n;
-	for (; i < l - 1; i++) {
+	for (; i < l; i++) {
 		n = p[i];
 		r = r[n];
 		if (r === null || typeof r === 'undefined') return r;
 	}
-	return r[p[i]];
+	return r;
 }
 
 function setPath(ref, path, value) {

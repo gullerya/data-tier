@@ -2,7 +2,7 @@
 	"tests": {
 		"url": "/tests/test.html",
 		"ttl": 24000,
-		"maxSkip": 3
+		"maxSkip": 4
 	},
 	"coverage": {
 		"include": [

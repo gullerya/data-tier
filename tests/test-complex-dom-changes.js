@@ -8,21 +8,19 @@ suite.runTest({ name: 'adding object and immediatelly removing it' }, async test
 		tn = test.getRandom(8),
 		m = DataTier.ties.create(tn, []);
 
-	//	adding object 1, then adding the tied element
+	//	adding object 1, then adding tied scoped element
 	m.push({ test: 'someA' });
 	const e1 = document.createElement('div');
-	DataTier.ties.create(e1);
 	e1.dataset.tie = `${tn}:0 => scope, scope:test`;
 	document.body.appendChild(e1);
 
-	//	adding object 2, then adding the tied element
+	//	adding object 2, then adding tied scoped element
 	m.push({ test: 'someB' });
 	const e2 = document.createElement('div');
-	DataTier.ties.create(e2);
 	e2.dataset.tie = `${tn}:1 => scope, scope:test`;
 	document.body.appendChild(e2);
 
-	//	removing object 2, and removing the tied element
+	//	verify
 	await test.waitNextMicrotask();
 	test.assertEqual('someA', e1.textContent);
 	test.assertEqual('someB', e2.textContent);

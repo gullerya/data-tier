@@ -153,7 +153,7 @@ export class DOMProcessor {
 			this._elementsMap.add(element);
 		}
 
-		if (element.tagName.indexOf('-') > 0 && !element.matches(':defined')) {
+		if (element.nodeName.indexOf('-') > 0 && !element.matches(':defined')) {
 			this._waitDefined(element);
 		} else {
 			const viewParams = this._dtInstance.views.addView(element);
@@ -173,7 +173,7 @@ export class DOMProcessor {
 	}
 
 	_waitDefined(element) {
-		customElements.whenDefined(element.tagName.toLowerCase()).then(() => {
+		customElements.whenDefined(element.nodeName.toLowerCase()).then(() => {
 			this._elementsMap.delete(element);
 			this._addOne(element);
 		});
@@ -249,11 +249,8 @@ export class DOMProcessor {
 				}
 			} else {
 				const tie = this._dtInstance.ties.get(param.tieKey);
-				if (tie) {
-					let value = getPath(tie, param.path);
-					if (typeof value === 'undefined') {
-						value = '';
-					}
+				if (tie !== undefined) {
+					const value = getPath(tie, param.path);
 					this._dtInstance.views.setViewProperty(element, param, value);
 				}
 			}

@@ -20,11 +20,30 @@ Defines a new tie, processes `model`, updates views (synchronously) and returns 
 | Parameter | Type                     | Default | Description |
 |-----------|--------------------------|---------|-------------|
 | `key`     | string, required, unique |         | MUST match `/^[a-zA-Z0-9]+$/` pattern; used in other APIs and HTML declarations to identify the tie |
-| `model`   | object/Array, optional   | `{}`    | MUST NOT be null; processed into `Observable` (if not yet), so the provided `model` remains unchanged |
+| `model`   | any, optional            | `{}`    | model, see different types handling below |
 
 | Returns   | Description |
 |-----------|-------------|
-| object    | `Observable` created from the provided model; read about `Observable` creation, APIs and more [here](https://www.npmjs.com/package/object-observer)
+| any       | effective model is returned, see detailed table below |
+
+#### Model processing
+
+Provided model parameter can be virtually anything.
+
+Most useful and thus interesting use-case is non-nullish `object` (including `Array`). This type is turned into `Observable`, including cloning of the origally provided model, which remains untouched. It is this `Observable` clone, that is returned by the `create` method.
+
+If the provided model is already `Observable`, it is taken as is.
+
+> Important: Since it is essential part of the `data-tier`, it is highly advised to read about `Observable` creation, APIs and more [here](https://www.npmjs.com/package/object-observer).
+
+Full types handling table:
+| Provided model          | Resulting model (also return value) |
+|-------------------------|-----------------|
+| `undefined`             | defaults to `{}`, see `object` below |
+| `null`                  | `null` |
+| `object` (`Observable`) | remain as it is |
+| `object`                | turned into `Observable`
+| primitive               | `boolean`, `number`, `string` remain as they are |
 
 #### Examples
 ```javascript
@@ -61,7 +80,7 @@ If the tie is not found, if will be created (see `create` above).
 | Parameter | Type             | Description |
 |-----------|------------------|-------------|
 | `key`     | string, required | tie's key   |
-| `model`   | object/Array             | MUST NOT be null; processed into `Observable` (if not yet), so the provided `model` remains unchanged |
+| `model`   | any              | MUST NOT be null; processed into `Observable` (if not yet), so the provided `model` remains unchanged |
 
 | Returns   | Description |
 |-----------|-------------|
