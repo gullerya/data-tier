@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2021-01-30
+### Changed
+- [Issue #58](https://github.com/gullerya/data-tier/issues/58) - allowed to create/update ties with primitive model (`boolean`, `number`, `string`); won't throw now and will corretly do a ties updates
+- [Issue #59](https://github.com/gullerya/data-tier/issues/59) - capable of create/update ties with `null`; won't throw now and will correctly do a ties updates
+- `nullish` model values (`undefined`, `null`) transformation into an empty string is now limited to only:
+  - `textContent` target property for any element
+  - `value` target property for only these: `INPUT`, `SELECT`, `TEXTAREA`
+
 ## [3.0.0] - 2021-01-28
 ### Changed
 - [Issue #60](https://github.com/gullerya/data-tier/issues/60):
