@@ -1,2 +1,2 @@
 fixes:
-  - "/dist/::/src/"
+  - /dist/::/src/
