@@ -34,7 +34,7 @@ const suite = getSuite({ name: 'Testing utils' });
 //	performance tuning
 suite.runTest({ name: 'getPath - performance tuning', skip: true }, test => {
 	const o = { levelA: { levelB: { levelC: 'text' } } }
-	let i = 100000000;
+	let i = 100000;
 	while (i--) {
 		test.assertEqual('text', Utils.getPath(o, ['levelA', 'levelB', 'levelC']));
 	}
