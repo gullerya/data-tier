@@ -14,7 +14,7 @@ Beside the actual APIs, it is very important to understand `data-tier`'s lifecyc
 import { ties } from './dist/data-tier.min.js';
 ```
 
-### `ties.`**`create(key[, model])`**
+### `ties.create(key[, model])`
 Defines a new tie, processes `model`, updates views (synchronously) and returns the processed `model` ready for further usage by application.
 
 | Parameter | Type                     | Default | Description |
@@ -54,7 +54,7 @@ console.log(tiedUser === oUser);
 //  true - if an Observable provided, it's taken as it is
 ```
 
-### `ties.`**`update(key, model)`**
+### `ties.update(key, model)`
 Updates tie's model, processes `model`, updates views (synchronously) and returns the processed `model` ready for further usage by application.
 If the tie is not found, if will be created (see `create` above).
 
@@ -67,7 +67,7 @@ If the tie is not found, if will be created (see `create` above).
 |-----------|-------------|
 | object    | `Observable` created from the provided model; read about `Observable` creation, APIs and more [here](https://www.npmjs.com/package/object-observer)
 
-### `ties.`**`get(key)`**
+### `ties.get(key)`
 Retrieves tie's model.
 
 | Parameter | Type             | Description |
@@ -78,7 +78,7 @@ Retrieves tie's model.
 |------------------|-------------|
 | object/undefined | `Observable` model (see `create`/`update` APIs); `undefined` if none found |
 
-### `ties.`**`remove(tieToRemove)`**
+### `ties.remove(tieToRemove)`
 Discards/unties the specified tie.
 
 Note: untying won't have any effect on the views, they will remain at their current state. If views cleanup desired, one should explicitly reset the model (to `null`, for example).
