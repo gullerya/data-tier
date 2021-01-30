@@ -1,31 +1,32 @@
 # API
 
-`data-tier` APIs split into the __functional__ (JS) part and the __declarative__ tying syntax in HTML.
+`data-tier` API splits into __operational__ (JavaScript) and __declarative__ (HTML).
 
-While Model-to-View data flow is pretty simple and straightforward, the opposite direction, View-to-Model, relys on some pre-conditions. I'll touch this part below as well.
+Beside the actual APIs, it is very important to understand `data-tier`'s lifecycle, its capabilities and limitations. See [Lifecycle](./lifecycle.md) documentation dedicated just to that.
 
-Beside the actual API's signatures, there is much of importance of understaning `data-tier`'s lifecycle and its runtime capabilities/limitations. See [Lifecycle](./lifecycle.md) documentation dedicated just to that part.
-
-> In the snippets below I'll assume, that the following statement was used to import the library: `import { ties } from './dist/data-tier.min.js';`
 
 ---
 
 ## JavaScript part - model definitions and operations
 
-`ties` is a data management namespace, holding model related APIs.
+`ties` is a data management namespace, holding model related APIs:
+```js
+import { ties } from './dist/data-tier.min.js';
+```
 
-### __A__. `const tiedModel = ties.create(key[, model]);`
-Creates (internally) a new tie, processes the `model`, updates the views if any (synchronously) and returns the processed `model` ready for further usage by application.
+### `ties.`**`create(key[, model])`**
+Defines a new tie, processes `model`, updates views (synchronously) and returns the processed `model` ready for further usage by application.
 
-Parameters:
-* __`key`__ `[string]` - unique, MUST match `/^[a-zA-Z0-9]+$/` pattern
-* __`model`__ `[object/Array]` - optional, MUST NOT be null
+| Parameter | Type                     | Default | Description |
+|-----------|--------------------------|---------|-------------|
+| `key`     | string, required, unique |         | MUST match `/^[a-zA-Z0-9]+$/` pattern; used in other APIs and HTML declarations to identify the tie |
+| `model`   | object/Array, optional   | `{}`    | MUST NOT be null; processed into `Observable` (if not yet), so the provided `model` remains unchanged |
 
-Result:
-* __`tiedModel`__ `[Observable]` - created (by cloning) from the provided model, or from an empty object if none provided
-> Read about `Observable` creation, APIs and more [here](https://www.npmjs.com/package/object-observer).
+| Returns   | Description |
+|-----------|-------------|
+| object    | `Observable` created from the provided model; read about `Observable` creation, APIs and more [here](https://www.npmjs.com/package/object-observer)
 
-Examples:
+#### Examples
 ```javascript
 //  provided initial model example
 const band = {
@@ -53,67 +54,50 @@ console.log(tiedUser === oUser);
 //  true - if an Observable provided, it's taken as it is
 ```
 
-### __B__. `const tiedModel = ties.update(key[, model]);`
-Updates a tie's model. If the tie is not found, if will be created via fallback to the method `create` (see above).
-During the update all the flow of model pre-processing (observation) and views update is performed.
+### `ties.`**`update(key, model)`**
+Updates tie's model, processes `model`, updates views (synchronously) and returns the processed `model` ready for further usage by application.
+If the tie is not found, if will be created (see `create` above).
 
-Parameters:
-* __`key`__ `[string]` - tie key, MUST match `/^[a-zA-Z0-9]+$/` pattern
-* __`model`__ `[object/Array]` - optional, MUST NOT be null; if no valid `model` provided the method silently exits
+| Parameter | Type             | Description |
+|-----------|------------------|-------------|
+| `key`     | string, required | tie's key   |
+| `model`   | object/Array             | MUST NOT be null; processed into `Observable` (if not yet), so the provided `model` remains unchanged |
 
-Result:
-* __`tiedModel`__ `[Observable]` - updated or created tied model (see the remarks about model processing/creation in the method `create` definition)
+| Returns   | Description |
+|-----------|-------------|
+| object    | `Observable` created from the provided model; read about `Observable` creation, APIs and more [here](https://www.npmjs.com/package/object-observer)
 
+### `ties.`**`get(key)`**
+Retrieves tie's model.
 
-### __C__. `void ties.remove(tieToRemove);`
+| Parameter | Type             | Description |
+|-----------|------------------|-------------|
+| `key`     | string, required | tie's key   |
+
+| Returns          | Description |
+|------------------|-------------|
+| object/undefined | `Observable` model (see `create`/`update` APIs); `undefined` if none found |
+
+### `ties.`**`remove(tieToRemove)`**
 Discards/unties the specified tie.
 
-Note: untying won't have any effect on the views, the will remain at their last state. If views cleanup desired, one should explicitly reset tie's properties (to `null`, for example) or delete them.
+Note: untying won't have any effect on the views, they will remain at their current state. If views cleanup desired, one should explicitly reset the model (to `null`, for example).
 
-Parameters:
-* __`key`__ `[string/object/Array]` - key or an actual tie model (the one obtained from `create` API call)
+| Parameter | Type                    | Description |
+|-----------|-------------------------|-------------|
+| `key`     | string/object, required | key or the tie's model (the one returned from `create`/`update`/`get` APIs) |
 
-If the tie was created from an `Observable` (see last example above) - it will be untied, but __not revoked__, thus will remain usable by the providing application.
+`Observable` model produced by `create`/`update` APIs will be __revoked__, thus becoming unusable for any further use.
 
-On the opposite, if an `Observable` was crafted during `create` API call, if will be __revoked__, thus becoming unusable for any further use.
+Yet, if the tie was created from an `Observable` provided by application, it will be untied but __not revoked__.
 
-If no tie found by the given `tieToRemove`, nothing will happen.
-
-Examples (continue with examples above):
-```javascript
-//  remove providing the tie's model
-ties.remove(bandModel);
-console.log(bandModel.name);
-//  Error - model was revoked
-
-//  or by key
-ties.remove('userSettings');
-
-ties.remove(tiedUser);
-console.log(tiedUser.firstName);
-//  Uria - provided Observable won't be revoked upon removal
-```
-
-### __C__. `const tiedModel = ties.get(key);`
-
-Retrieves tie by key.
-
-Parameters:
-* __`key`__ `[string]` - key, the tie was created with
-
-Result:
-* __`tiedModel`__ `[Observable]` - tie's model; `undefined` if none found
-
-Example:
-```javascript
-const settingsTie = ties.get('userSettings');
-```
+If no tie found, nothing will happen.
 
 ---
 
 ## HTML part - tying declaration
 
-In order to tie an HTML element to model, the `data-tie` attribute to be used.
+`data-tie` attribute serves to tie HTML element to model.
 
 Model can be tied to an element's __properties__ and __methods__.
 Additionally, tie declaration may specify, which event should be used to bind the 'view' back to model.
@@ -131,14 +115,15 @@ where a single declaration is:
 tieKey[:path] [=> [target] [=> event] ]
 ```
 
-| Part name | Optional | Description                             |
-|-----------|----------| ----------------------------------------|
-| `tieKey`  | no       | tie key (see JS APIs description above) |
-| `path`    | yes      | dot (`.`) separated path into the model object; when provided, MUST follow `tieKey` and prefixed by colon (`:`); when not specified, the whole model used as a tied value |
-| `target`  | yes      | element's property that the model will be assigned to or taken from; when not specified, resolved as explained below |
-| `event`   | yes      | event to be used to update model from the view; when not specified, resoved as explained below |
+`=>` sequence is used as parts separator (with 0 or more spaces around).
+To specify `event` while omitting `target`, use 2 sequental separators.
 
-> Attention! `=>` sequence is used as separator (with 0 or more spaces around). When specifying `event` while omitting `target`, 2 sequental separators must be used.
+| Part name | Required | Description                             |
+|-----------|----------| ----------------------------------------|
+| `tieKey`  | yes      | tie key (see JS APIs description above) |
+| `path`    |          | dot (`.`) separated path into the model object; when provided, MUST follow `tieKey` and prefixed by colon (`:`); when not specified, the whole model used as a tied value |
+| `target`  |          | element's property that the model will be assigned to or taken from; when not specified, resolved as explained below |
+| `event`   |          | event to be used to update model from the view; when not specified, resoved as explained below |
 
 #### Target property - default resolution
 
@@ -150,32 +135,40 @@ Target property, when omitted, resolved thus:
 
 #### Change event - default resolution
 
-Naturally, event property mostly will be omitted, meaning `data-tier` won't do view-to-model binding vector for this declaration.
-The only exception here are the elements below, for which `change` event is listened by default, if not specified otherwise: `INPUT`, `SELECT`, `TEXTAREA`.
+Mostly, event property will be omitted, meaning `data-tier` won't do view-to-model binding (per declaration).
+The only exception here is the elements list below, for which `change` event is listened by default, if not specified otherwise: `INPUT`, `SELECT`, `TEXTAREA`.
 
 ### Properties tying
 
 General rule here is simple - `data-tier` will perform assignment of model (resolving path, if any) to element's property upon initialization or any change of former.
 
-Examples of usages:
+#### Examples
 
-`<span data-tie="userTie:firstName"></span>`
-* `firstName` property of `userTie` to be tied to the `textContent` property (default) of the `span`
+```html
+<span data-tie="userTie:firstName"></span>
+```
+Above reads: `firstName` property of `userTie` to be tied to the `textContent` property (default) of the `span`.
 
-`<user-view data-tie="userTie => data"></user-view>`
-* the whole `userTie` is tied to `data` property of element `user-view`
+```html
+<user-view data-tie="userTie => data"></user-view>
+```
+Above reads: the whole `userTie` is tied to `data` property of element `user-view`.
 
-`<input data-tie="userTie:address.city"></input>`
-* in this case `address.city` property of model will be tied to `value` propety (default) of `input`
-* additionally, `change` event (default) listener will be set up sync `input`'s value back to `address.city` model
+```html
+<input data-tie="userTie:address.city"></input>
+```
+Above reads: `address.city` property of model will be tied to `value` propety (default) of `input`; additionally, `change` event (default) listener will be set up sync `input`'s value back to `address.city` model.
 
-`<textarea data-tie="userTie:description => => input"></textarea>`
-* the tied property is `value`, default for `textarea` elements
-* the view-to-model tying event explicitly set to `input` (instead of the default `change`)
+```html
+<textarea data-tie="userTie:description => => input"></textarea>
+```
+Above reads: the tied property is `value`, default for `textarea` element;
+the view-to-model tying event explicitly set to `input` (instead of the default `change`).
 
-`<date-input data-tie="userTie:birthday => data => change"></date-input>`
-* ties `data` property of custom input component to the `birthday` property of model
-* `change` event is listened for the view changes to be reflected in model
+```html
+<date-input data-tie="userTie:birthday => data => change"></date-input>
+```
+Above reads: ties `data` property of custom input component to the `birthday` property of model; `change` event is listened for the view changes to be reflected in model;
 
 #### Remark A - `dataset`
 
