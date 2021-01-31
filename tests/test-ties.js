@@ -36,7 +36,7 @@ suite.runTest({ name: 'adding a view and then a tie' }, async test => {
 	if (newEl.textContent !== text) test.fail(new Error('expected the content to be "' + text + '", found: ' + newEl.textContent));
 });
 
-suite.runTest({ name: 'tying undefined to ' }, async test => {
+suite.runTest({ name: 'tie to model created with undefined' }, async test => {
 	const
 		newEl = document.createElement('div'),
 		o = { text: 'text test C' },
@@ -86,6 +86,31 @@ suite.runTest({ name: 'setting a tie with an Observable' }, async test => {
 	ties.remove(tieName);
 	test.assertEqual('text test E', o.text);
 });
+
+//	primitive models
+for (const primitiveModel of [true, 123, 'text']) {
+	suite.runTest({ name: `primitive model - create - ${primitiveModel}` }, async test => {
+		const tn = test.getRandom(8);
+		const e = document.createElement('div');
+		e.dataset.tie = tn;
+		ties.create(tn, primitiveModel);
+		document.body.appendChild(e);
+		await test.waitNextMicrotask();
+		test.assertEqual(String(primitiveModel), e.textContent);
+	});
+
+	suite.runTest({ name: `primitive model - update - ${primitiveModel}` }, async test => {
+		const tn = test.getRandom(8);
+		const e = document.createElement('div');
+		e.dataset.tie = tn;
+		ties.create(tn, 'something');
+		document.body.appendChild(e);
+		await test.waitNextMicrotask();
+		test.assertEqual('something', e.textContent);
+		ties.update(tn, primitiveModel);
+		test.assertEqual(String(primitiveModel), e.textContent);
+	});
+}
 
 //	TODO: move this test to scoping area or else, when scope is officially supported
 suite.runTest({ name: 'update tie - create non-existing - scope/element key' }, test => {
