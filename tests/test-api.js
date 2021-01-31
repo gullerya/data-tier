@@ -22,6 +22,10 @@ suite.runTest({ name: 'add/remove Tie - positive simple flow' }, test => {
 	DataTier.ties.remove('someNonExistingTieNameShouldNotFailTheFlow');
 });
 
+suite.runTest({ name: 'Observable is exposed' }, test => {
+	test.assertTrue(typeof DataTier.Observable === 'object');
+});
+
 suite.runTest({ name: 'create tie - negative - no key', expectError: 'invalid key' }, () => {
 	DataTier.ties.create();
 });

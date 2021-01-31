@@ -1,18 +1,17 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import { Observable } from '../dist/object-observer.min.js';
-import { ties } from '../dist/data-tier.js';
+import { ties, Observable } from '../dist/data-tier.js';
 
 const suite = getSuite({ name: 'Testing ties' });
 
 suite.runTest({ name: 'adding a tie and then a view' }, async test => {
 	const
-		tieName = test.getRandom(8),
+		tn = test.getRandom(8),
 		newEl = document.createElement('div'),
 		text = 'text test A';
 
-	ties.create(tieName, { name: text });
+	ties.create(tn, { name: text });
 
-	newEl.dataset.tie = tieName + ':name => textContent';
+	newEl.dataset.tie = `${tn}:name => textContent`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
@@ -22,28 +21,29 @@ suite.runTest({ name: 'adding a tie and then a view' }, async test => {
 
 suite.runTest({ name: 'adding a view and then a tie' }, async test => {
 	const
-		tieNameA = test.getRandom(8),
-		tieNameB = test.getRandom(8),
+		tkA = test.getRandom(8),
+		tkB = test.getRandom(8),
 		newEl = document.createElement('div'),
 		text = 'text test B';
 
-	newEl.dataset.tie = tieNameA + ':nonce => nonce, ' + tieNameB + ':name';
+	newEl.dataset.tie = `${tkA}:nonce => nonce, ${tkB}:name`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
 
-	ties.create(tieNameB, { name: text });
+	ties.create(tkB, { name: text });
 	if (newEl.textContent !== text) test.fail(new Error('expected the content to be "' + text + '", found: ' + newEl.textContent));
 });
 
 suite.runTest({ name: 'tie to model created with undefined' }, async test => {
 	const
+		tk = test.getRandom(8),
 		newEl = document.createElement('div'),
 		o = { text: 'text test C' },
-		t = ties.create('tiesTestC');
+		t = ties.create(tk);
 
 	test.assertTrue(Observable.isObservable(t));
-	newEl.dataset.tie = 'tiesTestC:text => textContent';
+	newEl.dataset.tie = `${tk}:text => textContent`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
@@ -55,59 +55,59 @@ suite.runTest({ name: 'tie to model created with undefined' }, async test => {
 
 suite.runTest({ name: 'setting a tie with a non Observable' }, async test => {
 	const
-		tieName = test.getRandom(8),
+		tk = test.getRandom(8),
 		newEl = document.createElement('div'),
 		o = { text: 'text test E' },
-		t = ties.create(tieName, o);
+		t = ties.create(tk, o);
 
-	newEl.dataset.tie = `${tieName}:text => textContent`;
+	newEl.dataset.tie = `${tk}:text => textContent`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
 	test.assertEqual(newEl.textContent, t.text);
 
-	ties.remove(tieName);
+	ties.remove(tk);
 	test.assertEqual('text test E', t.text);
 });
 
 suite.runTest({ name: 'setting a tie with an Observable' }, async test => {
 	const
-		tieName = test.getRandom(8),
+		tk = test.getRandom(8),
 		newEl = document.createElement('div'),
 		o = Observable.from({ text: 'text test E' });
 
-	ties.create(tieName, o);
-	newEl.dataset.tie = `${tieName}:text`;
+	ties.create(tk, o);
+	newEl.dataset.tie = `${tk}:text`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();
 	test.assertEqual(newEl.textContent, o.text);
 
-	ties.remove(tieName);
+	ties.remove(tk);
 	test.assertEqual('text test E', o.text);
 });
 
 //	primitive models
 for (const primitiveModel of [true, 123, 'text']) {
 	suite.runTest({ name: `primitive model - create - ${primitiveModel}` }, async test => {
-		const tn = test.getRandom(8);
+		const tk = test.getRandom(8);
 		const e = document.createElement('div');
-		e.dataset.tie = tn;
-		ties.create(tn, primitiveModel);
+		e.dataset.tie = tk;
+		ties.create(tk, primitiveModel);
 		document.body.appendChild(e);
 		await test.waitNextMicrotask();
 		test.assertEqual(String(primitiveModel), e.textContent);
 	});
 
 	suite.runTest({ name: `primitive model - update - ${primitiveModel}` }, async test => {
-		const tn = test.getRandom(8);
+		const tk = test.getRandom(8);
 		const e = document.createElement('div');
-		e.dataset.tie = tn;
-		ties.create(tn, 'something');
+		e.dataset.tie = tk;
+		ties.create(tk, 'something');
 		document.body.appendChild(e);
 		await test.waitNextMicrotask();
 		test.assertEqual('something', e.textContent);
-		ties.update(tn, primitiveModel);
+		ties.update(tk, primitiveModel);
 		test.assertEqual(String(primitiveModel), e.textContent);
 	});
 }

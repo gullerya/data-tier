@@ -2,6 +2,8 @@ import { DOMProcessor } from './dom-processor.js';
 import { Ties } from './ties.js';
 import { Views } from './views.js';
 
+export { Observable } from './ties.js';
+
 export const version = 'DT-VERSION-PLACEHOLDER';
 
 const initStartTime = performance.now();

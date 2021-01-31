@@ -17,6 +17,10 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
+* __3.1.2__
+  * implemented [Issue #68](https://github.com/gullerya/data-tier/issues/68) - exposing `Observable` implementation that is bundled with this `data-tier` version
+  * added `cache-control` to the CDN deployment
+
 * __3.1.0__
   * implemented [Issue #58](https://github.com/gullerya/data-tier/issues/58) - allowed to create/update ties with primitive model (`boolean`, `number`, `string`)
   * implemented [Issue #59](https://github.com/gullerya/data-tier/issues/59) - capable of create/update ties with null
@@ -30,10 +34,6 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
     * removed `changeEvent` property support (less intrusive approach aggenda)
     * added new syntax to specify the event to listen to per tied property
     * added support for multiple events as per multiple properties tied
-
-* __2.12.0__
-  * upgaded dependencies
-  * implemented [Issue #61](https://github.com/gullerya/data-tier/issues/61) - release version automation
 
 ## Loading the library
 
