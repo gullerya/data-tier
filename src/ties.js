@@ -1,6 +1,10 @@
 import { Observable } from './object-observer.min.js';
 import { getPath, callViewFunction, getRandomKey } from './utils.js';
 
+export {
+	Observable
+};
+
 const
 	MODEL_KEY = Symbol('model.key'),
 	tieNameValidator = /^[a-zA-Z0-9]+$/,
@@ -27,7 +31,7 @@ class Tie {
 
 	processDataChanges(changes) {
 		const
-			tieViews = this.ties.dti.views.obtainTieViews(this.key),
+			tieViews = this.ties._dti.views.obtainTieViews(this.key),
 			tiedPaths = tieViews._pathsCache,
 			tiedPathsLength = tiedPaths.length;
 		let i, l, change, changedObject, arrPath, apl, changedPath = '', pl, tiedPath, pathViews, pvl;
@@ -87,7 +91,7 @@ class Tie {
 	}
 
 	updateView(element, tiedPath, useChangeValue, change) {
-		const viewParams = element[this.ties.dti.paramsKey];
+		const viewParams = element[this.ties._dti.paramsKey];
 		let i = viewParams.length;
 		while (i--) {
 			const param = viewParams[i];
@@ -120,7 +124,7 @@ class Tie {
 				} else {
 					newValue = getPath(this[MODEL_KEY], param.path);
 				}
-				this.ties.dti.views.setViewProperty(element, param, newValue);
+				this.ties._dti.views.setViewProperty(element, param, newValue);
 			}
 		}
 	}
@@ -128,15 +132,15 @@ class Tie {
 
 export class Ties {
 	constructor(dataTierInstance) {
-		this.dti = dataTierInstance;
-		this.ties = {};
+		this._dti = dataTierInstance;
+		this._ties = {};
 	}
 
 	get(key) {
 		const k = typeof key === 'string'
 			? key
 			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
-		const t = this.ties[k];
+		const t = this._ties[k];
 		return t ? t.model : undefined;
 	}
 
@@ -155,15 +159,15 @@ export class Ties {
 		}
 
 		Ties.validateTieKey(k);
-		if (this.ties[k]) {
+		if (this._ties[k]) {
 			throw new Error(`tie '${k}' already exists`);
 		}
 		if (key.nodeType) {
-			this.dti.views.addScope(key);
+			this._dti.views.addScope(key);
 		}
 
 		const tie = new Tie(k, model, this);
-		this.ties[k] = tie;
+		this._ties[k] = tie;
 		tie.processDataChanges([{ path: [] }]);
 
 		return tie.model;
@@ -177,7 +181,7 @@ export class Ties {
 		const k = typeof key === 'string'
 			? key
 			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
-		const tie = this.ties[k];
+		const tie = this._ties[k];
 		if (tie) {
 			if (tie.model !== model) {
 				tie.model = model;
@@ -195,16 +199,16 @@ export class Ties {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
 				finalTieKeyToRemove = tieToRemove.getAttribute('data-tie-scope');
 			} else {
-				finalTieKeyToRemove = Object.keys(this.ties).find(key => this.ties[key].model === tieToRemove);
+				finalTieKeyToRemove = Object.keys(this._ties).find(key => this._ties[key].model === tieToRemove);
 			}
 		} else if (typeof tieToRemove !== 'string') {
 			throw new Error(`invalid tieToRemove parameter ${tieToRemove}`);
 		}
 
-		const tie = this.ties[finalTieKeyToRemove];
+		const tie = this._ties[finalTieKeyToRemove];
 		if (tie) {
-			delete this.ties[finalTieKeyToRemove];
-			this.dti.views.deleteTieViews(finalTieKeyToRemove);
+			delete this._ties[finalTieKeyToRemove];
+			this._dti.views.deleteTieViews(finalTieKeyToRemove);
 		}
 	}
 
