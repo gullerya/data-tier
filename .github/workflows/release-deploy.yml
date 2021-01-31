@@ -30,15 +30,9 @@ jobs:
       - name: Get release version
         run: echo "RELEASE_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
 
-      # Build & Verify
+      # Build
       - name: Build
         run: npm run build
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm run test
 
       # Deploy
       - name: Deploy

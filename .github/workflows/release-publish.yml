@@ -30,9 +30,15 @@ jobs:
 
       # Publish to NPM
       - name: Publish to NPM
-        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: npm publish
+
+      # Deploy to CDN (trigger)
+      - name: Tirgger deploy to CDN
+        run: |
+          git tag deploy
+          git push origin HEAD:master deploy
 
       # Bump version to next snapshot
       - name: Bump snapshot version
