@@ -17,7 +17,7 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
-* __3.1.2__
+* __3.1.3__
   * implemented [Issue #68](https://github.com/gullerya/data-tier/issues/68) - exposing `Observable` implementation that is bundled with this `data-tier` version
   * added `cache-control` to the CDN deployment
 

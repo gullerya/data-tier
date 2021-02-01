@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.1.2] - 2021-01-31
+## [3.1.3] - 2021-02-01
 ### Added
 - [Issue #68](https://github.com/gullerya/data-tier/issues/68) - exposing `Observable` implementation that is bundled with this `data-tier` version
 - `cache-control` to the CDN deployment
