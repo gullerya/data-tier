@@ -6,13 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.1.4] - 2021-03-29
 ### Changed
+- documentation updated
 - dependencies maintainance
 
 ## [3.1.3] - 2021-02-01
 ### Added
 - [Issue #68](https://github.com/gullerya/data-tier/issues/68) - exposing `Observable` implementation that is bundled with this `data-tier` version
-- `cache-control` to the CDN deployment
+- `cache-control` added to the CDN deployment
 
 ## [3.1.0] - 2021-01-30
 ### Changed

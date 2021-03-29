@@ -5,7 +5,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/gullerya/data-tier/master.svg)](https://codecov.io/gh/gullerya/data-tier/branch/master)
 [![Codacy](https://img.shields.io/codacy/grade/eb34053e002648519fd3a2d78c45677b.svg?logo=codacy)](https://app.codacy.com/app/gullerya/data-tier)
 
-## Overview
+# `data-tier`
 
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/Javascript applications.
 `data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [`object-observer`](https://github.com/gullerya/object-observer) as the default `Observable` provider.
@@ -17,31 +17,52 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 
 #### Versions ([full changelog](./docs/changelog.md))
 
-* __3.1.3__
-  * implemented [Issue #68](https://github.com/gullerya/data-tier/issues/68) - exposing `Observable` implementation that is bundled with this `data-tier` version
-  * added `cache-control` to the CDN deployment
+- __3.1.4__
+  - documentation
+  - dependencies maintenance
 
-* __3.1.0__
-  * implemented [Issue #58](https://github.com/gullerya/data-tier/issues/58) - allowed to create/update ties with primitive model (`boolean`, `number`, `string`)
-  * implemented [Issue #59](https://github.com/gullerya/data-tier/issues/59) - capable of create/update ties with null
-  * nullish model values (`null`, `undefined`) transformation into an empty string is now limited to only:
-    * `textContent` target property for any element
-	* `value` target property for these: `INPUT`, `SELECT`, `TEXTAREA`
+- __3.1.3__
+  - implemented [Issue #68](https://github.com/gullerya/data-tier/issues/68) - exposing `Observable` implementation that is bundled with this `data-tier` version
+  - added `cache-control` to the CDN deployment
 
-* __3.0.0__
-  * implemented [Issue #60](https://github.com/gullerya/data-tier/issues/60):
-    * removed `defaultTieTarget` property support (less intrusive approach aggenda)
-    * removed `changeEvent` property support (less intrusive approach aggenda)
-    * added new syntax to specify the event to listen to per tied property
-    * added support for multiple events as per multiple properties tied
+- __3.1.0__
+  - implemented [Issue #58](https://github.com/gullerya/data-tier/issues/58) - allowed to create/update ties with primitive model (`boolean`, `number`, `string`)
+  - implemented [Issue #59](https://github.com/gullerya/data-tier/issues/59) - capable of create/update ties with null
+  - nullish model values (`null`, `undefined`) transformation into an empty string is now limited to only:
+    - `textContent` target property for any element
+	- `value` target property for these: `INPUT`, `SELECT`, `TEXTAREA`
 
-## Loading the library
+## Installation
 
-`data-tier` provided as an ES6 module:
+Use regular `npm install data-tier --save-prod` to use the library from your local environment.
 
-```javascript
-import * as DataTier from './dist/data-tier.min.js';
+```js
+import * as DataTier from './node_modules/dist/data-tier.min.js';
 ```
+
+Additionally, a __CDN__ deployment available (AWS driven), so one can import it as following:
+```js
+import * as DataTier from 'https://libs.gullerya.com/data-tier/x.y.z/data-tier.min.js';
+```
+
+> Note: replace the `x.y.z` by the desired version, one of the listed in the [changelog](docs/changelog.md).
+
+CDN features:
+- HTTPS only, no untrusted man-in-the-middle
+- highly available (with many geo spread edges)
+- agressive caching setup
+
+## Documentation
+
+[__API__](./docs/api-reference.md)
+
+[__WebComponents, ShadowDOM, MicroFrontends__](./docs/web-components.md)
+
+[__Tutorials__](./docs/tutorials.md)
+
+## Security
+
+Security policy is described [here](https://github.com/gullerya/data-tier/blob/master/docs/security.md). If/when any concern raised, please follow the process.
 
 ## Basic example
 
@@ -109,11 +130,3 @@ Functionalities like `repeater`, `router` and other well known UI paradigms shou
 Me myself investing some effort in building `data-tier` oriented components. I'll maintain the list below, updating it from time to time (please update me if you have something to add here).
 * [`data-tier-list`](https://www.npmjs.com/package/data-tier-list) - repeater-like component to render a list of a similar items based on a single template
 * [`i18n`](https://www.npmjs.com/package/@gullerya/i18n) - internationalization library, mostly concerned with translation, where dynamic replacement of the localized texts upon active locale change is driven by `data-tier`
-
-## Documentation
-
-[__API__](./docs/api-reference.md)
-
-[__WebComponents, ShadowDOM, MicroFrontends__](./docs/web-components.md)
-
-[__Tutorials__](./docs/tutorials.md)
