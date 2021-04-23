@@ -11,7 +11,8 @@ class Movable extends HTMLElement {
 
 customElements.define('movable-element-b', Movable);
 
-suite.runTest({ name: 'perf test - many changes in loop- functional tying', timeout: 82000, skip: true }, async () => {
+suite.runTest({ name: 'perf test - many changes in loop- functional tying', timeout: 82000, skip: true }, async test => {
+	const tn = test.getRandom(8);
 	const pg = document.createElement('div');
 	pg.style.cssText = 'position: relative;width: 200px;height: 200px; border: 1px solid #aaa';
 
@@ -19,9 +20,9 @@ suite.runTest({ name: 'perf test - many changes in loop- functional tying', time
 	for (let i = 0; i < 500; i++) {
 		const m = document.createElement('movable-element-b');
 		m.style.cssText = 'position: absolute;width: 10px;height: 10px; border-radius: 5px; background-color: rgb(' + 255 * Math.random() + ',' + 255 * Math.random() + ',' + 255 * Math.random() + ');';
-		m.dataset.tie = 'move(mb' + i + ':top, mb' + i + ':left)';
+		m.dataset.tie = 'move(' + tn + i + ':top, ' + tn + i + ':left)';
 		movables.push({
-			t: DataTier.ties.create('mb' + i, { top: 190 * Math.random(), left: 190 * Math.random() }),
+			t: DataTier.ties.create(tn + i, { top: 190 * Math.random(), left: 190 * Math.random() }),
 			xi: 3 * Math.random(),
 			yi: 3 * Math.random()
 		});
