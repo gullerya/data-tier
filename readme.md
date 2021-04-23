@@ -7,7 +7,7 @@
 
 # `data-tier`
 
-`data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/Javascript applications.
+`data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/JavaScript applications.
 `data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [`object-observer`](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
 It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts. Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will also have a bunch of useful information on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
@@ -15,32 +15,16 @@ It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycl
 #### Support matrix
 ![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](./docs/icons/edge-chromium.png)<sub>79+</sub>
 
-#### Versions ([full changelog](./docs/changelog.md))
-
-- __3.1.4__
-  - documentation
-  - dependencies maintenance
-
-- __3.1.3__
-  - implemented [Issue #68](https://github.com/gullerya/data-tier/issues/68) - exposing `Observable` implementation that is bundled with this `data-tier` version
-  - added `cache-control` to the CDN deployment
-
-- __3.1.0__
-  - implemented [Issue #58](https://github.com/gullerya/data-tier/issues/58) - allowed to create/update ties with primitive model (`boolean`, `number`, `string`)
-  - implemented [Issue #59](https://github.com/gullerya/data-tier/issues/59) - capable of create/update ties with null
-  - nullish model values (`null`, `undefined`) transformation into an empty string is now limited to only:
-    - `textContent` target property for any element
-	- `value` target property for these: `INPUT`, `SELECT`, `TEXTAREA`
+#### Changelog is found [here]](./docs/changelog.md)
 
 ## Installation
 
-Use regular `npm install data-tier --save-prod` to use the library from your local environment.
-
+Use regular `npm install data-tier --save-prod` to use the library from your local environment:
 ```js
-import * as DataTier from './node_modules/dist/data-tier.min.js';
+import * as DataTier from 'node_modules/data-tier/dist/data-tier.min.js';
 ```
 
-Additionally, a __CDN__ deployment available (AWS driven), so one can import it as following:
+Alternatively, a __CDN__ deployment available (AWS driven), so one can import it as following:
 ```js
 import * as DataTier from 'https://libs.gullerya.com/data-tier/x.y.z/data-tier.min.js';
 ```
