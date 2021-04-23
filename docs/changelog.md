@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.1.5] - 2021-04-24
+## [3.1.6] - 2021-04-24
 ### Added
 - [Issue #70](https://github.com/gullerya/data-tier/issues/70) - added manually triggered release
 ### Changed
