@@ -60,13 +60,27 @@ export class DOMProcessor {
 	}
 
 	_domChangesListener(changes) {
-		const l = changes.length;
-		let i = 0, change, changeType;
-
-		for (; i < l; i++) {
+		let change, changeType, nodes, ni, nl, next;
+		for (let i = 0, l = changes.length; i < l; i++) {
 			change = changes[i];
 			changeType = change.type;
-			if (changeType === 'attributes') {
+			if (changeType === 'childList') {
+				nodes = change.addedNodes;
+				for (ni = 0, nl = nodes.length; ni < nl; ni++) {
+					next = nodes[ni];
+					if (next.nodeType === Node.ELEMENT_NODE) {
+						this._addTree(next);
+					}
+				}
+
+				nodes = change.removedNodes;
+				for (ni = 0, nl = nodes.length; ni < nl; ni++) {
+					next = nodes[ni];
+					if (next.nodeType === Node.ELEMENT_NODE) {
+						this._dropTree(next);
+					}
+				}
+			} else if (changeType === 'attributes') {
 				const
 					attributeName = change.attributeName,
 					node = change.target,
@@ -74,22 +88,6 @@ export class DOMProcessor {
 					newValue = node.getAttribute(attributeName);
 				if (attributeName === 'data-tie' && oldValue !== newValue) {
 					this._onTieParamChange(node, newValue, oldValue);
-				}
-			} else if (changeType === 'childList') {
-				const an = change.addedNodes;
-				for (let ai = 0, al = an.length; ai < al; ai++) {
-					let next = an[ai];
-					if (next.nodeType === Node.ELEMENT_NODE) {
-						this._addTree(next);
-					}
-				}
-
-				const rn = change.removedNodes;
-				for (let di = 0, dl = rn.length; di < dl; di++) {
-					let next = rn[di];
-					if (next.nodeType === Node.ELEMENT_NODE) {
-						this._dropTree(next);
-					}
 				}
 			}
 		}

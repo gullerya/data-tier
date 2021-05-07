@@ -22,41 +22,11 @@ export class Views {
 	}
 
 	addView(element, tieParams) {
-		let tieParam, fParams, fp;
-		let i = tieParams.length, l;
-		while (i--) {
-			tieParam = tieParams[i];
-			if (tieParam.isFunctional) {
-				fParams = tieParam.fParams;
-				l = fParams.length;
-				while (l--) {
-					fp = fParams[l];
-					this._seekAndInsertView(fp, element);
-				}
-			} else {
-				this._seekAndInsertView(tieParam, element);
-			}
-		}
-		element[this.dti.paramsKey] = tieParams;
+		this._handleView(element, tieParams, true);
 	}
 
 	delView(element, tieParams) {
-		let tieParam, fParams, fp;
-		let i = tieParams.length, l;
-		while (i--) {
-			tieParam = tieParams[i];
-			if (tieParam.isFunctional) {
-				fParams = tieParam.fParams;
-				l = fParams.length;
-				while (l--) {
-					fp = fParams[l];
-					this._seekAndRemoveView(fp, element);
-				}
-			} else {
-				this._seekAndRemoveView(tieParam, element);
-			}
-		}
-		delete element[this.dti.paramsKey];
+		this._handleView(element, tieParams, false);
 	}
 
 	addScope(element) {
@@ -86,6 +56,29 @@ export class Views {
 
 	delScope() {
 		throw new Error('not implemented');
+	}
+
+	_handleView(element, tieParams, toAdd) {
+		let tieParam, fParams, fp;
+		let i = tieParams.length, l;
+		while (i--) {
+			tieParam = tieParams[i];
+			if (tieParam.isFunctional) {
+				fParams = tieParam.fParams;
+				l = fParams.length;
+				while (l--) {
+					fp = fParams[l];
+					this[toAdd ? '_seekAndInsertView' : '_seekAndRemoveView'](fp, element);
+				}
+			} else {
+				this[toAdd ? '_seekAndInsertView' : '_seekAndRemoveView'](tieParam, element);
+			}
+		}
+		if (toAdd) {
+			element[this.dti.paramsKey] = tieParams;
+		} else {
+			delete element[this.dti.paramsKey];
+		}
 	}
 
 	_seekAndInsertView(tieParam, element) {
@@ -132,17 +125,17 @@ export class Views {
 		let tmp = element, result;
 		do {
 			result = tmp.getAttribute('data-tie-scope');
-			if (!result) {
-				tmp = tmp.parentNode;
-				if (tmp.host) {
-					tmp = tmp.host;
-				}
+			if (result) {
+				break;
 			}
-		} while (!result && tmp && tmp.nodeType !== Node.DOCUMENT_NODE);
+			tmp = tmp.parentNode;
+			if (tmp.host) {
+				tmp = tmp.host;
+			}
+		} while (tmp && tmp.nodeType !== Node.DOCUMENT_NODE);
 		return result;
 	}
 
-	//	TOOD: this function may become stateless, see remark below
 	setViewProperty(elem, param, value) {
 		const targetProperty = param.targetProperty;
 		try {
@@ -152,7 +145,6 @@ export class Views {
 		}
 	}
 
-	//	TOOD: this function may become stateless, see remark below
 	_unsafeSetProperty(view, param, value, targetProperty) {
 		if (targetProperty === 'textContent') {
 			this._setTextContentProperty(view, value);
