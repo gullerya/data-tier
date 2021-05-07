@@ -4,7 +4,7 @@ Below I'll exemplify a usage of `data-tier` with a very simple cases, going from
 
 ## One way - primitive
 
-> Note: when speaking about one way binding here, it is always assumes 'model to view' way.
+> Note: when speaking about one way binding here, it is always assumed 'model to view' way.
 
 [CodePen - tutorial 1](https://codepen.io/gullerya/pen/YzZPZmr)
 
@@ -20,7 +20,8 @@ import { ties } from 'https://libs.gullerya.com/data-tier/3.1.6/data-tier.js';
 ties.create('tutorial1', 'Simple primitive text');
 ```
 
-`tutorial1` is a __tie key__. Each __tie__ is a model.
+`tutorial1` is the __tie key__.
+__Tie__ is a model managing object.
 There can be as many ties as needed, each identified by its unique key.
 
 Tying declaration, as in the `span` above, will always refer to the tie/s by key.
