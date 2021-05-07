@@ -14,15 +14,15 @@ Primary reasons for `data-tier` (or - why bother):
 - performant and robust data handling due to [`object-observer`](https://github.com/gullerya/object-observer)
 - perfectly suited for web-components based applications
 
-It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts.
+It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.md) documentation for a main concepts.
 
-> Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will provide a full author's take on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+> Once ready, [`data-tier`'s approach to client app architecture](docs/client-app-architecture.md) will provide a full author's take on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
 
 `data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
-![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](./docs/icons/edge-chromium.png)<sub>79+</sub>
+![CHROME](docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](docs/icons/edge-chromium.png)<sub>79+</sub>
 
-Changelog is found [here](./docs/changelog.md).
+Changelog is found [here](docs/changelog.md).
 
 ## Installation
 
@@ -47,11 +47,11 @@ CDN features:
 
 ## Documentation
 
-[Starting walkthrough](./docs/walkthrough.md)
+[Starting walkthrough](docs/walkthrough.md)
 
-[Deep dive - API](./docs/api-reference.md)
+[Deep dive - API](docs/api-reference.md)
 
-[Use cases - WebComponents, ShadowDOM, MicroFrontends](./docs/web-components.md)
+[Use cases - WebComponents, ShadowDOM, MicroFrontends](docs/web-components.md)
 
 ## Security
 
@@ -88,11 +88,11 @@ const model = ties.create('tieKeyA', {
 });
 ```
 
-For more details see [__API reference__](./docs/api-reference.md).
+For more details see [__API reference__](docs/api-reference.md).
 
 ## Extensions
 
-I believe, that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s (more conceptual details and examples [here](./docs/client-app-architecture.md)).
+I believe, that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s (more conceptual details and examples [here](docs/client-app-architecture.md)).
 
 Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by a __dedicated components__, probably, yet not necessary, built on top of `data-tier` or any other framework.
 
