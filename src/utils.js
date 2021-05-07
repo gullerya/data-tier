@@ -51,8 +51,7 @@ class Parameter {
 function extractViewParams(element) {
 	const paramList = element.getAttribute('data-tie');
 	if (paramList) {
-		const parsed = parseParamList(paramList, element);
-		return parsed.length ? parsed : null;
+		return parseParamList(paramList, element);
 	} else {
 		return null;
 	}
@@ -96,7 +95,7 @@ function parseParamList(paramList, element) {
 			console.error(`failed to parse one of a multi param parts (${rawParam}), skipping it`, e);
 		}
 	}
-	return result;
+	return result.length ? result : null;
 }
 
 function parseFunctionParam(rawParam) {

@@ -8,14 +8,21 @@
 # `data-tier`
 
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/JavaScript applications.
-`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [`object-observer`](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
-It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts. Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will also have a bunch of useful information on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+Primary reasons for `data-tier` (or - why bother):
+- simplicity, it is much simpler than any other MVVM libs I'm aware of
+- performant and robust data handling due to [`object-observer`](https://github.com/gullerya/object-observer)
+- perfectly suited for web-components based applications
 
-#### Support matrix
-![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](./docs/icons/edge-chromium.png)<sub>79+</sub>
+It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.md) documentation for a main concepts.
 
-#### Changelog is found [here]](./docs/changelog.md)
+> Once ready, [`data-tier`'s approach to client app architecture](docs/client-app-architecture.md) will provide a full author's take on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+
+`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
+
+![CHROME](docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](docs/icons/edge-chromium.png)<sub>79+</sub>
+
+Changelog is found [here](docs/changelog.md).
 
 ## Installation
 
@@ -32,82 +39,60 @@ import * as DataTier from 'https://libs.gullerya.com/data-tier/x.y.z/data-tier.m
 > Note: replace the `x.y.z` by the desired version, one of the listed in the [changelog](docs/changelog.md).
 
 CDN features:
-- HTTPS only, no untrusted man-in-the-middle
-- highly available (with many geo spread edges)
-- agressive caching setup
+- security:
+  - __HTTPS__ only
+- performance
+  - highly __available__ (with many geo spread edges)
+  - agressive __caching__ setup
 
 ## Documentation
 
-[__API__](./docs/api-reference.md)
+[Starting walkthrough](docs/walkthrough.md)
 
-[__WebComponents, ShadowDOM, MicroFrontends__](./docs/web-components.md)
+[Deep dive - API](docs/api-reference.md)
 
-[__Tutorials__](./docs/tutorials.md)
+[Use cases - WebComponents, ShadowDOM, MicroFrontends](docs/web-components.md)
 
 ## Security
 
 Security policy is described [here](https://github.com/gullerya/data-tier/blob/master/docs/security.md). If/when any concern raised, please follow the process.
 
-## Basic example
+## Examples
 
-There is a growing number of examples and ready to run tutorials in the repo self (`docs/tutorials`), but even more convenient is to play with the `CodePen` snippets below:
-* [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
-* [WebComponent scoped binding](https://codepen.io/gullerya/pen/xxZEvbK) - this time we have `input` tied to the reflecting `span` by an `input` event (immediate changes), while all of those scoped within a `web-component`, each instance of which has its own encapsulated model
-* ... more to come :)
+The easiest point to start from is the [walkthrough](docs/walkthrough.md) examples.
 
-As many similar libraries do, `data-tier` also employes the two:
-* __declarative__ part of binding views to model found in HTML
-* __functional__ part of defining and operating on the model in JavaScript
+Additionally, there are few the `CodePen` snippets:
+- [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
+- [WebComponent scoped binding](https://codepen.io/gullerya/pen/xxZEvbK) - this time we have `input` tied to the reflecting `span` by an `input` event (immediate changes), while all of those scoped within a `web-component`, each instance of which has its own encapsulated model
+- ... more to come :)
 
-Let's see how it plays in the code.
+Here we'll overview a rather simple, but quite self explanatory case.
 
-##### functional (JS) part
+2 elements below are both views tied to the same model.
+`span` is one-way bound to reflect the data.
+`input` employs two-way binding.
 
-Having data model defined, for example, as:
-```javascript
-let bands = [
-    {
-        id: 1234,
-        name: 'Dream Theater',
-        since: 1985,
-        albums: [
-            { id: 2345, year: 1988, name: 'When Dream and Day Unite' },
-            { id: 2346, year: 1991, name: 'Images and Words' }
-        ]
-    }
-];
-```
-one can create a __`tie`__ keyed, say, 'bandsTie', having its data set to the bands array:
-```javascript
-const bandsModel = DataTier.ties.create('bandsTie', bands);
-```
-
-`create` API returns an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md) clone of the provided `object`/`array`.
-
-> If no model provided, `data-tier` will create an empty object model by default.
-
-`bandsModel` from our example may be operated on as a usual JS `object`/`array`, but it is also being observed by `data-tier` for any (deep) changes.
-
-Any direct (JS driven) change will be reflected in the tied views.
-Also, any relevant changes from the views will be reflected in the `bandsModel` back.
-
-##### declarative (HTML) part
-
-Any UI element may be tied to the model using the key and the path:
 ```html
-<span data-tie="bandsTie:length"></span>
-
-<div>
-    <span data-tie="bandsTie:0.albums.1.name"></span>
-    <custom-album-viewer data-tie="bandsTie:0.albums.1 => data"></custom-album-viewer>
-</div>
+<input data-tie="tieKeyA:status => value => input">
+<br>
+<span data-tie="tieKeyA:status"></span>
 ```
 
-For more details see [__API reference__](./docs/api-reference.md).
+This is our model initialization to make it all play together:
+
+```js
+import { ties } from 'https://libs.gullerya.com/data-tier/3.1.6/data-tier.js';
+
+const model = ties.create('tieKeyA', {
+	status: 'better than ever'
+});
+```
+
+For more details see [__API reference__](docs/api-reference.md).
 
 ## Extensions
 
-I believe, that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s (more conceptual details and examples [here](./docs/client-app-architecture.md)).
+I believe, that `data-tier` as a framework should serve a single purpose of tying the model with the view in its very basic form: propagating the changes/values to the relevant recipient/s (more conceptual details and examples [here](docs/client-app-architecture.md)).
 
 Functionalities like `repeater`, `router` and other well known UI paradigms should be provided by a __dedicated components__, probably, yet not necessary, built on top of `data-tier` or any other framework.
 
