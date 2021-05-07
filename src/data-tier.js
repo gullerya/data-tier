@@ -29,8 +29,4 @@ export const ties = instance.ties;
 export const addDocument = instance.domProcessor.addDocument.bind(instance.domProcessor);
 export const removeDocument = instance.domProcessor.removeDocument.bind(instance.domProcessor);
 
-//	deprecated APIs
-export const addRootDocument = addDocument;
-export const removeRootDocument = removeDocument;
-
 console.info(`DT (${version}): ... initialization DONE (took ${(performance.now() - initStartTime).toFixed(2)}ms)`);
