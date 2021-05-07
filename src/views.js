@@ -1,13 +1,3 @@
-/**
- * lifecycle of the DOM elements:
- * - scan upon: init | add | remove | attribute changed
- * - add | del as view
- * 
- * lifecycle as View of DT:
- * - when model change: update				- lookup by tie + path
- * - when change event - update model
- */
-
 import { extractViewParams, getRandomKey } from './utils.js';
 
 export class Views {
@@ -19,19 +9,19 @@ export class Views {
 	}
 
 	obtainTieViews(tieKey) {
-		return this.views[tieKey] || (this.views[tieKey] = { _pathsCache: [] });
+		let result = this.views[tieKey];
+		if (!result) {
+			result = { _pathsCache: [] };
+			this.views[tieKey] = result;
+		}
+		return result;
 	}
 
 	deleteTieViews(tieKey) {
 		delete this.views[tieKey];
 	}
 
-	addView(element) {
-		const tieParams = extractViewParams(element);
-		if (!tieParams) {
-			return null;
-		}
-
+	addView(element, tieParams) {
 		let tieParam, fParams, fp;
 		let i = tieParams.length, l;
 		while (i--) {
@@ -48,7 +38,6 @@ export class Views {
 			}
 		}
 		element[this.dti.paramsKey] = tieParams;
-		return tieParams;
 	}
 
 	delView(element, tieParams) {
@@ -86,8 +75,11 @@ export class Views {
 		this.scopes[scopeKey] = element;
 		for (const unscoped of this.unscoped) {
 			if (element.contains(unscoped)) {
-				this.addView(unscoped);
-				this.unscoped.splice(this.unscoped.indexOf(unscoped), 1);
+				const viewParams = extractViewParams(unscoped);
+				if (viewParams) {
+					this.addView(unscoped, viewParams);
+					this.unscoped.splice(this.unscoped.indexOf(unscoped), 1);
+				}
 			}
 		}
 	}

@@ -1,7 +1,8 @@
 import {
 	getPath,
 	setPath,
-	callViewFunction
+	callViewFunction,
+	extractViewParams
 } from './utils.js';
 
 const
@@ -14,16 +15,16 @@ const
 		characterData: false,
 		characterDataOldValue: false
 	}),
-	BOUND_DOM_OBSERVER_KEY = Symbol('bound.dom.observer'),
-	BOUND_CHANGE_LISTENER_KEY = Symbol('bound.change.listener');
+	ADD_LISTENER = 'addEventListener',
+	REMOVE_LISTENER = 'removeEventListener';
 
 export class DOMProcessor {
 	constructor(dataTierInstance) {
 		this._dtInstance = dataTierInstance;
 		this._roots = new WeakMap();
 		this._elementsMap = new WeakSet();
-		this[BOUND_DOM_OBSERVER_KEY] = this._processDomChanges.bind(this);
-		this[BOUND_CHANGE_LISTENER_KEY] = this._changeListener.bind(this);
+		this._boundDOMChangesListener = this._domChangesListener.bind(this);
+		this._boundChangeListener = this._changeListener.bind(this);
 	}
 
 	addDocument(rootDocument) {
@@ -35,7 +36,7 @@ export class DOMProcessor {
 			return false;
 		}
 
-		const mo = new MutationObserver(this[BOUND_DOM_OBSERVER_KEY])
+		const mo = new MutationObserver(this._boundDOMChangesListener)
 		mo.observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
 		this._roots.set(rootDocument, mo);
 		for (let i = 0, l = rootDocument.children.length; i < l; i++) {
@@ -58,7 +59,7 @@ export class DOMProcessor {
 		return true;
 	}
 
-	_processDomChanges(changes) {
+	_domChangesListener(changes) {
 		const l = changes.length;
 		let i = 0, change, changeType;
 
@@ -71,10 +72,8 @@ export class DOMProcessor {
 					node = change.target,
 					oldValue = change.oldValue,
 					newValue = node.getAttribute(attributeName);
-				if (oldValue !== newValue) {
-					if (attributeName === 'data-tie') {
-						this._onTieParamChange(node, newValue, oldValue);
-					}
+				if (attributeName === 'data-tie' && oldValue !== newValue) {
+					this._onTieParamChange(node, newValue, oldValue);
 				}
 			} else if (changeType === 'childList') {
 				const an = change.addedNodes;
@@ -101,23 +100,16 @@ export class DOMProcessor {
 			const viewParamsOld = element[this._dtInstance.paramsKey];
 			if (viewParamsOld) {
 				this._dtInstance.views.delView(element, viewParamsOld);
-				for (const viewParamOld of viewParamsOld) {
-					if (viewParamOld.changeEvent) {
-						element.removeEventListener(viewParamOld.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
-					}
-				}
+				this._handleChangeListener(element, REMOVE_LISTENER, viewParamsOld);
 			}
 		}
 
 		if (newParam) {
-			const viewParams = this._dtInstance.views.addView(element);
+			const viewParams = extractViewParams(element);
 			if (viewParams) {
+				this._dtInstance.views.addView(element, viewParams);
 				this._updateFromView(element, viewParams);
-				for (const viewParam of viewParams) {
-					if (viewParam.changeEvent) {
-						element.addEventListener(viewParam.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
-					}
-				}
+				this._handleChangeListener(element, ADD_LISTENER, viewParams);
 			}
 		}
 	}
@@ -156,14 +148,11 @@ export class DOMProcessor {
 		if (element.nodeName.indexOf('-') > 0 && !element.matches(':defined')) {
 			this._waitDefined(element);
 		} else {
-			const viewParams = this._dtInstance.views.addView(element);
+			const viewParams = extractViewParams(element);
 			if (viewParams) {
+				this._dtInstance.views.addView(element, viewParams);
 				this._updateFromView(element, viewParams);
-				for (const viewParam of viewParams) {
-					if (viewParam.changeEvent) {
-						element.addEventListener(viewParam.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
-					}
-				}
+				this._handleChangeListener(element, ADD_LISTENER, viewParams);
 			}
 
 			if (element.shadowRoot) {
@@ -186,14 +175,13 @@ export class DOMProcessor {
 			this._elementsMap.delete(element);
 		}
 
-		let viewParams = element[this._dtInstance.paramsKey];
+		const viewParams = element[this._dtInstance.paramsKey];
 		if (viewParams) {
-			this._dtInstance.views.delView(element, viewParams);
-			for (const viewParam of viewParams) {
-				if (viewParam.changeEvent) {
-					element.removeEventListener(viewParam.changeEvent, this[BOUND_CHANGE_LISTENER_KEY]);
-				}
+			if (!viewParams.length) {
+				console.log('empty');
 			}
+			this._dtInstance.views.delView(element, viewParams);
+			this._handleChangeListener(element, REMOVE_LISTENER, viewParams);
 		}
 
 		if (element.shadowRoot) {
@@ -223,6 +211,17 @@ export class DOMProcessor {
 			if (tie) {
 				newValue = element[tieParam.targetProperty];
 				setPath(tie, tieParam.path, newValue);
+			}
+		}
+	}
+
+	_handleChangeListener(element, action, viewParams) {
+		let viewParam, changeEvent;
+		for (let i = 0, l = viewParams.length; i < l; i++) {
+			viewParam = viewParams[i];
+			changeEvent = viewParam.changeEvent;
+			if (changeEvent) {
+				element[action](changeEvent, this._boundChangeListener);
 			}
 		}
 	}

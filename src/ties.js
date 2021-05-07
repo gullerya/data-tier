@@ -6,7 +6,6 @@ export {
 };
 
 const
-	MODEL_KEY = Symbol('model.key'),
 	tieNameValidator = /^[a-zA-Z0-9]+$/,
 	reservedTieNames = ['scope'];
 
@@ -19,14 +18,14 @@ class Tie {
 
 	set model(model) {
 		const [postModel, isObservable] = ensureObservable(model);
-		this[MODEL_KEY] = postModel;
+		this._model = postModel;
 		if (isObservable) {
-			this[MODEL_KEY].observe(changes => this.processDataChanges(changes));
+			this._model.observe(changes => this.processDataChanges(changes));
 		}
 	}
 
 	get model() {
-		return this[MODEL_KEY];
+		return this._model;
 	}
 
 	processDataChanges(changes) {
@@ -34,16 +33,20 @@ class Tie {
 			tieViews = this.ties._dti.views.obtainTieViews(this.key),
 			tiedPaths = tieViews._pathsCache,
 			tiedPathsLength = tiedPaths.length;
-		let i, l, change, changedObject, arrPath, apl, changedPath = '', pl, tiedPath, pathViews, pvl;
+
+		if (!tiedPathsLength) {
+			return;
+		}
+
+		let change, changedObject, arrPath, apl, changedPath = '', pl, tiedPath, pathViews, pvl;
 		let cplen, sst, lst, fullArrayUpdate, same, view;
 
-		if (!tiedPathsLength) return;
-
-		for (i = 0, l = changes.length; i < l; i++) {
+		for (let i = 0, l = changes.length; i < l; i++) {
 			change = changes[i];
 			arrPath = change.path;
 			apl = arrPath.length;
 
+			//	TODO: optimize this check
 			if (arrPath.some(e => typeof e === 'symbol')) {
 				continue;
 			}
@@ -122,7 +125,7 @@ class Tie {
 				if (change.value !== undefined && useChangeValue) {
 					newValue = change.value;
 				} else {
-					newValue = getPath(this[MODEL_KEY], param.path);
+					newValue = getPath(this._model, param.path);
 				}
 				this.ties._dti.views.setViewProperty(element, param, newValue);
 			}
