@@ -9,9 +9,16 @@
 
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/JavaScript applications.
 
-`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
+Primary reasons for `data-tier` (or - why bother):
+- simplicity, it is much simpler than any other MVVM libs I'm aware of
+- performant and robust data handling due to [`object-observer`](https://github.com/gullerya/object-observer)
+- perfectly suited for web-components based applications
 
-It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts. Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will provide a full author's take on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts.
+
+> Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will provide a full author's take on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+
+`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
 ![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](./docs/icons/edge-chromium.png)<sub>79+</sub>
 
@@ -40,11 +47,11 @@ CDN features:
 
 ## Documentation
 
-[__API__](./docs/api-reference.md)
+[Starting walkthrough](./docs/walkthrough.md)
 
-[__WebComponents, ShadowDOM, MicroFrontends__](./docs/web-components.md)
+[Deep dive - API](./docs/api-reference.md)
 
-[__Tutorials__](./docs/tutorials.md)
+[Use cases - WebComponents, ShadowDOM, MicroFrontends](./docs/web-components.md)
 
 ## Security
 
@@ -52,59 +59,33 @@ Security policy is described [here](https://github.com/gullerya/data-tier/blob/m
 
 ## Examples
 
-There is a growing number of [tutorials](docs/tutorials.md).
+The easiest point to start from is the [walkthrough](docs/walkthrough.md) examples.
 
-Also there are few the `CodePen` snippets:
-* [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
-* [WebComponent scoped binding](https://codepen.io/gullerya/pen/xxZEvbK) - this time we have `input` tied to the reflecting `span` by an `input` event (immediate changes), while all of those scoped within a `web-component`, each instance of which has its own encapsulated model
-* ... more to come :)
+Additionally, there are few the `CodePen` snippets:
+- [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
+- [WebComponent scoped binding](https://codepen.io/gullerya/pen/xxZEvbK) - this time we have `input` tied to the reflecting `span` by an `input` event (immediate changes), while all of those scoped within a `web-component`, each instance of which has its own encapsulated model
+- ... more to come :)
 
-As many similar libraries do, `data-tier` also employes the two:
-* __declarative__ part of binding views to model found in HTML
-* __functional__ part of defining and operating on the model in JavaScript
+Here we'll overview a rather simple, but quite self explanatory case.
 
-Let's see how it plays in the code.
+2 elements below are both views tied to the same model.
+`span` is one-way bound to reflect the data.
+`input` employs two-way binding.
 
-##### functional (JS) part
-
-Having data model defined, for example, as:
-```javascript
-let bands = [
-    {
-        id: 1234,
-        name: 'Dream Theater',
-        since: 1985,
-        albums: [
-            { id: 2345, year: 1988, name: 'When Dream and Day Unite' },
-            { id: 2346, year: 1991, name: 'Images and Words' }
-        ]
-    }
-];
-```
-one can create a __`tie`__ keyed, say, 'bandsTie', having its data set to the bands array:
-```javascript
-const bandsModel = DataTier.ties.create('bandsTie', bands);
-```
-
-`create` API returns an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md) clone of the provided `object`/`array`.
-
-> If no model provided, `data-tier` will create an empty object model by default.
-
-`bandsModel` from our example may be operated on as a usual JS `object`/`array`, but it is also being observed by `data-tier` for any (deep) changes.
-
-Any direct (JS driven) change will be reflected in the tied views.
-Also, any relevant changes from the views will be reflected in the `bandsModel` back.
-
-##### declarative (HTML) part
-
-Any UI element may be tied to the model using the key and the path:
 ```html
-<span data-tie="bandsTie:length"></span>
+<input data-tie="tieKeyA:status => value => input">
+<br>
+<span data-tie="tieKeyA:status"></span>
+```
 
-<div>
-    <span data-tie="bandsTie:0.albums.1.name"></span>
-    <custom-album-viewer data-tie="bandsTie:0.albums.1 => data"></custom-album-viewer>
-</div>
+This is our model initialization to make it all play together:
+
+```js
+import { ties } from 'https://libs.gullerya.com/data-tier/3.1.6/data-tier.js';
+
+const model = ties.create('tieKeyA', {
+	status: 'better than ever'
+});
 ```
 
 For more details see [__API reference__](./docs/api-reference.md).

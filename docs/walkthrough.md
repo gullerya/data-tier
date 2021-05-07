@@ -1,4 +1,4 @@
-# Intro
+# Walkthrough
 
 Below I'll exemplify a usage of `data-tier` with a very simple cases, going from simplest to more involved ones. Each of those supplied with a link to CodePen for further exploration.
 
