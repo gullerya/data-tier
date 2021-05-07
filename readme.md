@@ -52,7 +52,7 @@ Security policy is described [here](https://github.com/gullerya/data-tier/blob/m
 
 ## Examples
 
-There is a growing number of [tutorials](docs/tutorials).
+There is a growing number of [tutorials](docs/tutorials.md).
 
 Also there are few the `CodePen` snippets:
 * [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
