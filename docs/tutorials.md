@@ -1,26 +1,107 @@
 # Intro
 
-To allow some quick impression of what we are talking about here, as well as ready-to-use playground to hack around. Once JSFiddle will allow to import ES6 modules nicely, I'll push those there too.
+Below I'll exemplify a usage of `data-tier` with a very simple cases, going from simplest to more involved ones. Each of those supplied with a link to CodePen for further exploration.
 
-On this page I'll describe shortly each example and link to it's own `md` where broader explanation will be found. In the same folder there are `htm` and `js` files, open the `htm` as a usual web page and you have a small workin app.
+## One way - primitive
 
-## 1. User view
+> Note: when speaking about one way binding here, it is always assumes 'model to view' way.
 
-User view is a small app (below 30 lines of `js` and below 50 lines of `html`) with 2 main view blocks:
-* form with input elements for a user's personal info, address and activation checkbox
-* condensed summary preview of the user's info
+[CodePen - tutorial 1](https://codepen.io/gullerya/pen/YzZPZmr)
 
-Both of those views are tied to the same model.
-App is simulating the fetching of the data from the server and initiating the model via `data-tier` APIs.
-Actual MVVM part is around 5 lines of code!
+First, let's create things and see them tied:
 
-Due to the living binding, editing of input fields immedatelly updates the model and then immediatelly reflected in the summary preview.
-> Pay attention, that by default `data-tier` listens on the `change` event of an `input` elements to track value changes. Therefore model update happens only when the field's value committed - on moving the focus away.
+```html
+<span data-tie="tutorial1"></span>
+```
 
-Additional feature exemplified here is managing a view state via classes tied to model.
-This part involves few lines of code (within those 5 yet) where one part of the model is observed and upon changes another part is being updated.
-It is cool, take a look on it!
+```js
+import { ties } from 'https://libs.gullerya.com/data-tier/3.1.6/data-tier.js';
 
-[Link](./tutorials/a-user-view/user-view.md)
+ties.create('tutorial1', 'Simple primitive text');
+```
 
-More examples to do...
+`tutorial1` is a __tie key__. Each __tie__ is a model.
+There can be as many ties as needed, each identified by its unique key.
+
+Tying declaration, as in the `span` above, will always refer to the tie/s by key.
+
+Usually, model is much more complicated than just a primitive, that is the next example.
+
+## One way - nested in object
+
+[CodePen - tutorial 2](https://codepen.io/gullerya/pen/mdWymwG)
+
+```html
+<span data-tie="tutorial2:address.city"></span>
+```
+
+Here tie key is followed by colon (`:`) and a path into the model's object tree.
+
+```js
+import { ties } from 'https://libs.gullerya.com/data-tier/3.1.6/data-tier.js';
+
+const model = ties.create('tutorial2', {
+	name: 'Aya Guller',
+	address: {
+		country: 'Dreamland',
+		city: 'Wonders'
+	}
+});
+```
+
+We've also obtained a reference to `model`, an __observed clone__ of the initial data.
+Any changes to model will be immediatelly reflected in the tied view/s, see the CodePen linked above to see that in action.
+
+## Two way - implicit defaults
+
+[CodePen - tutorial 3](https://codepen.io/gullerya/pen/wvJBeWK)
+
+```html
+<input data-tie="tutorial3:status">
+<br>
+<span data-tie="tutorial3:status"></span>
+```
+
+We've added an `input` element in this example, having a good occasion to introduce __target property__ concept, the property on the element that the tied data will be assigned to.
+
+In case of `span` (and actually vast majority of DOM elements) target property defaults to `textContent`. Input elements (`input`, `textarea`, `select`) are defaulted to `value`.
+
+```js
+import { ties } from 'https://libs.gullerya.com/data-tier/3.1.6/data-tier.js';
+
+const model = ties.create('tutorial3', {
+	status: 'better than ever'
+});
+```
+
+Please, change the value of the input box and __press Enter__.
+
+We see another default mechanism triggered for the `input` element (as well `textarea`, `select`, see [documentation](api-reference.md)) - `data-tier` listens on `change` event and reflects the value back to the model.
+
+`change` event is triggered only on focusing away, which is okay for most of the use cases, but `input` event is much more interesting for the tutorial examples.
+
+## Two way - explicit declaration
+
+[CodePen - tutorial 4](https://codepen.io/gullerya/pen/abJzwQX)
+
+```html
+<input data-tie="tutorial4:status => value => input">
+<br>
+<span data-tie="tutorial4:status"></span>
+```
+
+Most important part here is 2 explicit declarations in `input` element:
+- '`=> value`' means that data should be targeted to a `value` property of the element
+- '`=> input`' means that `data-tier` should listen to `input` event to sync data back to model
+
+Fast forwarding to the whole vision of the `data-tier`, data can be tied from whatever model to whateven view's property and optionally synced back by whatever event.
+
+```js
+import { ties } from 'https://libs.gullerya.com/data-tier/3.1.6/data-tier.js';
+
+const model = ties.create('tutorial4', {
+	status: 'better than ever'
+});
+```
+
+Albeit a micro example, but this is the whole essence of the full data binding lifecycle!

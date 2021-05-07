@@ -8,14 +8,14 @@
 # `data-tier`
 
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/JavaScript applications.
-`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [`object-observer`](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
-It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts. Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will also have a bunch of useful information on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
-#### Support matrix
+It is highly advised to briefly review the library's [Lifecycle](./docs/lifecycle.md) documentation for a main concepts. Once ready, [`data-tier`'s approach to client app architecture](./docs/client-app-architecture.md) will provide a full author's take on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
+
 ![CHROME](./docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](./docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](./docs/icons/edge-chromium.png)<sub>79+</sub>
 
-#### Changelog is found [here]](./docs/changelog.md)
+Changelog is found [here](./docs/changelog.md).
 
 ## Installation
 
@@ -32,9 +32,11 @@ import * as DataTier from 'https://libs.gullerya.com/data-tier/x.y.z/data-tier.m
 > Note: replace the `x.y.z` by the desired version, one of the listed in the [changelog](docs/changelog.md).
 
 CDN features:
-- HTTPS only, no untrusted man-in-the-middle
-- highly available (with many geo spread edges)
-- agressive caching setup
+- security:
+  - __HTTPS__ only
+- performance
+  - highly __available__ (with many geo spread edges)
+  - agressive __caching__ setup
 
 ## Documentation
 
@@ -48,9 +50,11 @@ CDN features:
 
 Security policy is described [here](https://github.com/gullerya/data-tier/blob/master/docs/security.md). If/when any concern raised, please follow the process.
 
-## Basic example
+## Examples
 
-There is a growing number of examples and ready to run tutorials in the repo self (`docs/tutorials`), but even more convenient is to play with the `CodePen` snippets below:
+There is a growing number of [tutorials](docs/tutorials).
+
+Also there are few the `CodePen` snippets:
 * [DataTier binding with regular DOM elements](https://codepen.io/gullerya/pen/abdmebe) - simple `input` element, its `change` event and `span` reflecting the changed value
 * [WebComponent scoped binding](https://codepen.io/gullerya/pen/xxZEvbK) - this time we have `input` tied to the reflecting `span` by an `input` event (immediate changes), while all of those scoped within a `web-component`, each instance of which has its own encapsulated model
 * ... more to come :)
