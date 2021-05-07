@@ -26,7 +26,7 @@ There can be as many ties as needed, each identified by its unique key.
 
 Tying declaration, as in the `span` above, will always refer to the tie/s by key.
 
-Usually, model is much more complicated than just a primitive, that is the next example.
+Usually, model is much more complicated than just a primitive.
 
 ## One way - nested in object
 
