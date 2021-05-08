@@ -1,42 +1,32 @@
-name: Deploy 'data-tier' to CDN
+name: Deploy to CDN
 
 on:
-  push:
-    tags:
-      - deploy
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy'
+        required: true
 
 jobs:
   release-deploy:
     runs-on: ubuntu-18.04
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.DT_CI_AT }}
-
-      - name: Delete temporary trigger tag
-        run: git push origin --delete deploy
-
       - name: Setup NodeJS 14
         uses: actions/setup-node@v2
         with:
           node-version: 14
 
-      - name: Install
-        run: npm install
-
       # Get release version
       - name: Get release version
-        run: echo "RELEASE_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
 
-      # Build
-      - name: Build
-        run: npm run build
+      - name: Install
+        run: npm install -E data-tier@${{ env.RELEASE_VERSION }}
 
       # Deploy
       - name: Deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET }}
-        run: aws s3 sync ./dist s3://${{ secrets.AWS_LIBS_BUCKET }}/data-tier/${{ env.RELEASE_VERSION }} --delete --cache-control public,max-age=172800,immutable
+        run: aws s3 sync ./node_modules/data-tier/dist s3://${{ secrets.AWS_LIBS_BUCKET }}/data-tier/${{ env.RELEASE_VERSION }} --delete --cache-control public,max-age=172800,immutable

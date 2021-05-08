@@ -1,4 +1,4 @@
-name: Trigger 'data-tier' release
+name: Trigger release
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Release 'data-tier'
+name: Release
 
 on:
   push:
@@ -35,10 +35,14 @@ jobs:
         run: npm publish
 
       # Deploy to CDN (trigger)
+      - name: Obtain release version
+        run: echo "RELEASE_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
       - name: Tirgger deploy to CDN
-        run: |
-          git tag deploy
-          git push origin HEAD:main deploy
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Deploy to CDN
+          token: ${{ secrets.DT_CI_AT }}
+          inputs: '{ "version": "${{ env.RELEASE_VERSION }}" }'
 
       # Bump version to next snapshot
       - name: Bump snapshot version
