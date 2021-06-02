@@ -182,6 +182,9 @@ export class Views {
 				}
 			}
 			view.className = classes.join(' ');
+		} else if (targetProperty.includes('data-')) {
+			const datasetName = targetProperty.split('-')[1];
+			view.dataset[datasetName] = value;
 		} else {
 			view[targetProperty] = value;
 		}
