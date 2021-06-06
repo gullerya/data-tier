@@ -24,6 +24,12 @@ It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.
 
 Changelog is found [here](docs/changelog.md).
 
+> Note: thanks the Piotr Pazola there is an ability to tie the data to the attributes rather than properties now (3.3.0).
+This is done via specifying the target 'property' starting with `data-`, which will cause `data-tier` to set the attribute to the tied data.
+
+> Note: the above solution of attributes tying is a narrowed case of a more generic, and yet still missing, functionality.
+This issue, attributes ties, will be addressed fully as part of the [Issue 74](https://github.com/gullerya/data-tier/issues/74) and [Issue 79](https://github.com/gullerya/data-tier/issues/79) work.
+
 ## Installation
 
 Use regular `npm install data-tier --save-prod` to use the library from your local environment:

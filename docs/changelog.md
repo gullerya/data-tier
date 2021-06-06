@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2021-06-06
+### Changed
+- Added special treatment for the `data-` attributes (thanks Piotr Pazola) - sets the value on the attribute rather than property
+- dependencies maintanance
+
 ## [3.2.0] - 2021-05-08
 ### Changed
 - removed `addRootDocument`/`removeRootDocument` in favor of `addDocument`/`removeDocument` APIs (deprecated since 2.11.0)
