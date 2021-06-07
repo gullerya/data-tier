@@ -5,8 +5,8 @@ This document specifies the syntax of binding a __data source__ to a __DOM eleme
 - DOM element - any native or custom element, where tie target of it might be:
   - property
   - attribute
-  - method
   - event
+  - method
 
 Tying declaration self is expressed as an attribute set on the element.
 
@@ -22,8 +22,8 @@ Tying declaration self is expressed as an attribute set on the element.
 `<tying declaration>`
 - `tieKey[:path] [=> [property] [=> V2M event] ]` - property tying
 - `tieKey[:path] a> attribute [=> V2M event]` - attribute tying
-- `tieKey[:path] m> method` - method tying
 - `tieKey[:path] e> event` - event tying
+- `method(tieKey[:path] [, tieKey[:path] [, ...]])` - method tying
 
 | `tieKey`  | yes      | tie key (see JS APIs description above) |
 | `path`    |          | dot (`.`) separated path into the model object; when provided, MUST follow `tieKey` and prefixed by colon (`:`); when not specified, the whole model used as a tied value |
