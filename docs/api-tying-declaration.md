@@ -8,11 +8,15 @@ This document specifies the syntax of binding a __data source__ to a __DOM eleme
   - event
   - method
 
-Tying declaration self is expressed as an attribute set on the element.
+Tying declaration self is expressed as an attribute value, set on the element.
 
 ---
 
 ## Formal syntax
+
+Common terms:
+- __V2M__ is used to refer to view-to-model flow/setting/even etc, according to the context
+- terms 'tie' / 'bind' are used interchangeably and bear equal semantic
 
 `attr-name="<tying declarations>"`
 
@@ -25,70 +29,114 @@ Tying declaration self is expressed as an attribute set on the element.
 - `tieKey[:path] e> event` - event tying
 - `method(tieKey[:path] [, tieKey[:path] [, ...]])` - method tying
 
-| `tieKey`  | yes      | tie key (see JS APIs description above) |
-| `path`    |          | dot (`.`) separated path into the model object; when provided, MUST follow `tieKey` and prefixed by colon (`:`); when not specified, the whole model used as a tied value |
-| `target`  |          | element's property that the model will be assigned to or taken from; when not specified, resolved as explained below |
-| `event`   |          | event to be used to update model from the view; when not specified, resoved as explained below |
+### Syntactical parts definition
 
-#### Target property - default resolution
+`attr-name`
+- attribute name, that the specific data centric library works with (`data-tie` in case of `data-tier`)
+- compliant with an attribute names HTML spec
 
-Target property, when omitted, resolved thus:
-* `value` if element one of: `INPUT`, `SELECT`, `TEXTAREA`
-* else `src` for: `IFRAME`, `IMG`, `SOURCE`
-* else `href` for: `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
-* else `textContent`
+`tieKey`
+- key reference to the tie holding the data source model
+- compliant with the following regex: `^[a-zA-Z0-9]+$`
+- __not__ equal to one of the reserved keys:
+  - `scope`
 
-#### Change event - default resolution
+`path`
+- dot (`.`) separated path into the model object
+- arrays indices referenced by dot notation as well (eg `array.0.property`)
+- if the `path` is not specified, the whole model used as a tied value
 
-Mostly, event property will be omitted, meaning `data-tier` won't do view-to-model binding (per declaration).
-The only exception here is the elements list below, for which `change` event is listened by default, if not specified otherwise: `INPUT`, `SELECT`, `TEXTAREA`.
+`property`
+- element's __property__, that the tied data will be __assigned__ to; in case of V2M setup, this property will be used as a source for model update
+- `property` part is optional (see more in __Data transfer__ section below)
+- the data expected to be assigned thus: `<element>.property = <data>` (see more in __Data transfer__ section below)
 
-### Properties tying
+`attribute`
+- element's __attribute__, that the tied data will be __assigned__ to; in case of V2M setup, this attribute will be used as a source for model update
+- `attribute` tying MUST use a special directive part: `a>`
+- the data expected to be assigned thus: `<element>.setAttribute(attribute, String(<data>))` (see more in __Data transfer__ section below)
 
-General rule here is simple - `data-tier` will perform assignment of model (resolving path, if any) to element's property upon initialization or any change of former.
+`event`
+- framework will add an event listener, taken from model, listening to the specified `event` (eg framework may do `<element>.addEventListener(event, <data>)`)
+- `event` tying MUST use a special directive part: `e>`
+- if an old value of the model is available, it will be removed from event listener
+- the tied data MUST be a function, in any other case, it should have no effect (the old listener still MUST be removed)
 
-#### Remark A - `dataset`
+`method`
+- invoke element's method with the specified tied arguments, taken from model/s
+- method should be invoked upon each change of one or more tied arguments
 
-Tying declaration may also be scripted via `dataset` property:
-```javascript
-inputElement.dataset.tie = 'user:address.city';
-```
+`V2M event`
+- V2M event part is for a view-to-model flow, serving th 2-way binding scenario
+- thus, when V2M event is not specified, tie declaration MAY be considered as 1-way binding (with some exceptions)
+- V2M event should internally be used by data binding library as a trigger for model update, originating in the element's change
+- data binding framework __MAY imply__ V2M event part definition in case of some elements, like implying `change` for `input` etc
 
-#### Remark B - `classList`
+### Data transfer
 
-`classList` property deserved a special treatment.
+When the data (model) is being assigned to the element (view), there are few points that need to be addressed:
+- data serialization MAY be required in some cases of property tying
+- data serialization (stringification) MUST be applied in all cases of attribute tying
+- convenience feature: default property resolution rules
+- convenience feature: default V2M event resolution rules
+
+#### Default property resolution rules
+
+> In case the default property resolution is undesired, implementation MAY turn the property part as required and skip the default resolution concern.
+
+Suggested resolution waterfall:
+- if the `property` specified, use the specified one
+- else use __`value`__ for: `INPUT`, `SELECT`, `TEXTAREA`
+- else use __`src`__ for: `IFRAME`, `IMG`, `SOURCE`
+- else use __`href`__ for: `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
+- else use __`textContent`__
+
+#### Default V2M event resolution rules
+
+In vast majority of cases omitting V2M event part will set a 1-way binding relation, leaving 2-way binding opted out by default.
+
+For some elements, from convenience perspective only, a default V2M event resolution MAY be applied, thus making the 2-way binding opted in by default.
+
+Suggested resolution waterfall:
+- if V2M event specified, use the specified one
+- else use `change` event for: `INPUT`, `SELECT`, `TEXTAREA`
+- else do nothing (1-way binding path)
+
+#### Serialization rules
+
+Attributes assignment rules are driven by HTML spec - attribute value MAY ONLY be of a type `string` and as such will always be stringified.
+
+Properties assignment is a more complex case. In many cases, especially having in mind the rise of a (possibly) complex web components, the original data type assignment desired.
+
+Suggested property assignment serialization waterfall:
+- stringify data for:
+  - `value` property for: `INPUT`, `SELECT`, `TEXTAREA`
+  - `src` property for: `IFRAME`, `IMG`, `SOURCE`
+  - `href` property for: `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
+  - `textContent` property for the rest
+  - stringify should produce an empty string (`''`) if the data is `null` or `undefined`
+- else assign data unchanged
+
+## `data-tier` implementation specifics
+
+`data-tier` implementation mostly adheres adheres to the spec above, which obviously was driven by the `data-tier` experience in the first place.
+
+There are few takes that are intentionally omitted from the spec, as they are more related to the specific implementation land.
+
+### Tying declarations attribute name
+
+`data-tier` implementation took a __`data-tie`__ attribute name as a tying declarations provider.
+
+> `data-tie` is of `data-` attribute kind, thus the declaration may also be scripted via `dataset` property, eg: `<element>.dataset.tie = 'tieKey:path => property';`
+
+### `classList` convenience deviation
+
+`classList` property deserved a special treatment in the `data-tier`.
+
 When `classList` tied, the following happens:
-* classes found on the tied view upon initialization are taken as the __baseline__ state
-* each time the view's `classList` updated, the __baseline__ classes are merged with the model and the result becomes the new classes state
-* `classList` model may be `string`, `object` or `Array`:
-    * `string` is taken simply as a class to add
-    * `Array` - each of its elements taken as a class; __all__ of'em added to the view; if some of the members are removed - those classes are removed from the view correspondingly
-    * `object` - each of its __keys__ taken as a class; those with truthy values are added and the falsish ones - removed to/from the view; this way one may force removal of the __baseline__ class
-
-### Methods
-
-Sometimes it is more convenient to tie model via element's method.
-
-Additional benefit of method tying is the fact, that `data-tier` will supply the changes array as the last argument to the tied method call, allowing more finely grained data handling, than just a state recalculation.
-
-```html
-<!-- multiple parameters -->
-<custom-view data-tie="render(userTie:firstName, userTie:lastName)"></custom-view>
-
-<!-- full model as a whole -->
-<custom-view data-tie="update(userTie)"></custom-view>
-```
-
-It is possible, of course to mix __property__ and __method__ tying declarations in the single one.
-I've not exemplified it here for the brevity.
-
-Let's go over a quite simple syntax:
-* `update` - view's __target method__; it resembles the target property in that this method will be looked for on the view/element
-* `(arg1[, arg2[, ...]])` - 1 or more __arguments__ to call the method with
-    * argument syntax is the same as in the property parameter case
-    * __all__ arguments are expected to be taken from a tied model/s
-    * any number of different `ties` may be used
-    * once the model of one of the method's arguments changes - `data-tier` resolves all of the arguments and calls the method
-    * actual method's arguments will always be supplied with one more thing - an array of the model's affecting relevant changes, if any (see [Change](https://github.com/gullerya/object-observer/blob/master/docs/observable.md#change-instance-properties) definition for more info)
-
-> Pro note: as of now, due to synchronous changes delivery, all but some specific `Array` mutations will be delivered as a single synchronous change. Yet the API is designed as __always__ providing an Array of changes for possible future compatibility with async changes aggregation as well as with Arrays massive mutations.
+- classes found on the tied view upon initialization are taken as the __baseline__ state
+- each time the view's `classList` updated, the __baseline__ classes are merged with the model and the result becomes the new classes state
+- `classList` model may be `string`, `object` or `Array`:
+  - `string` is taken simply as a class to add
+  - `Array` - each of its elements taken as a class; __all__ of'em added to the view; if some of the members are removed - those classes are removed from the view correspondingly
+  - `object` - each of its __keys__ taken as a class; those with truthy values are added and the falsish ones - removed to/from the view; this way one may force removal of the __baseline__ class
