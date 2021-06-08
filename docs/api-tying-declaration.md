@@ -15,7 +15,7 @@ Tying declaration self is expressed as an attribute value, set on the element.
 ## Formal syntax
 
 Common terms:
-- __V2M__ is used to refer to view-to-model flow/setting/even etc, according to the context
+- __V2M__ is used to refer to view-to-model flow/setting/event etc, according to the context
 - terms 'tie' / 'bind' are used interchangeably and bear equal semantic
 
 `attr-name="<tying declarations>"`
