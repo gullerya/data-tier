@@ -20,6 +20,12 @@ It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.
 
 `data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
+`data-tier` implements a [data binding declaration API](docs/api-tying-declaration.md) (part of this library), which specifies tying data source to element's:
+- attribute (in progress)
+- event (in progress)
+- method
+- property
+
 ![CHROME](docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](docs/icons/edge-chromium.png)<sub>79+</sub>
 
 Changelog is found [here](docs/changelog.md).
@@ -28,7 +34,7 @@ Changelog is found [here](docs/changelog.md).
 This is done via specifying the target 'property' starting with `data-`, which will cause `data-tier` to set the attribute to the tied data.
 
 > Note: the above solution of attributes tying is a narrowed case of a more generic, and yet still missing, functionality.
-This issue, attributes ties, will be addressed fully as part of the [Issue 74](https://github.com/gullerya/data-tier/issues/74) and [Issue 79](https://github.com/gullerya/data-tier/issues/79) work.
+This issue, attributes ties, is fully addressed in the [data binding declaration API](docs/api-tying-declaration.md) and its implementation (track [Issue 75](https://github.com/gullerya/data-tier/issues/75), [Issue 79](https://github.com/gullerya/data-tier/issues/79)).
 
 ## Installation
 
