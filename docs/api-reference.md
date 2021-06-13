@@ -2,8 +2,10 @@
 
 `data-tier` API splits into __operational__ (JavaScript) and __declarative__ (HTML).
 
-Beside the actual APIs, it is very important to understand `data-tier`'s lifecycle, its capabilities and limitations. See [Lifecycle](./lifecycle.md) documentation dedicated just to that.
+The declarative part is fully specced in [data binding declaration API](api-tying-declaration.md).
+Here below will be mentioned the `data-tier`'s specific implementation details / deviations.
 
+Beside the actual APIs, it is very important to understand `data-tier`'s lifecycle, its capabilities and limitations. See [Lifecycle](./lifecycle.md) documentation dedicated just to that.
 
 ---
 
@@ -116,52 +118,29 @@ If no tie found, nothing will happen.
 
 ## HTML part - tying declaration
 
-`data-tie` attribute serves to tie HTML element to model.
+`data-tier` implementation mostly adheres to the [data binding declaration API](api-tying-declaration.md), which obviously was driven by the `data-tier` own experience in the first place.
 
-Model can be tied to an element's __properties__ and __methods__.
-Additionally, tie declaration may specify, which event should be used to bind the 'view' back to model.
+Here will be mentioned details that were intentionally omitted from the spec, as they are more related to the specific implementation land.
 
-> As of now, `data-tier` doesn't support attributes tying.
+### Tying declarations attribute name
 
-### Formal syntax
+`data-tier` implementation took a __`data-tie`__ as a tying declarations attribute name.
 
-`data-tie` attribute can have 1 or more tying declarations:
-```
-<tying declaration>[, <tying declaration>[, ...] ]
-```
-where a single declaration is:
-```
-tieKey[:path] [=> [target] [=> event] ]
-```
+> `data-tie` is of `data-` attributes kind, thus it may also be scripted via `dataset` (eg `<element>.dataset.tie = 'tieKey:path => property'`).
 
-`=>` sequence is used as parts separator (with 0 or more spaces around).
-To specify `event` while omitting `target`, use 2 sequental separators.
+### `classList` convenience deviation
 
-| Part name | Required | Description                             |
-|-----------|----------| ----------------------------------------|
-| `tieKey`  | yes      | tie key (see JS APIs description above) |
-| `path`    |          | dot (`.`) separated path into the model object; when provided, MUST follow `tieKey` and prefixed by colon (`:`); when not specified, the whole model used as a tied value |
-| `target`  |          | element's property that the model will be assigned to or taken from; when not specified, resolved as explained below |
-| `event`   |          | event to be used to update model from the view; when not specified, resoved as explained below |
+`classList` property deserved a special treatment in the `data-tier`.
 
-#### Target property - default resolution
+When `classList` tied, the following happens:
+- classes found on the tied view upon initialization are taken as the __baseline__ state
+- each time the view's `classList` updated, the __baseline__ classes are merged with the model and the result becomes the new classes state
+- `classList` model may be `string`, `object` or `Array`:
+  - `string` is taken simply as a class to add
+  - `Array` - each of its elements taken as a class; __all__ of'em added to the view; if some of the members are removed - those classes are removed from the view correspondingly
+  - `object` - each of its __keys__ taken as a class; those with truthy values are added and the falsish ones - removed to/from the view; this way one may force removal of the __baseline__ class
 
-Target property, when omitted, resolved thus:
-* `value` if element one of: `INPUT`, `SELECT`, `TEXTAREA`
-* else `src` for: `IFRAME`, `IMG`, `SOURCE`
-* else `href` for: `A`, `ANIMATE`, `AREA`, `BASE`, `DISCARD`, `IMAGE` (`SVG` namespace), `LINK`, `PATTERN`, `use` (`SVG` namespace)
-* else `textContent`
-
-#### Change event - default resolution
-
-Mostly, event property will be omitted, meaning `data-tier` won't do view-to-model binding (per declaration).
-The only exception here is the elements list below, for which `change` event is listened by default, if not specified otherwise: `INPUT`, `SELECT`, `TEXTAREA`.
-
-### Properties tying
-
-General rule here is simple - `data-tier` will perform assignment of model (resolving path, if any) to element's property upon initialization or any change of former.
-
-#### Examples
+## Examples
 
 ```html
 <span data-tie="userTie:firstName"></span>
@@ -188,24 +167,6 @@ the view-to-model tying event explicitly set to `input` (instead of the default 
 <date-input data-tie="userTie:birthday => data => change"></date-input>
 ```
 Above reads: ties `data` property of custom input component to the `birthday` property of model; `change` event is listened for the view changes to be reflected in model;
-
-#### Remark A - `dataset`
-
-Tying declaration may also be scripted via `dataset` property:
-```javascript
-inputElement.dataset.tie = 'user:address.city';
-```
-
-#### Remark B - `classList`
-
-`classList` property deserved a special treatment.
-When `classList` tied, the following happens:
-* classes found on the tied view upon initialization are taken as the __baseline__ state
-* each time the view's `classList` updated, the __baseline__ classes are merged with the model and the result becomes the new classes state
-* `classList` model may be `string`, `object` or `Array`:
-    * `string` is taken simply as a class to add
-    * `Array` - each of its elements taken as a class; __all__ of'em added to the view; if some of the members are removed - those classes are removed from the view correspondingly
-    * `object` - each of its __keys__ taken as a class; those with truthy values are added and the falsish ones - removed to/from the view; this way one may force removal of the __baseline__ class
 
 ### Methods
 
