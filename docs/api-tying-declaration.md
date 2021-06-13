@@ -1,12 +1,12 @@
 # API - tying declaration
 
-This document specifies the syntax of binding a __data source__ to a __DOM element__:
+This document specifies the syntax of binding a __DOM element__ to a __data source/s__ in the HTML context:
 - data source - is any primitive, object, or part of an object graph
 - DOM element - any native or custom element, where tie target of it might be:
-  - property
   - attribute
   - event
   - method
+  - property
 
 Tying declaration self is expressed as an attribute value, set on the element.
 
@@ -19,16 +19,17 @@ Terminology:
 ## Formal syntax
 
 
+
 `attr-name="<tying declarations>"`
 
 `<tying declarations>`
 - `<tying declaration>[, <tying declaration>[, ...] ]`
 
 `<tying declaration>`
-- `tieKey[:path] [=> [property] [=> V2M event] ]` - property tying
 - `tieKey[:path] a> attribute [=> V2M event]` - attribute tying
 - `tieKey[:path] e> event` - event tying
 - `method(tieKey[:path] [, tieKey[:path] [, ...]])` - method tying
+- `tieKey[:path] [=> [property] [=> V2M event] ]` - property tying
 
 ### Syntactical parts definition
 
@@ -47,11 +48,6 @@ Terminology:
 - arrays indices referenced by dot notation as well (eg `array.0.property`)
 - if the `path` is not specified, the whole model used as a tied value
 
-`property`
-- element's __property__, that the tied data will be __assigned__ to; in case of V2M setup, this property will be used as a source for model update
-- `property` part is optional (see more in __Data transfer__ section below)
-- the data expected to be assigned thus: `<element>.property = <data>` (see more in __Data transfer__ section below)
-
 `attribute`
 - element's __attribute__, that the tied data will be __assigned__ to; in case of V2M setup, this attribute will be used as a source for model update
 - `attribute` tying MUST use a special directive part: `a>`
@@ -66,6 +62,11 @@ Terminology:
 `method`
 - invoke element's method with the specified tied arguments, taken from model/s
 - method should be invoked upon each change of one or more tied arguments
+
+`property`
+- element's __property__, that the tied data will be __assigned__ to; in case of V2M setup, this property will be used as a source for model update
+- `property` part is optional (see more in __Data transfer__ section below)
+- the data expected to be assigned thus: `<element>.property = <data>` (see more in __Data transfer__ section below)
 
 `V2M event`
 - V2M event part is for a view-to-model flow, serving th 2-way binding scenario
