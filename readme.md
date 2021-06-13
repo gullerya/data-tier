@@ -33,8 +33,7 @@ Changelog is found [here](docs/changelog.md).
 > Note: thanks the Piotr Pazola there is an ability to tie the data to the attributes rather than properties now (3.3.0).
 This is done via specifying the target 'property' starting with `data-`, which will cause `data-tier` to set the attribute to the tied data.
 
-> Note: the above solution of attributes tying is a narrowed case of a more generic, and yet still missing, functionality.
-This issue, attributes ties, is fully addressed in the [data binding declaration API](docs/api-tying-declaration.md) and its implementation (track [Issue 75](https://github.com/gullerya/data-tier/issues/75), [Issue 79](https://github.com/gullerya/data-tier/issues/79)).
+> Note: the above solution of attributes tying is a narrowed case of a more generic, and yet still missing, functionality. This issue, attributes ties, is fully addressed in the [data binding declaration API](docs/api-tying-declaration.md) and its implementation ([Issue 75](https://github.com/gullerya/data-tier/issues/75), [Issue 79](https://github.com/gullerya/data-tier/issues/79) for tracking).
 
 ## Installation
 
