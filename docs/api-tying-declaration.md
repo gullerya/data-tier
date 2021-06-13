@@ -127,9 +127,9 @@ There are few takes that are intentionally omitted from the spec, as they are mo
 
 ### Tying declarations attribute name
 
-`data-tier` implementation took a __`data-tie`__ attribute name as a tying declarations provider.
+`data-tier` implementation took a __`data-tie`__ as a tying declarations attribute name.
 
-> `data-tie` is of `data-` attribute kind, thus the declaration may also be scripted via `dataset` property, eg: `<element>.dataset.tie = 'tieKey:path => property';`
+> `data-tie` is of `data-` attributes kind, thus it may also be scripted via `dataset` (eg `<element>.dataset.tie = 'tieKey:path => property'`).
 
 ### `classList` convenience deviation
 
