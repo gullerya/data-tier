@@ -26,10 +26,10 @@ Terminology:
 - `<tying declaration>[, <tying declaration>[, ...] ]`
 
 `<tying declaration>`
+- `tieKey[:path] [=> [property] [=> V2M event] ]` - property tying
 - `tieKey[:path] a> attribute [=> V2M event]` - attribute tying
 - `tieKey[:path] e> event` - event tying
 - `method(tieKey[:path] [, tieKey[:path] [, ...]])` - method tying
-- `tieKey[:path] [=> [property] [=> V2M event] ]` - property tying
 
 ### Syntactical parts definition
 

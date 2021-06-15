@@ -35,16 +35,17 @@ suite.runTest({ name: 'adding root model to view - view first' }, async test => 
 });
 
 suite.runTest({ name: 'update view when path changes (deep)' }, async test => {
-	DataTier.ties.create('viewsA', user);
+	const tn = test.getRandom(8);
+	DataTier.ties.create(tn, user);
 	const s1 = document.createElement('div');
 
-	s1.dataset.tie = 'viewsA:name => textContent';
+	s1.dataset.tie = `${tn}:name => textContent`;
 	document.body.appendChild(s1);
 
 	await test.waitNextMicrotask();
 
 	if (s1.textContent !== user.name) test.fail(new Error('preliminary check failed'));
-	s1.dataset.tie = 'viewsA:address.street => textContent';
+	s1.dataset.tie = `${tn}:address.street => textContent`;
 
 	await test.waitNextMicrotask();
 

@@ -9,7 +9,7 @@ suite.runTest({ name: 'targeting to data- property should set attribute' }, asyn
 	DataTier.ties.create(tieName, { test: 'test' });
 
 	const newEl = document.createElement('div');
-	newEl.dataset.tie = `${tieName}:test => data-test`;
+	newEl.dataset.tie = `${tieName}:test a> data-test`;
 	document.body.appendChild(newEl);
 
 	await test.waitNextMicrotask();

@@ -1,7 +1,8 @@
 import {
+	TARGET_TYPES,
 	getPath,
 	setPath,
-	callViewFunction,
+	callViewMethod,
 	extractViewParams
 } from './utils.js';
 
@@ -207,7 +208,7 @@ export class DOMProcessor {
 
 			tie = this._dtInstance.ties.get(tieParam.tieKey);
 			if (tie) {
-				newValue = element[tieParam.targetProperty];
+				newValue = element[tieParam.targetKey];
 				setPath(tie, tieParam.path, newValue);
 			}
 		}
@@ -228,7 +229,7 @@ export class DOMProcessor {
 		let i = viewParams.length;
 		while (i--) {
 			const param = viewParams[i];
-			if (param.isFunctional) {
+			if (param.targetType === TARGET_TYPES.METHOD) {
 				let someData = false;
 				const args = [];
 				param.fParams.forEach(fp => {
@@ -242,13 +243,13 @@ export class DOMProcessor {
 				});
 				if (someData) {
 					args.push(null);
-					callViewFunction(element, param.targetProperty, args);
+					callViewMethod(element, param.targetKey, args);
 				}
 			} else {
 				const tie = this._dtInstance.ties.get(param.tieKey);
 				if (tie !== undefined) {
 					const value = getPath(tie, param.path);
-					this._dtInstance.views.setViewProperty(element, param, value);
+					this._dtInstance.views.updateViewByModel(element, param, value);
 				}
 			}
 		}

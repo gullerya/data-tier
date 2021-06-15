@@ -1,4 +1,4 @@
-import { extractViewParams, getRandomKey } from './utils.js';
+import { extractViewParams, getRandomKey, TARGET_TYPES } from './utils.js';
 
 export class Views {
 	constructor(dtInstance) {
@@ -63,7 +63,7 @@ export class Views {
 		let i = tieParams.length, l;
 		while (i--) {
 			tieParam = tieParams[i];
-			if (tieParam.isFunctional) {
+			if (tieParam.targetType === TARGET_TYPES.METHOD) {
 				fParams = tieParam.fParams;
 				l = fParams.length;
 				while (l--) {
@@ -136,13 +136,31 @@ export class Views {
 		return result;
 	}
 
-	setViewProperty(elem, param, value) {
-		const targetProperty = param.targetProperty;
+	updateViewByModel(elem, param, value) {
+		const targetType = param.targetType || TARGET_TYPES.PROPERTY;
+		const targetKey = param.targetKey;
 		try {
-			this._unsafeSetProperty(elem, param, value, targetProperty);
+			switch (targetType) {
+				case TARGET_TYPES.ATTRIBUTE:
+					this._unsafeSetAttribute(elem, param, value, targetKey);
+					break;
+				case TARGET_TYPES.EVENT:
+					throw new Error(`unsupported target type '${targetType}'`);
+				case TARGET_TYPES.METHOD:
+					throw new Error(`unsupported target type '${targetType}'`);
+				case TARGET_TYPES.PROPERTY:
+					this._unsafeSetProperty(elem, param, value, targetKey);
+					break;
+				default:
+					throw new Error(`unsupported target type '${targetType}'`);
+			}
 		} catch (e) {
-			console.error(`failed to set '${targetProperty}' of '${elem}' to '${value}'`, e);
+			console.error(`failed to set '${targetKey}' of '${elem}' to '${value}'`, e);
 		}
+	}
+
+	_unsafeSetAttribute(view, _param, value, targetAttribute) {
+		view.setAttribute(targetAttribute, String(value));
 	}
 
 	_unsafeSetProperty(view, param, value, targetProperty) {
@@ -182,9 +200,6 @@ export class Views {
 				}
 			}
 			view.className = classes.join(' ');
-		} else if (targetProperty.includes('data-')) {
-			const datasetName = targetProperty.split('-')[1];
-			view.dataset[datasetName] = value;
 		} else {
 			view[targetProperty] = value;
 		}

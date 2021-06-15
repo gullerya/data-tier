@@ -1,5 +1,5 @@
 import { Observable } from './object-observer.min.js';
-import { getPath, callViewFunction, getRandomKey } from './utils.js';
+import { TARGET_TYPES, getPath, callViewMethod, getRandomKey } from './utils.js';
 
 export {
 	Observable
@@ -98,7 +98,7 @@ class Tie {
 		let i = viewParams.length;
 		while (i--) {
 			const param = viewParams[i];
-			if (param.isFunctional) {
+			if (param.targetType === TARGET_TYPES.METHOD) {
 				if (param.fParams.some(fp => fp.tieKey === this.key && fp.rawPath === tiedPath)) {
 					let someData = false;
 					const args = [];
@@ -113,7 +113,7 @@ class Tie {
 					});
 					if (someData) {
 						args.push([change]);
-						callViewFunction(element, param.targetProperty, args);
+						callViewMethod(element, param.targetKey, args);
 					}
 				}
 			} else {
@@ -127,7 +127,7 @@ class Tie {
 				} else {
 					newValue = getPath(this._model, param.path);
 				}
-				this.ties._dti.views.setViewProperty(element, param, newValue);
+				this.ties._dti.views.updateViewByModel(element, param, newValue);
 			}
 		}
 	}

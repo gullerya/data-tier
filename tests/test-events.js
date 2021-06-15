@@ -1,14 +1,14 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
 
-const
-	suite = getSuite({ name: 'Testing events' }),
-	testTie = DataTier.ties.create('eventsTest', {});
+const suite = getSuite({ name: 'Testing events' });
 
 suite.runTest({ name: 'binding/unbinding default event' }, async test => {
+	const tn = test.getRandom(8);
+	const testTie = DataTier.ties.create(tn, {});
 	const i = document.createElement('input');
 	let e;
-	i.dataset.tie = 'eventsTest:someA';
+	i.dataset.tie = `${tn}:someA`;
 	document.body.appendChild(i);
 
 	await test.waitNextMicrotask();
@@ -33,10 +33,12 @@ suite.runTest({ name: 'binding/unbinding default event' }, async test => {
 });
 
 suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test => {
+	const tn = test.getRandom(8);
+	const testTie = DataTier.ties.create(tn, {});
 	const i = document.createElement('input');
 	let e;
 	i.type = 'checkbox';
-	i.dataset.tie = 'eventsTest:bool';
+	i.dataset.tie = `${tn}:bool`;
 	document.body.appendChild(i);
 
 	await test.waitNextMicrotask();
@@ -61,8 +63,10 @@ suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test
 });
 
 suite.runTest({ name: 'binding/unbinding custom event default value property' }, async test => {
+	const tn = test.getRandom(8);
+	const testTie = DataTier.ties.create(tn, {});
 	const i = document.createElement('input');
-	i.dataset.tie = 'eventsTest:someB => => customChange';
+	i.dataset.tie = `${tn}:someB => => customChange`;
 	document.body.appendChild(i);
 
 	await test.waitNextMicrotask();
@@ -87,12 +91,14 @@ suite.runTest({ name: 'binding/unbinding custom event default value property' },
 });
 
 suite.runTest({ name: 'binding custom event custom value property' }, async test => {
+	const tn = test.getRandom(8);
+	const testTie = DataTier.ties.create(tn, {});
 	testTie.someC = 'new value';
 
 	const d = document.createElement('div');
 	testTie.someC = 'new value';
 	d.customValue = '';
-	d.dataset.tie = 'eventsTest:someC => customValue => customChange';
+	d.dataset.tie = `${tn}:someC => customValue => customChange`;
 	document.body.appendChild(d);
 
 	await test.waitNextMicrotask();
@@ -181,10 +187,11 @@ suite.runTest({ name: 'deeply nested model update - failure' }, async test => {
 });
 
 suite.runTest({ name: 'removed view is untied' }, async test => {
-	const testModel = DataTier.ties.create('untieRemoved', { test: 'test' });
+	const tn = test.getRandom(8);
+	const testModel = DataTier.ties.create(tn, { test: 'test' });
 
 	const i = document.createElement('input');
-	i.dataset.tie = 'untieRemoved:test';
+	i.dataset.tie = `${tn}:test`;
 	document.body.appendChild(i);
 
 	await test.waitNextMicrotask();
