@@ -52,7 +52,7 @@
 		"bump": "node ./ci/tools/version-utils.js"
 	},
 	"dependencies": {
-		"object-observer": "^4.3.0"
+		"object-observer": "^4.3.1"
 	},
 	"devDependencies": {
 		"eslint": "^7.28.0",
