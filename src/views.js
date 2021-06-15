@@ -144,10 +144,6 @@ export class Views {
 				case TARGET_TYPES.ATTRIBUTE:
 					this._unsafeSetAttribute(elem, param, value, targetKey);
 					break;
-				case TARGET_TYPES.EVENT:
-					throw new Error(`unsupported target type '${targetType}'`);
-				case TARGET_TYPES.METHOD:
-					throw new Error(`unsupported target type '${targetType}'`);
 				case TARGET_TYPES.PROPERTY:
 					this._unsafeSetProperty(elem, param, value, targetKey);
 					break;
