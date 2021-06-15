@@ -136,13 +136,9 @@ function parsePropertyParam(rawParam, element) {
 		eventPart
 	] = rawParam.split(PARAM_SPLITTER);
 
-	const targetType = !targetTypeDirective || targetTypeDirective === '=>' ? TARGET_TYPES.PROPERTY
-		: targetTypeDirective === 'a>' ? TARGET_TYPES.ATTRIBUTE
-			: targetTypeDirective === 'e>' ? TARGET_TYPES.EVENT
-				: null;
-	if (!targetType) {
-		throw new Error(`unexpected targeting type directive '${targetTypeDirective}' in param '${rawParam}'`);
-	}
+	const targetType = targetTypeDirective === 'a>' ? TARGET_TYPES.ATTRIBUTE
+		: targetTypeDirective === 'e>' ? TARGET_TYPES.EVENT
+			: TARGET_TYPES.PROPERTY;
 
 	const { tieKey, rawPath, path } = parseFromPart(fromPart);
 	targetKey = targetKey ? targetKey : getDefaultTargetProperty(element);
