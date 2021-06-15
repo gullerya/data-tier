@@ -1,8 +1,8 @@
 [![NPM](https://img.shields.io/npm/v/data-tier.svg?label=npm%20data-tier)](https://www.npmjs.com/package/data-tier)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](./license.md)
 
-[![Quality pipeline](https://github.com/gullerya/data-tier/workflows/Quality%20pipeline/badge.svg?branch=master)](https://github.com/gullerya/data-tier/actions?query=workflow%3A%22Quality+pipeline%22)
-[![Codecov](https://img.shields.io/codecov/c/github/gullerya/data-tier/master.svg)](https://codecov.io/gh/gullerya/data-tier/branch/master)
+[![Quality pipeline](https://github.com/gullerya/data-tier/workflows/Quality%20pipeline/badge.svg?branch=main)](https://github.com/gullerya/data-tier/actions?query=workflow%3A%22Quality+pipeline%22)
+[![Codecov](https://img.shields.io/codecov/c/github/gullerya/data-tier/main.svg)](https://codecov.io/gh/gullerya/data-tier/branch/main)
 [![Codacy](https://img.shields.io/codacy/grade/eb34053e002648519fd3a2d78c45677b.svg?logo=codacy)](https://app.codacy.com/app/gullerya/data-tier)
 
 # `data-tier`
@@ -18,10 +18,10 @@ It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.
 
 > Once ready, [`data-tier`'s approach to client app architecture](docs/client-app-architecture.md) will provide a full author's take on when and how to employ data binding in a modern client applications in a non-intrusive, non-prisoning, managable and extensible way.
 
-`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/master/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
+`data-tier` relies on an [`Observable`](https://github.com/gullerya/object-observer/blob/main/docs/observable.md)-driven event cycle, having an embedded [object-observer](https://github.com/gullerya/object-observer) as the default `Observable` provider.
 
 `data-tier` implements a [data binding declaration API](docs/api-tying-declaration.md) (part of this library), which specifies tying data source to element's:
-- attribute (in progress)
+- attribute
 - event (in progress)
 - method
 - property
@@ -29,11 +29,6 @@ It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.
 ![CHROME](docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](docs/icons/edge-chromium.png)<sub>79+</sub>
 
 Changelog is found [here](docs/changelog.md).
-
-> Note: thanks the Piotr Pazola there is an ability to tie the data to the attributes rather than properties now (3.3.0).
-This is done via specifying the target 'property' starting with `data-`, which will cause `data-tier` to set the attribute to the tied data.
-
-> Note: the above solution of attributes tying is a narrowed case of a more generic, and yet still missing, functionality. This issue, attributes ties, is fully addressed in the [data binding declaration API](docs/api-tying-declaration.md) and its implementation ([Issue 75](https://github.com/gullerya/data-tier/issues/75), [Issue 79](https://github.com/gullerya/data-tier/issues/79) for tracking).
 
 ## Installation
 
@@ -66,7 +61,7 @@ CDN features:
 
 ## Security
 
-Security policy is described [here](https://github.com/gullerya/data-tier/blob/master/docs/security.md). If/when any concern raised, please follow the process.
+Security policy is described [here](https://github.com/gullerya/data-tier/blob/main/docs/security.md). If/when any concern raised, please follow the process.
 
 ## Examples
 

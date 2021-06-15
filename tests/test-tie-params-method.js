@@ -1,15 +1,15 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
-import { extractViewParams } from '../dist/utils.js';
+import { extractViewParams, TARGET_TYPES } from '../dist/utils.js';
 
-const suite = getSuite({ name: 'Testing tie functional params' });
+const suite = getSuite({ name: 'Testing tie method API (declaration)' });
 
 //	tie param structure is defined as following:
 //	{
 //		tieKey: <string>,
 //		rawPath: <string>,
 //		path: <string[]>,
-//		targetProperty: <string>,
-//		isFunctional: true
+//		targetType: TARGET_TYPES.METHOD,
+//		targetKey: <string>,
 //		fParams: [
 //			{
 //				tieKey: <string>,
@@ -32,8 +32,8 @@ suite.runTest({ name: 'func param - single root' }, test => {
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);
-	test.assertEqual('f', vp.targetProperty);
-	test.assertTrue(vp.isFunctional);
+	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
+	test.assertEqual('f', vp.targetKey);
 	test.assertTrue(Array.isArray(vp.fParams));
 	test.assertEqual(1, vp.fParams.length);
 	test.assertEqual('tieName', vp.fParams[0].tieKey);
@@ -54,8 +54,8 @@ suite.runTest({ name: 'func param - single deep' }, test => {
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);
-	test.assertEqual('f', vp.targetProperty);
-	test.assertTrue(vp.isFunctional);
+	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
+	test.assertEqual('f', vp.targetKey);
 	test.assertTrue(Array.isArray(vp.fParams));
 	test.assertEqual(1, vp.fParams.length);
 	test.assertEqual('tieName', vp.fParams[0].tieKey);
@@ -80,8 +80,8 @@ suite.runTest({ name: 'func param - multi root' }, test => {
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);
-	test.assertEqual('f', vp.targetProperty);
-	test.assertTrue(vp.isFunctional);
+	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
+	test.assertEqual('f', vp.targetKey);
 	test.assertTrue(Array.isArray(vp.fParams));
 	test.assertEqual(2, vp.fParams.length);
 	test.assertEqual('tieNameA', vp.fParams[0].tieKey);
@@ -106,8 +106,8 @@ suite.runTest({ name: 'func param - multi mixed' }, test => {
 	test.assertEqual(null, vp.tieKey);
 	test.assertEqual(null, vp.rawPath);
 	test.assertEqual(null, vp.path);
-	test.assertEqual('f', vp.targetProperty);
-	test.assertTrue(vp.isFunctional);
+	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
+	test.assertEqual('f', vp.targetKey);
 	test.assertTrue(Array.isArray(vp.fParams));
 	test.assertEqual(2, vp.fParams.length);
 	test.assertEqual('tieNameA', vp.fParams[0].tieKey);

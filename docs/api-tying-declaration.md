@@ -26,10 +26,10 @@ Terminology:
 - `<tying declaration>[, <tying declaration>[, ...] ]`
 
 `<tying declaration>`
+- `tieKey[:path] [=> [property] [=> V2M event] ]` - property tying
 - `tieKey[:path] a> attribute [=> V2M event]` - attribute tying
 - `tieKey[:path] e> event` - event tying
 - `method(tieKey[:path] [, tieKey[:path] [, ...]])` - method tying
-- `tieKey[:path] [=> [property] [=> V2M event] ]` - property tying
 
 ### Syntactical parts definition
 
@@ -51,7 +51,7 @@ Terminology:
 `attribute`
 - element's __attribute__, that the tied data will be __assigned__ to; in case of V2M setup, this attribute will be used as a source for model update
 - `attribute` tying MUST use a special directive part: `a>`
-- the data expected to be assigned thus: `<element>.setAttribute(attribute, String(<data>))` (see more in __Data transfer__ section below)
+- the data expected to be assigned thus: `<element>.setAttribute(attribute, String(<data>))` (see more in [Data transition](#data-transition) section below)
 
 `event`
 - framework will add an event listener, taken from model, listening to the specified `event` (eg framework may do `<element>.addEventListener(event, <data>)`)
@@ -65,8 +65,8 @@ Terminology:
 
 `property`
 - element's __property__, that the tied data will be __assigned__ to; in case of V2M setup, this property will be used as a source for model update
-- `property` part is optional (see more in __Data transfer__ section below)
-- the data expected to be assigned thus: `<element>.property = <data>` (see more in __Data transfer__ section below)
+- `property` part is optional (see more in [Data transition](#data-transition) section below)
+- the data expected to be assigned thus: `<element>.property = <data>` (see more in [Data transition](#data-transition) section below)
 
 `V2M event`
 - V2M event part is for a view-to-model flow, serving th 2-way binding scenario
@@ -74,7 +74,7 @@ Terminology:
 - V2M event should internally be used by data binding library as a trigger for model update, originating in the element's change
 - data binding framework __MAY imply__ V2M event part definition in case of some elements, like implying `change` for `input` etc
 
-### Data transfer
+### Data transition
 
 When the data (model) is being assigned to the element (view), there are few points that need to be addressed:
 - data serialization MAY be required in some cases of property tying
@@ -104,9 +104,16 @@ Suggested resolution waterfall:
 - else use `change` event for: `INPUT`, `SELECT`, `TEXTAREA`
 - else do nothing (1-way binding path)
 
-#### Serialization rules
+#### Serialization rules - attributes
 
 Attributes assignment rules are driven by HTML spec - attribute value MAY ONLY be of a type `string` and as such will always be stringified.
+
+Exceptions to the said above:
+- if the value is `null` or `undefined` the attribute will be removed
+
+> It is still an open question of shall or shall not the `boolean` values be treated in the same/similar way.
+
+#### Serialization rules - properties
 
 Properties assignment is a more complex case. In many cases, especially having in mind the rise of a (possibly) complex web components, the original data type assignment desired.
 

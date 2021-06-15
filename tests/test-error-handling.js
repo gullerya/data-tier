@@ -15,13 +15,14 @@ suite.runTest({ name: 'accessing in other place the observable that was replaced
 	const
 		inner = {},
 		raw = { o: inner },
-		data = DataTier.ties.create('errorA', raw),
+		tn = test.getRandom(8),
+		data = DataTier.ties.create(tn, raw),
 		elem = document.createElement('div');
 
 	data.observe(changes =>
 		changes.forEach(change =>
 			console.dir(change)));
-	elem.dataset.tie = 'errorA => textContent';
+	elem.dataset.tie = `${tn} => textContent`;
 
 	document.body.appendChild(elem);
 

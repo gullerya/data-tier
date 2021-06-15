@@ -1,6 +1,6 @@
 const
 	PARAM_LIST_SPLITTER = /\s*[,;]\s*/,
-	PARAM_SPLITTER = /\s*=>\s*/,
+	PARAM_SPLITTER = /\s*([=ae]>)\s*/,
 	DEFAULT_TARGET = {
 		A: 'href',
 		ANIMATE: 'href',
@@ -19,6 +19,12 @@ const
 		SOURCE: 'src'
 	},
 	DEFAULT_EVENTS_CHANGE = ['INPUT', 'SELECT', 'TEXTAREA'],
+	TARGET_TYPES = {
+		ATTRIBUTE: 1,
+		EVENT: 2,
+		METHOD: 3,
+		PROPERTY: 4
+	},
 	randomKeySource = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 	randomKeySourceLen = randomKeySource.length;
 
@@ -26,25 +32,27 @@ export {
 	extractViewParams,
 	getPath,
 	setPath,
-	callViewFunction,
+	callViewMethod,
 	getRandomKey
 };
 
 export {
 	DEFAULT_TARGET,
-	DEFAULT_EVENTS_CHANGE
+	DEFAULT_EVENTS_CHANGE,
+	TARGET_TYPES
 };
 
 class Parameter {
-	constructor(tieKey, rawPath, path, targetProperty, changeEvent, isFunctional, fParams) {
+	constructor(tieKey, rawPath, path, targetType, targetKey, changeEvent, fParams) {
 		this.tieKey = tieKey;
 		this.rawPath = rawPath;
 		this.path = path;
-		this.targetProperty = targetProperty;
+		this.targetType = targetType;
+		this.targetKey = targetKey;
 		this.changeEvent = changeEvent;
-		this.isFunctional = isFunctional;
 		this.fParams = fParams;
 		this.iClasses = null;
+		Object.seal(this);
 	}
 }
 
@@ -80,16 +88,16 @@ function parseParamList(paramList, element) {
 		}
 		try {
 			if (fnext) {
-				parsedParam = parseFunctionParam(fnext);
+				parsedParam = parseMethodParam(fnext);
 				fnext = null;
 			} else {
 				parsedParam = parsePropertyParam(rawParam, element);
 			}
-			if (parsedParam.targetProperty in keysTest) {
-				console.error(`elements's property '${parsedParam.targetProperty}' tied more than once; all but first tie dismissed`);
+			if (parsedParam.targetKey in keysTest) {
+				console.error(`elements's property '${parsedParam.targetKey}' tied more than once; all but first tie dismissed`);
 			} else {
 				result.push(parsedParam);
-				keysTest[parsedParam.targetProperty] = true;
+				keysTest[parsedParam.targetKey] = true;
 			}
 		} catch (e) {
 			console.error(`failed to parse one of a multi param parts (${rawParam}), skipping it`, e);
@@ -98,43 +106,48 @@ function parseParamList(paramList, element) {
 	return result.length ? result : null;
 }
 
-function parseFunctionParam(rawParam) {
-	const [targetFunction, args] = rawParam.split(/[()]/);
+function parseMethodParam(rawParam) {
+	const [targetMethod, args] = rawParam.split(/[()]/);
 	const fParams = args.trim()
 		.split(/\s*,\s*/)
 		.map(parseFromPart);
 	if (!fParams.length) {
-		throw new Error(`functional tie parameter MUST have at least one tied argument, '${rawParam}' doesn't`);
+		throw new Error(`method tie parameter MUST have at least one tied argument, '${rawParam}' doesn't`);
 	}
 
-	return new Parameter(null, null, null, targetFunction, null, true, fParams);
+	return new Parameter(null, null, null, TARGET_TYPES.METHOD, targetMethod, null, fParams);
 }
 
 /**
  * MVVM:		from [=> to [=> event]]
- * from:		tieKey:path
- * to:			property
- * event:		eventName
  * 
- * example 1:	tieKey:path.to.data => data => datachange
- * example 2:	tieKey:path.to.data => data
+ * example 1:	tieKey:path.to.data => property => datachange
+ * example 2:	tieKey:path.to.data a> attribute
  * example 3:	tieKey:path.to.data
  * example 4:	tieKey
  */
 function parsePropertyParam(rawParam, element) {
+	/* eslint-disable no-unused-vars */
 	let [
 		fromPart,
-		toPart,
+		targetTypeDirective,
+		targetKey,
+		_eventDirective,
 		eventPart
 	] = rawParam.split(PARAM_SPLITTER);
+
+	const targetType = targetTypeDirective === 'a>' ? TARGET_TYPES.ATTRIBUTE
+		: targetTypeDirective === 'e>' ? TARGET_TYPES.EVENT
+			: TARGET_TYPES.PROPERTY;
+
 	const { tieKey, rawPath, path } = parseFromPart(fromPart);
-	toPart = toPart ? toPart : getDefaultTargetProperty(element);
+	targetKey = targetKey ? targetKey : getDefaultTargetProperty(element);
 	eventPart = eventPart ? eventPart : getDefaultChangeEvent(element);
 
-	const result = new Parameter(tieKey, rawPath, path, toPart, eventPart, false, null);
+	const result = new Parameter(tieKey, rawPath, path, targetType, targetKey, eventPart, null);
 
 	//	TODO: this should be generalized better
-	if (toPart === 'classList') {
+	if (targetKey === 'classList') {
 		result.iClasses = Array.from(element.classList);
 	}
 
@@ -201,7 +214,7 @@ function setPath(ref, path, value) {
 	ref[path[i]] = value;
 }
 
-function callViewFunction(elem, func, args) {
+function callViewMethod(elem, func, args) {
 	try {
 		elem[func].apply(elem, args);
 	} catch (e) {

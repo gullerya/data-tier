@@ -26,7 +26,7 @@ suite.runTest({ name: `adding ${chunksToAdd} untied HTML chunks to DOM - one ele
 });
 
 //	this tests un-tied elements, measuring impact of 'data-tier' on the app
-suite.runTest({ name: `adding ${chunksToAdd} untied HTML chunks to DOM - chunk as a whole`, skip: true }, () => {
+suite.runTest({ name: `adding ${chunksToAdd} untied HTML chunks to DOM - chunk as a whole` }, () => {
 	const measures = runMeasured(() => {
 		const root = document.createElement('div');
 		const child1 = document.createElement('span');
