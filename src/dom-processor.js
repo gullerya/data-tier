@@ -176,9 +176,6 @@ export class DOMProcessor {
 
 		const viewParams = element[this._dtInstance.paramsKey];
 		if (viewParams) {
-			if (!viewParams.length) {
-				console.log('empty');
-			}
 			this._dtInstance.views.delView(element, viewParams);
 			this._handleChangeListener(element, REMOVE_LISTENER, viewParams);
 		}
