@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2021-06-15
+### Changed
+- [Issue #79](https://github.com/gullerya/data-tier/issues/79) - implemented tying declaration API - attributes
+- removed special treatment for the `data-` attributes (in favor of well defined attributes support API)
+- documentation updated
+- dependencies maintanance
+
+## [3.3.1] - 2021-06-11
+### Changed
+- [Issue #74](https://github.com/gullerya/data-tier/issues/74) - added tying declaration API - specification
+
 ## [3.3.0] - 2021-06-06
 ### Changed
 - Added special treatment for the `data-` attributes (thanks Piotr Pazola) - sets the value on the attribute rather than property

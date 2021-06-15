@@ -192,7 +192,7 @@ Let's go over a quite simple syntax:
     * __all__ arguments are expected to be taken from a tied model/s
     * any number of different `ties` may be used
     * once the model of one of the method's arguments changes - `data-tier` resolves all of the arguments and calls the method
-    * actual method's arguments will always be supplied with one more thing - an array of the model's affecting relevant changes, if any (see [Change](https://github.com/gullerya/object-observer/blob/master/docs/observable.md#change-instance-properties) definition for more info)
+    * actual method's arguments will always be supplied with one more thing - an array of the model's affecting relevant changes, if any (see [Change](https://github.com/gullerya/object-observer/blob/main/docs/observable.md#change-instance-properties) definition for more info)
 
 > Pro note: as of now, due to synchronous changes delivery, all but some specific `Array` mutations will be delivered as a single synchronous change. Yet the API is designed as __always__ providing an Array of changes for possible future compatibility with async changes aggregation as well as with Arrays massive mutations.
 
