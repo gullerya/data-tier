@@ -208,7 +208,11 @@ export class DOMProcessor {
 
 			tie = this._dtInstance.ties.get(tieParam.tieKey);
 			if (tie) {
-				newValue = element[tieParam.targetKey];
+				if (tieParam.targetType === TARGET_TYPES.ATTRIBUTE) {
+					newValue = element.getAttribute(tieParam.targetKey);
+				} else {
+					newValue = element[tieParam.targetKey];
+				}
 				setPath(tie, tieParam.path, newValue);
 			}
 		}
