@@ -160,7 +160,11 @@ export class Views {
 	}
 
 	_unsafeSetAttribute(view, _param, value, targetAttribute) {
-		view.setAttribute(targetAttribute, String(value));
+		if (value === null || value === undefined) {
+			view.removeAttribute(targetAttribute);
+		} else {
+			view.setAttribute(targetAttribute, String(value));
+		}
 	}
 
 	_unsafeSetProperty(view, param, value, targetProperty) {

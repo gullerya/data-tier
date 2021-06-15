@@ -47,3 +47,111 @@ suite.runTest({ name: 'two way binding e2e' }, async test => {
 
 	test.assertEqual('else', tie.test);
 });
+
+suite.runTest({ name: 'tie boolean (true) correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	DataTier.ties.create(tieName, { test: true });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(newEl.getAttribute('attr'), 'true');
+});
+
+suite.runTest({ name: 'tie boolean (false) correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	DataTier.ties.create(tieName, { test: false });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(newEl.getAttribute('attr'), 'false');
+});
+
+suite.runTest({ name: 'tie number (0) correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	DataTier.ties.create(tieName, { test: 0 });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(newEl.getAttribute('attr'), '0');
+});
+
+suite.runTest({ name: 'tie number (123) correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	DataTier.ties.create(tieName, { test: 123 });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(newEl.getAttribute('attr'), '123');
+});
+
+suite.runTest({ name: 'tie string (empty) correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	DataTier.ties.create(tieName, { test: '' });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(newEl.getAttribute('attr'), '');
+});
+
+suite.runTest({ name: 'tie string ("some") correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	DataTier.ties.create(tieName, { test: 'some' });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+
+	test.assertEqual(newEl.getAttribute('attr'), 'some');
+});
+
+suite.runTest({ name: 'tie undefined correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	const tie = DataTier.ties.create(tieName, { test: 'some' });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+	test.assertEqual(newEl.getAttribute('attr'), 'some');
+
+	tie.test = undefined;
+	test.assertFalse(newEl.hasAttribute('attr'));
+});
+
+suite.runTest({ name: 'tie null correctly' }, async test => {
+	const tieName = test.getRandom(8);
+	const tie = DataTier.ties.create(tieName, { test: 'some' });
+
+	const newEl = document.createElement('div');
+	newEl.dataset.tie = `${tieName}:test a> attr`;
+	document.body.appendChild(newEl);
+
+	await test.waitNextMicrotask();
+	test.assertEqual(newEl.getAttribute('attr'), 'some');
+
+	tie.test = null;
+	test.assertFalse(newEl.hasAttribute('attr'));
+});
