@@ -136,16 +136,19 @@ export class Views {
 		return result;
 	}
 
-	updateViewByModel(elem, param, value) {
+	updateViewByModel(elem, param, value, oldValue) {
 		const targetType = param.targetType || TARGET_TYPES.PROPERTY;
 		const targetKey = param.targetKey;
 		try {
 			switch (targetType) {
 				case TARGET_TYPES.ATTRIBUTE:
-					this._unsafeSetAttribute(elem, param, value, targetKey);
+					this._unsafeSetAttribute(elem, targetKey, value);
+					break;
+				case TARGET_TYPES.EVENT:
+					this._unsafeSetEvent(elem, targetKey, value, oldValue);
 					break;
 				case TARGET_TYPES.PROPERTY:
-					this._unsafeSetProperty(elem, param, value, targetKey);
+					this._unsafeSetProperty(elem, param, targetKey, value);
 					break;
 				default:
 					throw new Error(`unsupported target type '${targetType}'`);
@@ -155,7 +158,7 @@ export class Views {
 		}
 	}
 
-	_unsafeSetAttribute(view, _param, value, targetAttribute) {
+	_unsafeSetAttribute(view, targetAttribute, value) {
 		if (value === null || value === undefined) {
 			view.removeAttribute(targetAttribute);
 		} else {
@@ -163,7 +166,16 @@ export class Views {
 		}
 	}
 
-	_unsafeSetProperty(view, param, value, targetProperty) {
+	_unsafeSetEvent(view, targetEvent, value, oldValue) {
+		if (typeof oldValue === 'function') {
+			view.removeEventListener(targetEvent, oldValue);
+		}
+		if (typeof value === 'function') {
+			view.addEventListener(targetEvent, value);
+		}
+	}
+
+	_unsafeSetProperty(view, param, targetProperty, value) {
 		if (targetProperty === 'textContent') {
 			this._setTextContentProperty(view, value);
 		} else if (targetProperty === 'value') {

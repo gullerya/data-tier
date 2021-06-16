@@ -15,6 +15,12 @@ const suite = getSuite({ name: 'Testing tie API - negative (declaration)' });
 //		iClasses: <string[]>
 //	}
 
+suite.runTest({ name: 'no param defined' }, test => {
+	const el = document.createElement('div');
+	const vp = extractViewParams(el);
+	test.assertEqual(null, vp);
+});
+
 suite.runTest({ name: 'illegal target type directive' }, () => {
 	const el = document.createElement('div');
 	el.dataset.tie = 'tieKey:path.to.go -> attr';

@@ -22,7 +22,7 @@ It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.
 
 `data-tier` implements a [data binding declaration API](docs/api-tying-declaration.md) (part of this library), which specifies tying data source to element's:
 - attribute
-- event (in progress)
+- event
 - method
 - property
 

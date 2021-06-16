@@ -17,12 +17,6 @@ const suite = getSuite({ name: 'Testing tie properties API (declaration)' });
 
 //	single
 //
-suite.runTest({ name: 'no param defined' }, test => {
-	const el = document.createElement('div');
-	const vp = extractViewParams(el);
-	test.assertEqual(null, vp);
-});
-
 suite.runTest({ name: 'single param - full with event' }, test => {
 	const el = document.createElement('div');
 	el.dataset.tie = 'tieName:path.to.go => data => event';
