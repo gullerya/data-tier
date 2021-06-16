@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.5.0] - 2021-06-16
 ### Added
 - [Issue #75](https://github.com/gullerya/data-tier/issues/75) - implemented tying declaration API - events
 - documentation updated
