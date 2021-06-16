@@ -127,7 +127,7 @@ class Tie {
 				} else {
 					newValue = getPath(this._model, param.path);
 				}
-				this.ties._dti.views.updateViewByModel(element, param, newValue);
+				this.ties._dti.views.updateViewByModel(element, param, newValue, change.oldValue);
 			}
 		}
 	}
