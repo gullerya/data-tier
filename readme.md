@@ -26,7 +26,19 @@ It is highly advised to briefly review the library's [Lifecycle](docs/lifecycle.
 - method
 - property
 
-![CHROME](docs/icons/chrome.png)<sub>61+</sub> | ![FIREFOX](docs/icons/firefox.png)<sub>60+</sub> | ![EDGE](docs/icons/edge-chromium.png)<sub>79+</sub>
+The simplest example of usage, just to give some look'n'feel:
+```js
+DataTier.ties.create('key1', { firstName: 'Uria' });
+```
+```html
+<span data-tie="key1:firstName"></span>
+```
+
+Support matrix:
+![CHROME](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/70.1.0/chrome/chrome_24x24.png)<sub>61+</sub> |
+![FIREFOX](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/70.1.0/firefox/firefox_24x24.png)<sub>60+</sub> |
+![EDGE](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/70.1.0/edge/edge_24x24.png)<sub>79+</sub> |
+![Safari](https://cdnjs.cloudflare.com/ajax/libs/browser-logos/70.1.0/safari/safari_24x24.png)<sub>13+</sub>
 
 Changelog is found [here](docs/changelog.md).
 

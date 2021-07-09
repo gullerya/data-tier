@@ -52,13 +52,13 @@
 		"bump": "node ./ci/tools/version-utils.js"
 	},
 	"dependencies": {
-		"object-observer": "^4.3.1"
+		"object-observer": "^4.3.2"
 	},
 	"devDependencies": {
-		"eslint": "^7.28.0",
+		"eslint": "^7.30.0",
 		"fs-extra": "^10.0.0",
 		"just-test": "2.3.2",
-		"puppeteer": "^10.0.0",
+		"puppeteer": "^10.1.0",
 		"uglify-es": "^3.3.9"
 	}
 }
