@@ -7,15 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.2] - 2021-11-8
+### Fixed
+- dependencies updated
+
 ## [3.5.1] - 2021-07-09
 ### Fixed
-- dependencies maintanance
+- dependencies updated
 
 ## [3.5.0] - 2021-06-16
 ### Added
 - [Issue #75](https://github.com/gullerya/data-tier/issues/75) - implemented tying declaration API - events
 - documentation updated
-- dependencies maintanance
+- dependencies updated
 
 ## [3.4.0] - 2021-06-15
 ### Changed
