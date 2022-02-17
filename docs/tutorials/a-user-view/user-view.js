@@ -1,4 +1,5 @@
 import * as DataTier from '../../../dist/data-tier.js';
+import { Observable } from '../../../dist/object-observer.min.js';
 
 //	let's assume that we are bringing the user data over a wire
 new Promise(resolve => setTimeout(() =>
@@ -18,7 +19,7 @@ new Promise(resolve => setTimeout(() =>
 	.then(userData => {
 		const model = DataTier.ties.create('userInfo', userData);
 		model.classes = { active: true };
-		model.observe(() => {
+		Observable.observe(model, () => {
 			model.classes.inactive = !model.active;
 		}, { path: 'active' });
 	});

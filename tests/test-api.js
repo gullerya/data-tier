@@ -1,5 +1,6 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
+import { Observable } from '../dist/object-observer.min.js';
 
 const suite = getSuite({ name: 'Testing Tie APIs' });
 
@@ -45,17 +46,6 @@ suite.runTest({ name: 'create tie - negative - object key', expectError: 'invali
 suite.runTest({ name: 'create tie - negative - duplicate key', expectError: 'already exists' }, () => {
 	DataTier.ties.create('validTieA', {});
 	DataTier.ties.create('validTieA');
-});
-
-suite.runTest({ name: 'create Tie - negative tests' }, test => {
-	try {
-		DataTier.ties.create('validTieName', { observe: 'string and not a function' });
-		test.fail('should not be able to create tie with a non-Observable object which has some of Observable properties occupied');
-	} catch (e) {
-		if (e.message.startsWith('should not be able')) {
-			throw new Error('validation failed');
-		}
-	}
 });
 
 suite.runTest({ name: 'get Tie - negative tests' }, test => {
@@ -122,7 +112,7 @@ suite.runTest({ name: 'create/remove Tie - no object provided' }, test => {
 	const t = DataTier.ties.create('noGivenOTieA');
 
 	test.assertEqual('object', typeof t);
-	test.assertTrue('observe' in t);
+	test.assertTrue(Observable.isObservable(t));
 });
 
 suite.runTest({ name: 'create/remove Tie - plain object provided' }, test => {
@@ -132,7 +122,7 @@ suite.runTest({ name: 'create/remove Tie - plain object provided' }, test => {
 	test.assertNotEqual(o, t);
 	test.assertEqual('object', typeof t);
 	test.assertEqual('some', t.test);
-	test.assertTrue('observe' in t);
+	test.assertTrue(Observable.isObservable(t));
 });
 
 suite.runTest({ name: 'create/remove Tie - plain array provided' }, test => {
@@ -143,7 +133,7 @@ suite.runTest({ name: 'create/remove Tie - plain array provided' }, test => {
 	test.assertEqual('object', typeof t);
 	test.assertTrue(Array.isArray(t));
 	test.assertEqual('a', t[0]);
-	test.assertTrue('observe' in t);
+	test.assertTrue(Observable.isObservable(t));
 });
 
 suite.runTest({ name: 'root APIs - negative tests' }, test => {

@@ -11,7 +11,7 @@ const
 process.stdout.write(`\x1B[32mStarting the build...\x1B[0m${os.EOL}${os.EOL}`);
 
 process.stdout.write('\tcleaning "dist"...');
-fs.rmdirSync('./dist', { recursive: true });
+fs.rmSync('./dist', { recursive: true, force: true });
 fs.mkdirSync('./dist');
 process.stdout.write(`\t\t\x1B[32mOK\x1B[0m${os.EOL}`);
 
