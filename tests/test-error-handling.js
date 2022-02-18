@@ -1,5 +1,6 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
+import { Observable } from '../dist/object-observer.min.js';
 
 const suite = getSuite({ name: 'Testing erroneous cases' });
 
@@ -19,7 +20,7 @@ suite.runTest({ name: 'accessing in other place the observable that was replaced
 		data = DataTier.ties.create(tn, raw),
 		elem = document.createElement('div');
 
-	data.observe(changes =>
+	Observable.observe(data, changes =>
 		changes.forEach(change =>
 			console.dir(change)));
 	elem.dataset.tie = `${tn} => textContent`;

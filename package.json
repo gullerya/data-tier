@@ -1,6 +1,6 @@
 {
 	"name": "data-tier",
-	"version": "3.5.3-snapshot",
+	"version": "3.5.3",
 	"description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
 	"type": "module",
 	"main": "dist/data-tier.min.js",
@@ -52,13 +52,13 @@
 		"bump": "node ./ci/tools/version-utils.js"
 	},
 	"dependencies": {
-		"object-observer": "^4.4.0"
+		"object-observer": "^5.0.0"
 	},
 	"devDependencies": {
-		"eslint": "^8.2.0",
+		"eslint": "^8.9.0",
 		"fs-extra": "^10.0.0",
 		"just-test": "2.3.2",
-		"puppeteer": "^11.0.0",
+		"puppeteer": "^13.3.2",
 		"uglify-es": "^3.3.9"
 	}
 }

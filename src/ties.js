@@ -20,7 +20,7 @@ class Tie {
 		const [postModel, isObservable] = ensureObservable(model);
 		this._model = postModel;
 		if (isObservable) {
-			this._model.observe(changes => this.processDataChanges(changes));
+			Observable.observe(this._model, changes => this.processDataChanges(changes));
 		}
 	}
 
