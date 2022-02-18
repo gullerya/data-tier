@@ -1,6 +1,5 @@
 import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
 import * as DataTier from '../dist/data-tier.js';
-import { Observable } from '../dist/object-observer.min.js';
 
 const suite = getSuite({ name: 'Testing Tie APIs' });
 
@@ -112,7 +111,7 @@ suite.runTest({ name: 'create/remove Tie - no object provided' }, test => {
 	const t = DataTier.ties.create('noGivenOTieA');
 
 	test.assertEqual('object', typeof t);
-	test.assertTrue(Observable.isObservable(t));
+	test.assertTrue(DataTier.Observable.isObservable(t));
 });
 
 suite.runTest({ name: 'create/remove Tie - plain object provided' }, test => {
@@ -122,7 +121,7 @@ suite.runTest({ name: 'create/remove Tie - plain object provided' }, test => {
 	test.assertNotEqual(o, t);
 	test.assertEqual('object', typeof t);
 	test.assertEqual('some', t.test);
-	test.assertTrue(Observable.isObservable(t));
+	test.assertTrue(DataTier.Observable.isObservable(t));
 });
 
 suite.runTest({ name: 'create/remove Tie - plain array provided' }, test => {
@@ -133,7 +132,7 @@ suite.runTest({ name: 'create/remove Tie - plain array provided' }, test => {
 	test.assertEqual('object', typeof t);
 	test.assertTrue(Array.isArray(t));
 	test.assertEqual('a', t[0]);
-	test.assertTrue(Observable.isObservable(t));
+	test.assertTrue(DataTier.Observable.isObservable(t));
 });
 
 suite.runTest({ name: 'root APIs - negative tests' }, test => {

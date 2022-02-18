@@ -1,7 +1,7 @@
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
-import uglifyES from 'uglify-es';
+import uglifyJS from 'uglify-js';
 
 const
 	fsEncOpts = { encoding: 'utf8' },
@@ -39,7 +39,7 @@ for (const fileToMinify of filesToMinify) {
 	const fc = fs
 		.readFileSync(fp, fsEncOpts)
 		.replace(/(?<!.min)\.js(?=')/g, '.min.js');
-	const mfc = uglifyES.minify(fc, options).code;
+	const mfc = uglifyJS.minify(fc, options).code;
 	fs.writeFileSync(mfp, mfc, fsEncOpts);
 }
 process.stdout.write(`\t\t\t\x1B[32mOK\x1B[0m${os.EOL}`);
