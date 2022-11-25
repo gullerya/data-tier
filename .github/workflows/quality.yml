@@ -3,7 +3,7 @@ on:
   push:
     branches: ["*"]
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */12 * * *"
 
 jobs:
   quality_pipeline:
