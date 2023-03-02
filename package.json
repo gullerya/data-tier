@@ -56,8 +56,6 @@
 	"devDependencies": {
 		"eslint": "^8.35.0",
 		"fs-extra": "^11.1.0",
-		"just-test": "2.3.2",
-		"puppeteer": "^19.7.2",
 		"uglify-js": "^3.17.4"
 	}
 }
