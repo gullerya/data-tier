@@ -44,12 +44,12 @@ Changelog is found [here](docs/changelog.md).
 
 ## Installation
 
-Use regular `npm install data-tier --save-prod` to use the library from your local environment:
+Use regular `npm install @gullerya/data-tier --save-prod` to use the library from your local environment:
 ```js
-import * as DataTier from 'node_modules/data-tier/dist/data-tier.min.js';
+import * as DataTier from 'node_modules/@gullerya/data-tier/dist/data-tier.min.js';
 ```
 
-Alternatively, a __CDN__ deployment available (AWS driven), so one can import it as following:
+__CDN__ deployment is available (AWS driven), so one can import it as following:
 ```js
 import * as DataTier from 'https://libs.gullerya.com/data-tier/x.y.z/data-tier.min.js';
 ```
