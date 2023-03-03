@@ -1,4 +1,4 @@
-[![NPM](https://img.shields.io/npm/v/data-tier.svg?label=npm)](https://www.npmjs.com/package/data-tier)
+[![NPM](https://img.shields.io/npm/v/data-tier.svg?label=npm)](https://www.npmjs.com/package/@gullerya/data-tier)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](./license.md)
 
 [![Quality pipeline](https://github.com/gullerya/data-tier/workflows/Quality%20pipeline/badge.svg?branch=main)](https://github.com/gullerya/data-tier/actions?query=workflow%3A%22Quality+pipeline%22)
@@ -6,8 +6,6 @@
 [![Codacy](https://img.shields.io/codacy/grade/eb34053e002648519fd3a2d78c45677b.svg?logo=codacy)](https://app.codacy.com/app/gullerya/data-tier)
 
 # `data-tier`
-
-> Starting v4 `data-tier`'s NPM will be relocated to the scoped [@gullerya/data-tier](https://www.npmjs.com/package/@gullerya/data-tier).
 
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/JavaScript applications.
 
@@ -46,12 +44,12 @@ Changelog is found [here](docs/changelog.md).
 
 ## Installation
 
-Use regular `npm install data-tier --save-prod` to use the library from your local environment:
+Use regular `npm install @gullerya/data-tier --save-prod` to use the library from your local environment:
 ```js
-import * as DataTier from 'node_modules/data-tier/dist/data-tier.min.js';
+import * as DataTier from 'node_modules/@gullerya/data-tier/dist/data-tier.min.js';
 ```
 
-Alternatively, a __CDN__ deployment available (AWS driven), so one can import it as following:
+__CDN__ deployment is available (AWS driven), so one can import it as following:
 ```js
 import * as DataTier from 'https://libs.gullerya.com/data-tier/x.y.z/data-tier.min.js';
 ```

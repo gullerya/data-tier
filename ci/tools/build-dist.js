@@ -1,51 +1,83 @@
 import os from 'os';
 import fs from 'fs';
 import path from 'path';
-import uglifyJS from 'uglify-js';
+import esbuild from 'esbuild';
+import { calcIntegrity } from './intergrity-utils.js';
 
 const
-	fsEncOpts = { encoding: 'utf8' },
-	filesToCopy = ['data-tier.js', 'dom-processor.js', 'ties.js', 'utils.js', 'views.js'],
-	filesToMinify = filesToCopy;
+	SRC_DIR = 'src',
+	OUT_DIR = 'dist',
+	fsEncOpts = { encoding: 'utf8' };
 
-process.stdout.write(`\x1B[32mStarting the build...\x1B[0m${os.EOL}${os.EOL}`);
+{
+	writeGreen('Starting the build...', true);
 
-process.stdout.write('\tcleaning "dist"...');
-fs.rmSync('./dist', { recursive: true, force: true });
-fs.mkdirSync('./dist');
-process.stdout.write(`\t\t\x1B[32mOK\x1B[0m${os.EOL}`);
+	//	cleanup
+	fs.rmSync('./dist', { recursive: true, force: true });
+	fs.mkdirSync('./dist');
 
-process.stdout.write('\tcopying "src" to "dist"...');
-for (const fileToCopy of filesToCopy) {
-	fs.copyFileSync(path.join('./src', fileToCopy), path.join('./dist', fileToCopy));
+	await buildESModule();
+	await buildCDNResources();
+
+	writeGreen(`DONE`, true);
 }
-process.stdout.write(`\t\x1B[32mOK\x1B[0m${os.EOL}`);
 
-process.stdout.write('\tupdate version in runtime...');
-const version = JSON.parse(fs.readFileSync('package.json', fsEncOpts)).version;
-const dataTierSource = fs
-	.readFileSync('dist/data-tier.js', fsEncOpts)
-	.replace('DT-VERSION-PLACEHOLDER', version);
-fs.writeFileSync('dist/data-tier.js', dataTierSource, fsEncOpts);
-process.stdout.write(`\t\x1B[32mOK\x1B[0m${os.EOL}`);
+async function buildESModule() {
+	write('\tbuilding ESM resources...');
 
-process.stdout.write('\tminifying...');
-const options = {
-	toplevel: true
-};
-for (const fileToMinify of filesToMinify) {
-	const fp = path.join('./dist', fileToMinify);
-	const mfp = path.join('./dist', fileToMinify.replace(/\.js$/, '.min.js'));
-	const fc = fs
-		.readFileSync(fp, fsEncOpts)
-		.replace(/(?<!.min)\.js(?=')/g, '.min.js');
-	const mfc = uglifyJS.minify(fc, options).code;
-	fs.writeFileSync(mfp, mfc, fsEncOpts);
+	write('\t\tcopying...');
+	const srcFiles = fs.readdirSync(SRC_DIR);
+	for (const file of srcFiles) {
+		fs.copyFileSync(path.join(SRC_DIR, file), path.join(OUT_DIR, file));
+	}
+
+	write('\t\tupdating version in runtime...');
+	const version = JSON.parse(fs.readFileSync('package.json', fsEncOpts)).version;
+	const dataTierSource = fs
+		.readFileSync(path.join(OUT_DIR, 'data-tier.js'), fsEncOpts)
+		.replace('DT-VERSION-PLACEHOLDER', version);
+	fs.writeFileSync(path.join(OUT_DIR, 'data-tier.js'), dataTierSource, fsEncOpts);
+
+	write('\t\tminifying...');
+	await esbuild.build({
+		entryPoints: srcFiles.map(f => path.join(OUT_DIR, f)),
+		outdir: OUT_DIR,
+		minify: true,
+		sourcemap: true,
+		sourcesContent: false,
+		outExtension: { '.js': '.min.js' }
+	});
+
+	write('\t\tinstalling "object-observer"...');
+	fs.copyFileSync('node_modules/@gullerya/object-observer/dist/object-observer.min.js', 'dist/object-observer.min.js');
+
+	writeGreen('\tOK');
+	write(os.EOL, false);
 }
-process.stdout.write(`\t\t\t\x1B[32mOK\x1B[0m${os.EOL}`);
 
-process.stdout.write('\tinstalling "object-observer"...');
-fs.copyFileSync('node_modules/@gullerya/object-observer/dist/object-observer.min.js', 'dist/object-observer.min.js');
-process.stdout.write(`\t\x1B[32mOK\x1B[0m${os.EOL}${os.EOL}`);
+async function buildCDNResources() {
+	write('\tbuilding CDN resources...');
 
-process.stdout.write(`\x1B[32mDONE${os.EOL}`);
+	write('\t\tcopying...');
+	const CDN_DIR = path.join(OUT_DIR, 'cdn');
+	fs.mkdirSync(CDN_DIR);
+	const srcFiles = fs.readdirSync(OUT_DIR).filter(f => f !== 'cdn');
+	for (const file of srcFiles) {
+		fs.copyFileSync(path.join(OUT_DIR, file), path.join(CDN_DIR, file));
+	}
+
+	write('\t\tproducing sri.json...');
+	const sriMap = await calcIntegrity(CDN_DIR);
+	fs.writeFileSync('sri.json', JSON.stringify(sriMap, null, '\t'), fsEncOpts);
+
+	writeGreen('\tOK');
+	write(os.EOL, false);
+}
+
+function write(text, newLine = true) {
+	process.stdout.write(`${text}${newLine ? os.EOL : ''}`);
+}
+
+function writeGreen(text, newLine = true) {
+	write(`\x1B[32m${text}\x1B[0m`, newLine);
+}

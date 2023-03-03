@@ -1,5 +1,5 @@
 {
-	"name": "data-tier",
+	"name": "@gullerya/data-tier",
 	"version": "3.6.6",
 	"description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
 	"type": "module",
@@ -48,14 +48,17 @@
 	"scripts": {
 		"build": "node ./ci/tools/build-dist.js",
 		"lint": "eslint -c ./ci/.eslintrc.json ./src/*.js ./tests/*.js ./ci/**/*.js",
-		"test": "node ./node_modules/just-test/dist/tests-runner/run-tests.js --config=./tests/tests-run-config.json"
+		"test": "node node_modules/just-test/bin/local-runner.js config_file=./tests/configs/tests-config-ci.json"
 	},
 	"dependencies": {
 		"@gullerya/object-observer": "^6.0.4"
 	},
 	"devDependencies": {
 		"eslint": "^8.35.0",
-		"fs-extra": "^11.1.0",
-		"uglify-js": "^3.17.4"
+		"just-test": "^3.0.4",
+		"esbuild": "^0.17.10"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }
