@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.DT_CI_AT }}
 
       - name: Setup NodeJS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
 
@@ -30,7 +30,7 @@ jobs:
       - name: Bump & Tag version
         run: |
           git config user.name "automation"
-          git config user.email "ci.gullerya@gmail.com"
+          git config user.email "gullerya@gmail.com"
           npm version ${{ github.event.inputs.version }}
           git add --all
           git push

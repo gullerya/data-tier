@@ -7,8 +7,6 @@
 
 # `data-tier`
 
-Starting v4 `data-tier`'s NPM will be relocated to the scoped [@gullerya/data-tier](https://www.npmjs.com/package/@gullerya/data-tier).
-
 `data-tier` ('tier' from 'to tie') is a two way binding (MVVM) library targeting client (browser) HTML/JavaScript applications.
 
 Primary reasons for `data-tier` (or - why bother):

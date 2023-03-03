@@ -9,11 +9,14 @@ on:
 
 jobs:
   release-deploy:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Setup NodeJS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
 
@@ -30,4 +33,5 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET }}
+          AWS_REGION: eu-central-1
         run: aws s3 sync ./node_modules/data-tier/dist s3://${{ secrets.AWS_LIBS_BUCKET }}/data-tier/${{ env.RELEASE_VERSION }} --delete --cache-control public,max-age=172800,immutable

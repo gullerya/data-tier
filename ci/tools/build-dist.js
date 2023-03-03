@@ -45,7 +45,7 @@ for (const fileToMinify of filesToMinify) {
 process.stdout.write(`\t\t\t\x1B[32mOK\x1B[0m${os.EOL}`);
 
 process.stdout.write('\tinstalling "object-observer"...');
-fs.copyFileSync('node_modules/object-observer/dist/object-observer.min.js', 'dist/object-observer.min.js');
+fs.copyFileSync('node_modules/@gullerya/object-observer/dist/object-observer.min.js', 'dist/object-observer.min.js');
 process.stdout.write(`\t\x1B[32mOK\x1B[0m${os.EOL}${os.EOL}`);
 
 process.stdout.write(`\x1B[32mDONE${os.EOL}`);
