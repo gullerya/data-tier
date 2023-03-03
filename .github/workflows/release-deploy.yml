@@ -6,6 +6,11 @@ on:
       version:
         description: "Version to deploy (eg 1.2.3)"
         required: true
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
 
 jobs:
   release-deploy:
@@ -20,13 +25,9 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      # Get release version
-      - name: Get release version
-        run: echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-
       # Pull the version to be deployed
       - name: Install
-        run: npm install -E data-tier@${{ env.RELEASE_VERSION }}
+        run: npm install -E @gullerya/data-tier@${{ inputs.version }}
 
       # Deploy
       - name: Deploy
@@ -34,4 +35,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET }}
           AWS_REGION: eu-central-1
-        run: aws s3 sync ./node_modules/data-tier/dist s3://${{ secrets.AWS_LIBS_BUCKET }}/data-tier/${{ env.RELEASE_VERSION }} --delete --cache-control public,max-age=172800,immutable
+        run: aws s3 sync ./node_modules/@gullerya/data-tier/dist s3://${{ secrets.AWS_LIBS_BUCKET }}/data-tier/${{ inputs.version }} --delete --cache-control public,max-age=172800,immutable

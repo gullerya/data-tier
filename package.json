@@ -1,5 +1,5 @@
 {
-	"name": "data-tier",
+	"name": "@gullerya/data-tier",
 	"version": "3.6.6",
 	"description": "Tiny and fast two way (MV-VM) data binding framework for browser environments.",
 	"type": "module",
@@ -57,5 +57,8 @@
 		"eslint": "^8.35.0",
 		"just-test": "^3.0.4",
 		"uglify-js": "^3.17.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

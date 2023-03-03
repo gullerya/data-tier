@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-20.04
+    outputs:
+      packageVersion: ${{ steps.outputVersion.outputs.packageVersion }}
 
     steps:
       - name: Checkout
@@ -32,12 +34,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: npm publish
 
-      # Trigger deploy to CDN
-      - name: Obtain release version
-        run: echo "RELEASE_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
-      - name: Tirgger deploy to CDN
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: "Deploy (CDN)"
-          token: ${{ secrets.DT_CI_AT }}
-          inputs: '{ "version": "${{ env.RELEASE_VERSION }}" }'
+      - name: Output version
+        id: outputVersion
+        run: echo "packageVersion=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
+
+  trigger-cdn-deploy:
+    needs: publish
+    uses: ./.github/workflows/release-deploy.yml
+    with:
+      version: ${{ needs.publish.outputs.packageVersion }}
+    secrets: inherit
