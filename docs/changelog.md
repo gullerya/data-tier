@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated tests to the new framework
 - update CI to the best practices
 
-# [3.6.2] - 2023-03-02
+# [3.6.4] - 2023-03-03
 ### Chore
 - documentation updated
 - dependencies updated
