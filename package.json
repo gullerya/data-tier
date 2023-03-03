@@ -56,7 +56,7 @@
 	"devDependencies": {
 		"eslint": "^8.35.0",
 		"just-test": "^3.0.4",
-		"uglify-js": "^3.17.0"
+		"esbuild": "^0.17.10"
 	},
 	"publishConfig": {
 		"access": "public"
