@@ -1,4 +1,4 @@
-[![NPM](https://img.shields.io/npm/v/data-tier.svg?label=npm)](https://www.npmjs.com/package/@gullerya/data-tier)
+[![NPM](https://img.shields.io/npm/v/@gullerya/data-tier.svg?label=npm)](https://www.npmjs.com/package/@gullerya/data-tier)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](./license.md)
 
 [![Quality pipeline](https://github.com/gullerya/data-tier/workflows/Quality%20pipeline/badge.svg?branch=main)](https://github.com/gullerya/data-tier/actions?query=workflow%3A%22Quality+pipeline%22)

@@ -51,7 +51,7 @@
 		"test": "node node_modules/just-test/bin/local-runner.js config_file=./tests/configs/tests-config-ci.json"
 	},
 	"dependencies": {
-		"@gullerya/object-observer": "^6.0.4"
+		"@gullerya/object-observer": "^6.0.5"
 	},
 	"devDependencies": {
 		"eslint": "^8.35.0",
