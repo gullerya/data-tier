@@ -1,11 +1,14 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
+import { getRandom } from '@gullerya/just-test/random';
 import * as DataTier from '../dist/data-tier.js';
 
-let clickCounter = 0;
-const suite = getSuite({ name: 'Testing functions dynamic binding' });
 
-suite.runTest({ name: 'bind onclick logic' }, async test => {
-	const tn = test.getRandom(8);
+let clickCounter = 0;
+
+test('bind onclick logic', async () => {
+	const tn = getRandom(8);
 	const user = {
 		name: 'click me',
 		clickHandler: () => {
@@ -19,11 +22,11 @@ suite.runTest({ name: 'bind onclick logic' }, async test => {
 	d.dataset.tie = `${tn}:clickHandler => onclick, ${tn}:name => textContent`;
 	document.body.appendChild(d);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	d.click();
-	if (d.textContent !== 'click again' || clickCounter !== 1) test.fail('expected to register result of a first click');
+	if (d.textContent !== 'click again' || clickCounter !== 1) assert.fail('expected to register result of a first click');
 
 	d.click();
-	if (clickCounter !== 3) test.fail('expected to register result of a second click');
+	if (clickCounter !== 3) assert.fail('expected to register result of a second click');
 });

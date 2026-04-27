@@ -1,7 +1,9 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
+import { getRandom } from '@gullerya/just-test/random';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Testing Shadowing in ShadowDom' });
 
 customElements.define('open-shadow-test', class extends HTMLElement {
 	constructor() {
@@ -90,8 +92,8 @@ customElements.define('open-shadow-parent-test-b', class extends HTMLElement {
 	}
 });
 
-suite.runTest({ name: 'Open ShadowDom should be auto-tied (add element self)' }, async test => {
-	const tieName = test.getRandom(8);
+test('Open ShadowDom should be auto-tied (add element self)', async () => {
+	const tieName = getRandom(8);
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
 	//	test add element with shadow DOM
@@ -99,20 +101,20 @@ suite.runTest({ name: 'Open ShadowDom should be auto-tied (add element self)' },
 	ce.shadowRoot.innerHTML = `<span data-tie="${tieName}:data">default content</span>`;
 
 	document.body.appendChild(ce);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	let c = ce.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 
 	//	test remove element with shadow DOM
 	document.body.removeChild(ce);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	tie.data = 'not to be found';
 	c = ce.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 });
 
-suite.runTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, async test => {
-	const tieName = test.getRandom(8);
+test('Open ShadowDom should be auto-tied (add as child)', async () => {
+	const tieName = getRandom(8);
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 
 	//	test add element with shadow HOST as its child
@@ -121,20 +123,20 @@ suite.runTest({ name: 'Open ShadowDom should be auto-tied (add as child)' }, asy
 	ce.shadowRoot.innerHTML = `<span data-tie="${tieName}:data">default content</span>`;
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	let c = ce.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 
 	//	test removnig element with shadow HOST as its child
 	document.body.removeChild(pe);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	tie.data = 'not to be found';
 	c = ce.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 });
 
-suite.runTest({ name: 'Open ShadowDom should observe DOM Mutations (self being child)' }, async test => {
-	const tieName = test.getRandom(8);
+test('Open ShadowDom should observe DOM Mutations (self being child)', async () => {
+	const tieName = getRandom(8);
 	DataTier.ties.create(tieName, { data: 'data' });
 
 	//	first, validate all in place
@@ -143,20 +145,20 @@ suite.runTest({ name: 'Open ShadowDom should observe DOM Mutations (self being c
 	ce.shadowRoot.innerHTML = `<span data-tie="${tieName}:data">default content</span>`;
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	let c = ce.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 
 	//	now, append new child and see it being processed
 	const newChild = document.createElement('span');
 	newChild.dataset.tie = `${tieName}:data`;
 	ce.shadowRoot.appendChild(newChild);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	c = ce.shadowRoot.lastElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 });
 
-suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (element self)' }, async test => {
+test('Closed ShadowDom should not be auto-tied, but by API (element self)', async () => {
 	const tieName = 'tieForClosedShadowDomA';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 	let c;
@@ -164,32 +166,32 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (ele
 	//	add closed shadow HOST
 	const ce = document.createElement('closed-shadow-test-a');
 	document.body.appendChild(ce);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	const e = ce.ownShadowRootProp.firstElementChild;
 	c = e.textContent;
-	test.assertEqual(c, 'default content');
+	assert.equal(c, 'default content');
 
 	//	add it explicitly to the DataTier
 	DataTier.addDocument(ce.ownShadowRootProp);
 	tie.data = 'other content';
 	c = e.textContent;
-	test.assertEqual(c, 'other content');
+	assert.equal(c, 'other content');
 
 	//  removing closed shadow HOST
 	document.body.removeChild(ce);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	tie.data = 'one more time';
 	c = e.textContent;
-	test.assertEqual(c, 'one more time');
+	assert.equal(c, 'one more time');
 
 	//	remove explicitly from DataTier
 	DataTier.removeDocument(ce.ownShadowRootProp);
 	tie.data = 'now should not change';
 	c = e.textContent;
-	test.assertEqual(c, 'one more time');
+	assert.equal(c, 'one more time');
 });
 
-suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as child of other element)' }, async test => {
+test('Closed ShadowDom should not be auto-tied, but by API (as child of other element)', async () => {
 	const tieName = 'tieForClosedShadowDomB';
 	const tie = DataTier.ties.create(tieName, { data: 'data' });
 	let c;
@@ -199,32 +201,32 @@ suite.runTest({ name: 'Closed ShadowDom should not be auto-tied, but by API (as 
 	const ce = document.createElement('closed-shadow-test-b');
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	const e = ce.ownShadowRootProp.firstElementChild;
 	c = e.textContent;
-	test.assertEqual(c, 'default content');
+	assert.equal(c, 'default content');
 
 	//	add it explicitly to the DataTier
 	DataTier.addDocument(ce.ownShadowRootProp);
 	tie.data = 'other content';
 	c = e.textContent;
-	test.assertEqual(c, 'other content');
+	assert.equal(c, 'other content');
 
 	//  removing closed shadow HOST
 	document.body.removeChild(pe);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	tie.data = 'one more time';
 	c = e.textContent;
-	test.assertEqual(c, 'one more time');
+	assert.equal(c, 'one more time');
 
 	//	remove explicitly from DataTier
 	DataTier.removeDocument(ce.ownShadowRootProp);
 	tie.data = 'now should not change';
 	c = e.textContent;
-	test.assertEqual(c, 'one more time');
+	assert.equal(c, 'one more time');
 });
 
-suite.runTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being child)' }, async test => {
+test('Closed ShadowDom should observe DOM Mutations (self being child)', async () => {
 	const tieName = 'tieForClosedShadowDomC';
 	DataTier.ties.create(tieName, { data: 'data' });
 
@@ -234,50 +236,58 @@ suite.runTest({ name: 'Closed ShadowDom should observe DOM Mutations (self being
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
 	DataTier.addDocument(ce.ownShadowRootProp);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	let c = ce.ownShadowRootProp.firstElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 
 	//	now, append new child and see it being processed
 	const newChild = document.createElement('span');
 	newChild.dataset.tie = 'tieForClosedShadowDomC:data';
 	ce.ownShadowRootProp.appendChild(newChild);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	c = ce.ownShadowRootProp.lastElementChild.textContent;
-	test.assertEqual(c, 'data');
+	assert.equal(c, 'data');
 });
 
 // nested tied shadow DOMs
 
-suite.runTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied)' }, async test => {
+test('Open ShadowDom should be able to have another custom element within it (also tied)', async () => {
 	const tieName = 'tieForShadowDom';
 	DataTier.ties.create(tieName, { data: 'custom content' });
 
 	//	first, validate all in place
 	const ce = document.createElement('open-shadow-parent-test');
 	document.body.appendChild(ce);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	const c = ce.shadowRoot.firstElementChild.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(c, 'custom content');
+	assert.equal(c, 'custom content');
 });
 
-suite.runTest({ name: 'Open ShadowDom should be able to have another custom element within it (also tied) - self as child' }, async test => {
+test('Open ShadowDom should be able to have another custom element within it (also tied) - self as child', async () => {
 	const tieName = 'tieForOpenShadowDomParentB';
 	DataTier.ties.create(tieName, { data: 'custom content' });
+	//	inner custom element's setter writes to 'tieForShadowDom' (hardcoded); ensure it exists
+	if (!DataTier.ties.get('tieForShadowDom')) {
+		DataTier.ties.create('tieForShadowDom', {});
+	}
 
 	//	first, validate all in place
 	const pe = document.createElement('div');
 	const ce = document.createElement('open-shadow-parent-test-b');
 	pe.appendChild(ce);
 	document.body.appendChild(pe);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	const c = ce.shadowRoot.firstElementChild.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(c, 'custom content');
+	assert.equal(c, 'custom content');
 });
 
-suite.runTest({ name: 'Open ShadowDom should be propertly tied even if defined only after the tying' }, async test => {
+test('Open ShadowDom should be propertly tied even if defined only after the tying', async () => {
 	const tieName = 'tieForShadowDomUndefinedFirst';
 	DataTier.ties.create(tieName, { data: 'custom content' });
+	//	inner custom element's setter writes to 'tieForShadowDom' (hardcoded); ensure it exists
+	if (!DataTier.ties.get('tieForShadowDom')) {
+		DataTier.ties.create('tieForShadowDom', {});
+	}
 
 	//	create undefined element and attach it to living DOM (may also be already found in DOM)
 	const ue = document.createElement('undefined-first-shadow-holder');
@@ -295,13 +305,13 @@ suite.runTest({ name: 'Open ShadowDom should be propertly tied even if defined o
 		}
 	});
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 	const it = ue.shadowRoot.firstElementChild.shadowRoot.firstElementChild.textContent;
-	test.assertEqual(it, 'custom content');
+	assert.equal(it, 'custom content');
 });
 
-suite.runTest({ name: 'Shadow Dom already has inner element with Shadow DOM themselves' }, async test => {
-	const tid = test.getRandom(8);
+test('Shadow Dom already has inner element with Shadow DOM themselves', async () => {
+	const tid = getRandom(8);
 	const tie = DataTier.ties.create(tid, { data: 'some' });
 	let child1;
 	let child2;
@@ -337,8 +347,8 @@ suite.runTest({ name: 'Shadow Dom already has inner element with Shadow DOM them
 
 	document.body.appendChild(document.createElement('shadow-in-shadow-parent'));
 
-	await test.waitNextMicrotask();
-	test.assertEqual(tie.data, child1.textContent);
-	test.assertEqual(tie.data, child2.textContent);
-	test.assertEqual(2, touches);
+	await waitNextTask();
+	assert.equal(tie.data, child1.textContent);
+	assert.equal(tie.data, child2.textContent);
+	assert.equal(2, touches);
 });

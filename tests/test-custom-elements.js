@@ -1,8 +1,9 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
 import * as DataTier from '../dist/data-tier.js';
 
 const
-	suite = getSuite({ name: 'Testing Custom Elements behavior' }),
 	model = {
 		text: 'some text',
 		date: new Date()
@@ -24,13 +25,13 @@ class CustomElement extends HTMLElement {
 
 customElements.define('custom-element', CustomElement);
 
-suite.runTest({ name: 'testing basic controllers: binding value of custom element' }, async test => {
+test('testing basic controllers: binding value of custom element', async () => {
 	const e = document.createElement('custom-element');
 	e.dataset.tie = 'testCustomsA:text => value';
-	if (e.value) test.fail('precondition of the test failed');
+	if (e.value) assert.fail('precondition of the test failed');
 	document.body.appendChild(e);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(e.value, model.text.toUpperCase());
+	assert.equal(e.value, model.text.toUpperCase());
 });

@@ -1,7 +1,7 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Bench: document init' });
 const skip = true;
 
 const DocumentSizes = [1000, 3000, 5000, 7000, 12000];
@@ -59,8 +59,8 @@ for (const docSize of DocumentSizes) {
 		const totalElements = f.contentDocument.body.querySelectorAll('*').length;
 		const tiedElements = f.contentDocument.body.querySelectorAll('[data-tie]').length;
 
-		suite.runTest({ name: `perform init on DOM; total elements: ${totalElements}, tied elements: ${tiedElements}` }, test => {
-			test.assertEqual(docSize, totalElements);
+		test(`perform init on DOM; total elements: ${totalElements}, tied elements: ${tiedElements}`, () => {
+			assert.equal(docSize, totalElements);
 
 			let startTime = performance.now();
 			DataTier.addDocument(f.contentDocument);

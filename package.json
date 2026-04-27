@@ -47,16 +47,21 @@
 	],
 	"scripts": {
 		"build": "node ./ci/tools/build-dist.js",
-		"lint": "eslint -c ./ci/.eslintrc.json ./src/*.js ./tests/*.js ./ci/**/*.js",
-		"test": "node node_modules/just-test/bin/local-runner.js config_file=./tests/configs/tests-config-ci.json"
+		"lint": "eslint -c ./ci/eslint.config.mjs ./src/*.js ./tests/*.js ./ci/**/*.js",
+		"test:chromium": "node node_modules/@gullerya/just-test/bin/local-runner.js config_file=./tests/configs/tests-config-ci-chromium.js",
+		"test:firefox": "node node_modules/@gullerya/just-test/bin/local-runner.js config_file=./tests/configs/tests-config-ci-firefox.js",
+		"test:webkit": "node node_modules/@gullerya/just-test/bin/local-runner.js config_file=./tests/configs/tests-config-ci-webkit.js",
+		"test": "npm run test:chromium"
 	},
 	"dependencies": {
-		"@gullerya/object-observer": "^6.0.4"
+		"@gullerya/object-observer": "^7.0.0"
 	},
 	"devDependencies": {
-		"eslint": "^8.35.0",
-		"just-test": "^3.0.4",
-		"esbuild": "^0.17.10"
+		"@eslint/js": "^9.39.1",
+		"@gullerya/just-test": "^4.0.17",
+		"esbuild": "^0.27.0",
+		"eslint": "^9.39.1",
+		"globals": "^16.5.0"
 	},
 	"publishConfig": {
 		"access": "public"

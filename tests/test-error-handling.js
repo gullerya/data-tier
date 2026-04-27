@@ -1,9 +1,10 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { waitNextTask } from '@gullerya/just-test/timing';
+import { getRandom } from '@gullerya/just-test/random';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Testing erroneous cases' });
 
-suite.runTest({ name: 'adding view with empty tie definition' }, () => {
+test('adding view with empty tie definition', () => {
 	const elem = document.createElement('div');
 
 	elem.dataset.tie = '';
@@ -11,11 +12,11 @@ suite.runTest({ name: 'adding view with empty tie definition' }, () => {
 	document.body.appendChild(elem);
 });
 
-suite.runTest({ name: 'accessing in other place the observable that was replaced' }, async test => {
+test('accessing in other place the observable that was replaced', async () => {
 	const
 		inner = {},
 		raw = { o: inner },
-		tn = test.getRandom(8),
+		tn = getRandom(8),
 		data = DataTier.ties.create(tn, raw),
 		elem = document.createElement('div');
 
@@ -26,13 +27,13 @@ suite.runTest({ name: 'accessing in other place the observable that was replaced
 
 	document.body.appendChild(elem);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	data.o = inner;
 
 	document.body.removeChild(elem);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	document.body.appendChild(elem);
 });

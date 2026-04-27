@@ -1,7 +1,6 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
 import { extractViewParams } from '../dist/utils.js';
-
-const suite = getSuite({ name: 'Testing tie API - negative (declaration)' });
 
 //	tie param structure is defined as following:
 //	{
@@ -15,13 +14,13 @@ const suite = getSuite({ name: 'Testing tie API - negative (declaration)' });
 //		iClasses: <string[]>
 //	}
 
-suite.runTest({ name: 'no param defined' }, test => {
+test('no param defined', () => {
 	const el = document.createElement('div');
 	const vp = extractViewParams(el);
-	test.assertEqual(null, vp);
+	assert.equal(null, vp);
 });
 
-suite.runTest({ name: 'illegal target type directive' }, () => {
+test('illegal target type directive', () => {
 	const el = document.createElement('div');
 	el.dataset.tie = 'tieKey:path.to.go -> attr';
 	extractViewParams(el);

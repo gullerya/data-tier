@@ -1,7 +1,9 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
+import { getRandom, CHAR_SOURCES } from '@gullerya/just-test/random';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Testing Custom Elements when Undefined yet' });
 
 class CustomElementA extends HTMLElement {
 	get value() {
@@ -14,23 +16,23 @@ class CustomElementA extends HTMLElement {
 	}
 }
 
-suite.runTest({ name: 'testing custom elements - autonomous: undefined first and adding to DOM' }, async test => {
-	const tieName = test.getRandom(8);
-	const ceSuffix = test.getRandom(4, ['abcdefghijklmnopqrstuvwxyz']);
+test('testing custom elements - autonomous: undefined first and adding to DOM', async () => {
+	const tieName = getRandom(8);
+	const ceSuffix = getRandom(4, CHAR_SOURCES.alphaLower);
 	const tie = DataTier.ties.create(tieName, { text: 'some text' });
 	const e = document.createElement('ce-' + ceSuffix);
 	e.dataset.tie = `${tieName}:text => value`;
-	if (e.value) test.fail('precondition failed - was not expecting to get any value, got "' + e.value + '"');
+	if (e.value) assert.fail('precondition failed - was not expecting to get any value, got "' + e.value + '"');
 
 	document.body.appendChild(e);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	if (e.value) test.fail('precondition failed - was not expecting to get any value, got "' + e.value + '"');
+	if (e.value) assert.fail('precondition failed - was not expecting to get any value, got "' + e.value + '"');
 
 	customElements.define('ce-' + ceSuffix, CustomElementA);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(tie.text.toUpperCase(), e.value);
+	assert.equal(tie.text.toUpperCase(), e.value);
 });

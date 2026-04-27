@@ -1,7 +1,6 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
 import { extractViewParams, TARGET_TYPES } from '../dist/utils.js';
-
-const suite = getSuite({ name: 'Testing tie method API (declaration)' });
 
 //	tie param structure is defined as following:
 //	{
@@ -20,106 +19,106 @@ const suite = getSuite({ name: 'Testing tie method API (declaration)' });
 
 //	single
 //
-suite.runTest({ name: 'func param - single root' }, test => {
+test('func param - single root', () => {
 	const el = document.createElement('div');
 	el.dataset.tie = 'f(tieName)';
 
 	const vps = extractViewParams(el);
-	test.assertTrue(Array.isArray(vps));
-	test.assertEqual(1, vps.length);
+	assert.isTrue(Array.isArray(vps));
+	assert.equal(1, vps.length);
 
 	const vp = vps[0];
-	test.assertEqual(null, vp.tieKey);
-	test.assertEqual(null, vp.rawPath);
-	test.assertEqual(null, vp.path);
-	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
-	test.assertEqual('f', vp.targetKey);
-	test.assertTrue(Array.isArray(vp.fParams));
-	test.assertEqual(1, vp.fParams.length);
-	test.assertEqual('tieName', vp.fParams[0].tieKey);
-	test.assertEqual('', vp.fParams[0].rawPath);
-	test.assertTrue(Array.isArray(vp.fParams[0].path));
-	test.assertEqual(0, vp.fParams[0].path.length);
+	assert.equal(null, vp.tieKey);
+	assert.equal(null, vp.rawPath);
+	assert.equal(null, vp.path);
+	assert.equal(TARGET_TYPES.METHOD, vp.targetType);
+	assert.equal('f', vp.targetKey);
+	assert.isTrue(Array.isArray(vp.fParams));
+	assert.equal(1, vp.fParams.length);
+	assert.equal('tieName', vp.fParams[0].tieKey);
+	assert.equal('', vp.fParams[0].rawPath);
+	assert.isTrue(Array.isArray(vp.fParams[0].path));
+	assert.equal(0, vp.fParams[0].path.length);
 });
 
-suite.runTest({ name: 'func param - single deep' }, test => {
+test('func param - single deep', () => {
 	const el = document.createElement('div');
 	el.dataset.tie = 'f(tieName:some.path.to.data)';
 
 	const vps = extractViewParams(el);
-	test.assertTrue(Array.isArray(vps));
-	test.assertEqual(1, vps.length);
+	assert.isTrue(Array.isArray(vps));
+	assert.equal(1, vps.length);
 
 	const vp = vps[0];
-	test.assertEqual(null, vp.tieKey);
-	test.assertEqual(null, vp.rawPath);
-	test.assertEqual(null, vp.path);
-	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
-	test.assertEqual('f', vp.targetKey);
-	test.assertTrue(Array.isArray(vp.fParams));
-	test.assertEqual(1, vp.fParams.length);
-	test.assertEqual('tieName', vp.fParams[0].tieKey);
-	test.assertEqual('some.path.to.data', vp.fParams[0].rawPath);
-	test.assertTrue(Array.isArray(vp.fParams[0].path));
-	test.assertEqual(4, vp.fParams[0].path.length);
-	test.assertEqual('some', vp.fParams[0].path[0]);
-	test.assertEqual('path', vp.fParams[0].path[1]);
-	test.assertEqual('to', vp.fParams[0].path[2]);
-	test.assertEqual('data', vp.fParams[0].path[3]);
+	assert.equal(null, vp.tieKey);
+	assert.equal(null, vp.rawPath);
+	assert.equal(null, vp.path);
+	assert.equal(TARGET_TYPES.METHOD, vp.targetType);
+	assert.equal('f', vp.targetKey);
+	assert.isTrue(Array.isArray(vp.fParams));
+	assert.equal(1, vp.fParams.length);
+	assert.equal('tieName', vp.fParams[0].tieKey);
+	assert.equal('some.path.to.data', vp.fParams[0].rawPath);
+	assert.isTrue(Array.isArray(vp.fParams[0].path));
+	assert.equal(4, vp.fParams[0].path.length);
+	assert.equal('some', vp.fParams[0].path[0]);
+	assert.equal('path', vp.fParams[0].path[1]);
+	assert.equal('to', vp.fParams[0].path[2]);
+	assert.equal('data', vp.fParams[0].path[3]);
 });
 
-suite.runTest({ name: 'func param - multi root' }, test => {
+test('func param - multi root', () => {
 	const el = document.createElement('div');
 	el.dataset.tie = 'f(tieNameA, tieNameB)';
 
 	const vps = extractViewParams(el);
-	test.assertTrue(Array.isArray(vps));
-	test.assertEqual(1, vps.length);
+	assert.isTrue(Array.isArray(vps));
+	assert.equal(1, vps.length);
 
 	const vp = vps[0];
-	test.assertEqual(null, vp.tieKey);
-	test.assertEqual(null, vp.rawPath);
-	test.assertEqual(null, vp.path);
-	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
-	test.assertEqual('f', vp.targetKey);
-	test.assertTrue(Array.isArray(vp.fParams));
-	test.assertEqual(2, vp.fParams.length);
-	test.assertEqual('tieNameA', vp.fParams[0].tieKey);
-	test.assertEqual('', vp.fParams[0].rawPath);
-	test.assertTrue(Array.isArray(vp.fParams[0].path));
-	test.assertEqual(0, vp.fParams[0].path.length);
-	test.assertEqual('tieNameB', vp.fParams[1].tieKey);
-	test.assertEqual('', vp.fParams[1].rawPath);
-	test.assertTrue(Array.isArray(vp.fParams[1].path));
-	test.assertEqual(0, vp.fParams[1].path.length);
+	assert.equal(null, vp.tieKey);
+	assert.equal(null, vp.rawPath);
+	assert.equal(null, vp.path);
+	assert.equal(TARGET_TYPES.METHOD, vp.targetType);
+	assert.equal('f', vp.targetKey);
+	assert.isTrue(Array.isArray(vp.fParams));
+	assert.equal(2, vp.fParams.length);
+	assert.equal('tieNameA', vp.fParams[0].tieKey);
+	assert.equal('', vp.fParams[0].rawPath);
+	assert.isTrue(Array.isArray(vp.fParams[0].path));
+	assert.equal(0, vp.fParams[0].path.length);
+	assert.equal('tieNameB', vp.fParams[1].tieKey);
+	assert.equal('', vp.fParams[1].rawPath);
+	assert.isTrue(Array.isArray(vp.fParams[1].path));
+	assert.equal(0, vp.fParams[1].path.length);
 });
 
-suite.runTest({ name: 'func param - multi mixed' }, test => {
+test('func param - multi mixed', () => {
 	const el = document.createElement('div');
 	el.dataset.tie = 'f(tieNameA, tieNameB:some.path.to.data)';
 
 	const vps = extractViewParams(el);
-	test.assertTrue(Array.isArray(vps));
-	test.assertEqual(1, vps.length);
+	assert.isTrue(Array.isArray(vps));
+	assert.equal(1, vps.length);
 
 	const vp = vps[0];
-	test.assertEqual(null, vp.tieKey);
-	test.assertEqual(null, vp.rawPath);
-	test.assertEqual(null, vp.path);
-	test.assertEqual(TARGET_TYPES.METHOD, vp.targetType);
-	test.assertEqual('f', vp.targetKey);
-	test.assertTrue(Array.isArray(vp.fParams));
-	test.assertEqual(2, vp.fParams.length);
-	test.assertEqual('tieNameA', vp.fParams[0].tieKey);
-	test.assertEqual('', vp.fParams[0].rawPath);
-	test.assertTrue(Array.isArray(vp.fParams[0].path));
-	test.assertEqual(0, vp.fParams[0].path.length);
-	test.assertEqual('tieNameB', vp.fParams[1].tieKey);
-	test.assertEqual('some.path.to.data', vp.fParams[1].rawPath);
-	test.assertTrue(Array.isArray(vp.fParams[1].path));
-	test.assertEqual(4, vp.fParams[1].path.length);
-	test.assertEqual('some', vp.fParams[1].path[0]);
-	test.assertEqual('path', vp.fParams[1].path[1]);
-	test.assertEqual('to', vp.fParams[1].path[2]);
-	test.assertEqual('data', vp.fParams[1].path[3]);
+	assert.equal(null, vp.tieKey);
+	assert.equal(null, vp.rawPath);
+	assert.equal(null, vp.path);
+	assert.equal(TARGET_TYPES.METHOD, vp.targetType);
+	assert.equal('f', vp.targetKey);
+	assert.isTrue(Array.isArray(vp.fParams));
+	assert.equal(2, vp.fParams.length);
+	assert.equal('tieNameA', vp.fParams[0].tieKey);
+	assert.equal('', vp.fParams[0].rawPath);
+	assert.isTrue(Array.isArray(vp.fParams[0].path));
+	assert.equal(0, vp.fParams[0].path.length);
+	assert.equal('tieNameB', vp.fParams[1].tieKey);
+	assert.equal('some.path.to.data', vp.fParams[1].rawPath);
+	assert.isTrue(Array.isArray(vp.fParams[1].path));
+	assert.equal(4, vp.fParams[1].path.length);
+	assert.equal('some', vp.fParams[1].path[0]);
+	assert.equal('path', vp.fParams[1].path[1]);
+	assert.equal('to', vp.fParams[1].path[2]);
+	assert.equal('data', vp.fParams[1].path[3]);
 });

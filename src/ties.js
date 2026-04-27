@@ -140,9 +140,14 @@ export class Ties {
 	}
 
 	get(key) {
-		const k = typeof key === 'string'
-			? key
-			: (key && key.getAttribute ? key.getAttribute('data-tie-scope') : null);
+		let k;
+		if (typeof key === 'string' && key) {
+			k = key;
+		} else if (key && key.nodeType === Node.ELEMENT_NODE) {
+			k = key.getAttribute('data-tie-scope');
+		} else {
+			throw new Error(`invalid key '${key}'`);
+		}
 		const t = this._ties[k];
 		return t ? t.model : undefined;
 	}
@@ -197,15 +202,18 @@ export class Ties {
 	}
 
 	remove(tieToRemove) {
-		let finalTieKeyToRemove = tieToRemove;
-		if (typeof tieToRemove === 'object') {
+		let finalTieKeyToRemove;
+		if (typeof tieToRemove === 'string' && tieToRemove) {
+			finalTieKeyToRemove = tieToRemove;
+		} else if (tieToRemove && typeof tieToRemove === 'object') {
 			if (tieToRemove.nodeType === Node.ELEMENT_NODE) {
 				finalTieKeyToRemove = tieToRemove.getAttribute('data-tie-scope');
 			} else {
+				//	remove-by-model-reference; silent no-op if no match
 				finalTieKeyToRemove = Object.keys(this._ties).find(key => this._ties[key].model === tieToRemove);
 			}
-		} else if (typeof tieToRemove !== 'string') {
-			throw new Error(`invalid tieToRemove parameter ${tieToRemove}`);
+		} else {
+			throw new Error(`invalid tieToRemove parameter '${tieToRemove}'`);
 		}
 
 		const tie = this._ties[finalTieKeyToRemove];

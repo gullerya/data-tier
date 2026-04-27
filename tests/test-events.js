@@ -1,39 +1,41 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
+import { getRandom } from '@gullerya/just-test/random';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Testing events' });
 
-suite.runTest({ name: 'binding/unbinding default event' }, async test => {
-	const tn = test.getRandom(8);
+test('binding/unbinding default event', async () => {
+	const tn = getRandom(8);
 	const testTie = DataTier.ties.create(tn, {});
 	const i = document.createElement('input');
 	let e;
 	i.dataset.tie = `${tn}:someA`;
 	document.body.appendChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual('', i.value);
+	assert.equal('', i.value);
 	i.value = 'text';
 	e = new Event('change');
 	i.dispatchEvent(e);
 
-	test.assertEqual('text', testTie.someA);
+	assert.equal('text', testTie.someA);
 
 	//  removal of element should untie
 	document.body.removeChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	i.value = 'changed text';
 	e = new Event('change');
 	i.dispatchEvent(e);
 
-	test.assertEqual('text', testTie.someA);
+	assert.equal('text', testTie.someA);
 });
 
-suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test => {
-	const tn = test.getRandom(8);
+test('binding/unbinding default event (checkbox)', async () => {
+	const tn = getRandom(8);
 	const testTie = DataTier.ties.create(tn, {});
 	const i = document.createElement('input');
 	let e;
@@ -41,57 +43,57 @@ suite.runTest({ name: 'binding/unbinding default event (checkbox)' }, async test
 	i.dataset.tie = `${tn}:bool`;
 	document.body.appendChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(i.value, 'on');
+	assert.equal(i.value, 'on');
 	i.checked = true;
 	e = new Event('change');
 	i.dispatchEvent(e);
 
-	test.assertTrue(testTie.bool);
+	assert.isTrue(testTie.bool);
 
 	//  removal of element should untie
 	document.body.removeChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	i.checked = false;
 	e = new Event('change');
 	i.dispatchEvent(e);
 
-	test.assertTrue(testTie.bool);
+	assert.isTrue(testTie.bool);
 });
 
-suite.runTest({ name: 'binding/unbinding custom event default value property' }, async test => {
-	const tn = test.getRandom(8);
+test('binding/unbinding custom event default value property', async () => {
+	const tn = getRandom(8);
 	const testTie = DataTier.ties.create(tn, {});
 	const i = document.createElement('input');
 	i.dataset.tie = `${tn}:someB => => customChange`;
 	document.body.appendChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(i.value, '');
+	assert.equal(i.value, '');
 	i.value = 'text';
 	let e = new Event('customChange');
 	i.dispatchEvent(e);
 
-	test.assertEqual(testTie.someB, 'text');
+	assert.equal(testTie.someB, 'text');
 
 	//  removal of element should untie
 	document.body.removeChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	i.value = 'changed text';
 	e = new Event('customChange');
 	i.dispatchEvent(e);
 
-	test.assertEqual(testTie.someB, 'text');
+	assert.equal(testTie.someB, 'text');
 });
 
-suite.runTest({ name: 'binding custom event custom value property' }, async test => {
-	const tn = test.getRandom(8);
+test('binding custom event custom value property', async () => {
+	const tn = getRandom(8);
 	const testTie = DataTier.ties.create(tn, {});
 	testTie.someC = 'new value';
 
@@ -101,118 +103,118 @@ suite.runTest({ name: 'binding custom event custom value property' }, async test
 	d.dataset.tie = `${tn}:someC => customValue => customChange`;
 	document.body.appendChild(d);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(d.customValue, testTie.someC);
+	assert.equal(d.customValue, testTie.someC);
 	d.customValue = 'text';
 	d.dispatchEvent(new Event('customChange'));
 
-	test.assertEqual('text', testTie.someC);
+	assert.equal('text', testTie.someC);
 });
 
-suite.runTest({ name: 'regular event/value multiple bindings' }, async test => {
-	const tieName = test.getRandom(8);
+test('regular event/value multiple bindings', async () => {
+	const tieName = getRandom(8);
 	const t = DataTier.ties.create(tieName, { test: 'some', other: 'thing' });
 
 	const i = document.createElement('input');
 	i.dataset.tie = `${tieName}:test, ${tieName}:other => customProp`;
 	document.body.appendChild(i);
 
-	await test.waitNextMicrotask();
-	test.assertEqual(i.value, t.test);
-	test.assertEqual(i.customProp, t.other);
+	await waitNextTask();
+	assert.equal(i.value, t.test);
+	assert.equal(i.customProp, t.other);
 
 	i.value = 'text';
 	i.dispatchEvent(new Event('change'));
 
-	await test.waitNextMicrotask();
-	test.assertEqual(t.test, i.value);
-	test.assertEqual(t.other, 'thing');
+	await waitNextTask();
+	assert.equal(t.test, i.value);
+	assert.equal(t.other, 'thing');
 });
 
-suite.runTest({ name: 'custom event/value multiple bindings' }, async test => {
-	const tieName = test.getRandom(8);
+test('custom event/value multiple bindings', async () => {
+	const tieName = getRandom(8);
 	const t = DataTier.ties.create(tieName, { test: 'some', other: 'thing' });
 
 	const d = document.createElement('input');
 	d.dataset.tie = `${tieName}:test => customValue => customChange, ${tieName}:other => customProp`;
 	document.body.appendChild(d);
 
-	await test.waitNextMicrotask();
-	test.assertEqual(d.customValue, t.test);
-	test.assertEqual(d.customProp, t.other);
+	await waitNextTask();
+	assert.equal(d.customValue, t.test);
+	assert.equal(d.customProp, t.other);
 
 	d.customValue = 'text';
 	d.dispatchEvent(new Event('customChange'));
 
-	await test.waitNextMicrotask();
-	test.assertEqual(t.test, d.customValue);
-	test.assertEqual(t.other, 'thing');
+	await waitNextTask();
+	assert.equal(t.test, d.customValue);
+	assert.equal(t.other, 'thing');
 });
 
-suite.runTest({ name: 'deeply nested model update - success' }, async test => {
-	const tieName = test.getRandom(8);
+test('deeply nested model update - success', async () => {
+	const tieName = getRandom(8);
 	const testModel = DataTier.ties.create(tieName);
 
 	const i = document.createElement('input');
 	i.dataset.tie = tieName + ':one.two.three';
 	document.body.appendChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	i.value = 'new value';
 	i.dispatchEvent(new Event('change'));
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual('new value', testModel.one && testModel.one.two && testModel.one.two.three);
+	assert.equal('new value', testModel.one && testModel.one.two && testModel.one.two.three);
 });
 
-suite.runTest({ name: 'deeply nested model update - failure' }, async test => {
-	const tieName = test.getRandom(8);
+test('deeply nested model update - failure', async () => {
+	const tieName = getRandom(8);
 	const testModel = DataTier.ties.create(tieName, { one: { two: 4 } });
 
 	const i = document.createElement('input');
 	i.dataset.tie = tieName + ':one.two.three';
 	document.body.appendChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	i.value = 'new value';
 	i.dispatchEvent(new Event('change'));
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(4, testModel.one.two);
+	assert.equal(4, testModel.one.two);
 });
 
-suite.runTest({ name: 'removed view is untied' }, async test => {
-	const tn = test.getRandom(8);
+test('removed view is untied', async () => {
+	const tn = getRandom(8);
 	const testModel = DataTier.ties.create(tn, { test: 'test' });
 
 	const i = document.createElement('input');
 	i.dataset.tie = `${tn}:test`;
 	document.body.appendChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(i.value, 'test');
+	assert.equal(i.value, 'test');
 
 	i.value = 'else';
 	i.dispatchEvent(new Event('change'));
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(i.value, 'else');
+	assert.equal(i.value, 'else');
 
 	document.body.removeChild(i);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	i.value = 'next';
 	i.dispatchEvent(new Event('change'));
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(testModel.test, 'else');
+	assert.equal(testModel.test, 'else');
 });

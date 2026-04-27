@@ -1,81 +1,81 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
 import * as DataTier from '../dist/data-tier.js?inst=scope-lifecycle';
 
-const suite = getSuite({ name: 'Testing scoped views lifecycle' });
-
-suite.runTest({ name: 'scoped tying root - data first, element last' }, async test => {
+test('scoped tying root - data first, element last', async () => {
 	const sv = document.createElement('div');
 	sv.dataset.tie = 'scope:text';
 	const model = DataTier.ties.create(sv, { text: 'text' });
 
 	document.body.appendChild(sv);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(model.text, sv.textContent);
+	assert.equal(model.text, sv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying root - element first, data last' }, async test => {
+test('scoped tying root - element first, data last', async () => {
 	const sv = document.createElement('div');
 	sv.dataset.tie = 'scope:text';
 
 	document.body.appendChild(sv);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	const model = DataTier.ties.create(sv, { text: 'text' });
 
-	test.assertEqual(model.text, sv.textContent);
+	assert.equal(model.text, sv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying root - data, element, attribute last' }, async test => {
+test('scoped tying root - data, element, attribute last', async () => {
 	const sv = document.createElement('div');
 	const model = DataTier.ties.create(sv, { text: 'text' });
 
 	document.body.appendChild(sv);
-	test.assertEqual('', sv.textContent);
+	assert.equal('', sv.textContent);
 
 	sv.dataset.tie = 'scope:text';
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(model.text, sv.textContent);
+	assert.equal(model.text, sv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying root - element, data, attribute last' }, async test => {
+test('scoped tying root - element, data, attribute last', async () => {
 	const sv = document.createElement('div');
 	document.body.appendChild(sv);
-	test.assertEqual('', sv.textContent);
+	assert.equal('', sv.textContent);
 
 	const model = DataTier.ties.create(sv, { text: 'text' });
 
 	sv.dataset.tie = 'scope:text';
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(model.text, sv.textContent);
+	assert.equal(model.text, sv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying child - data first, element last' }, async test => {
+test('scoped tying child - data first, element last', async () => {
 	const rv = document.createElement('div');
 	document.body.appendChild(rv);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	const model = DataTier.ties.create(rv, { text: 'text' });
 
 	const cv = document.createElement('div');
 	cv.dataset.tie = 'scope:text';
 	rv.appendChild(cv);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(model.text, cv.textContent);
+	assert.equal(model.text, cv.textContent);
 });
 
-suite.runTest({ name: 'scoped tying child - element first, data last' }, async test => {
+test('scoped tying child - element first, data last', async () => {
 	const rv = document.createElement('div');
 	const cv = document.createElement('div');
 	cv.dataset.tie = 'scope:text';
 	rv.appendChild(cv);
 	document.body.appendChild(rv);
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	const model = DataTier.ties.create(rv, { text: 'text' });
 
-	test.assertEqual(model.text, cv.textContent);
+	assert.equal(model.text, cv.textContent);
 });

@@ -1,170 +1,109 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Testing Tie APIs' });
-
-suite.runTest({ name: 'add/remove Tie - positive simple flow' }, test => {
+test('add/remove Tie - positive simple flow', () => {
 	const tieName = 'tieApiPosTest';
 	let tie = DataTier.ties.get(tieName);
 
-	if (tie) test.fail('expected to NOT have tie when not yet defined');
+	assert.isFalse(Boolean(tie), 'expected to NOT have tie when not yet defined');
 
 	tie = DataTier.ties.create(tieName);
 
-	if (!tie) test.fail('expected to get recently created tie');
-
-	if (tie !== DataTier.ties.get(tieName)) test.fail('expected to deterministically get the same tie back');
+	assert.isTrue(Boolean(tie), 'expected to get recently created tie');
+	assert.strictEqual(tie, DataTier.ties.get(tieName), 'expected to deterministically get the same tie back');
 
 	DataTier.ties.remove(tie);
 
-	if (DataTier.ties.get(tieName)) test.fail('expected the tie to be removed');
+	assert.isFalse(Boolean(DataTier.ties.get(tieName)), 'expected the tie to be removed');
 
 	DataTier.ties.remove('someNonExistingTieNameShouldNotFailTheFlow');
 });
 
-suite.runTest({ name: 'Observable is exposed' }, test => {
-	test.assertTrue(typeof DataTier.Observable === 'object');
+test('Observable is exposed', () => {
+	assert.equal('object', typeof DataTier.Observable);
 });
 
-suite.runTest({ name: 'create tie - negative - no key', expectError: 'invalid key' }, () => {
-	DataTier.ties.create();
+test('create tie - negative - no key', () => {
+	assert.throws(() => DataTier.ties.create(), 'invalid key');
 });
 
-suite.runTest({ name: 'create tie - negative - empty key', expectError: 'invalid key' }, () => {
-	DataTier.ties.create('');
+test('create tie - negative - empty key', () => {
+	assert.throws(() => DataTier.ties.create(''), 'invalid key');
 });
 
-suite.runTest({ name: 'create tie - negative - underscore in key', expectError: 'tie key MUST match' }, () => {
-	DataTier.ties.create('underscore_prohibited');
+test('create tie - negative - underscore in key', () => {
+	assert.throws(() => DataTier.ties.create('underscore_prohibited'), 'tie key MUST match');
 });
 
-suite.runTest({ name: 'create tie - negative - object key', expectError: 'invalid key' }, () => {
-	DataTier.ties.create({});
+test('create tie - negative - object key', () => {
+	assert.throws(() => DataTier.ties.create({}), 'invalid key');
 });
 
-suite.runTest({ name: 'create tie - negative - duplicate key', expectError: 'already exists' }, () => {
+test('create tie - negative - duplicate key', () => {
 	DataTier.ties.create('validTieA', {});
-	DataTier.ties.create('validTieA');
+	assert.throws(() => DataTier.ties.create('validTieA'), 'already exists');
 });
 
-suite.runTest({ name: 'get Tie - negative tests' }, test => {
-	try {
-		DataTier.ties.get();
-		test.fail('should not be able to get tie without name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.get('');
-		test.fail('should not be able to get tie with empty name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.get('underscore_prohibited');
-		test.fail('should not be able to get tie with improper name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.get({});
-		test.fail('should not be able to get tie with improper name');
-	} catch (e) {
-		//
-	}
+test('get Tie - negative tests', () => {
+	assert.throws(() => DataTier.ties.get(), 'invalid key');
+	assert.throws(() => DataTier.ties.get(''), 'invalid key');
+	assert.throws(() => DataTier.ties.get({}), 'invalid key');
+	//	valid-shape strings that are not registered return undefined (internal lookups, e.g., 'scope', rely on this)
+	assert.strictEqual(undefined, DataTier.ties.get('nonExistingKey'));
+	assert.strictEqual(undefined, DataTier.ties.get('scope'));
 });
 
-suite.runTest({ name: 'remove Tie - negative tests' }, test => {
-	try {
-		DataTier.ties.remove();
-		test.fail('should not be able to remove tie without name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.remove('');
-		test.fail('should not be able to remove tie with empty name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.remove('underscore_prohibited');
-		test.fail('should not be able to remove tie with improper name');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.ties.remove({});
-		test.fail('should not be able to remove tie with improper name');
-	} catch (e) {
-		//
-	}
+test('remove Tie - negative tests', () => {
+	assert.throws(() => DataTier.ties.remove(), 'invalid tieToRemove');
+	assert.throws(() => DataTier.ties.remove(''), 'invalid tieToRemove');
+	//	valid-shape string for a non-existing tie is a silent no-op (idempotent removal)
+	DataTier.ties.remove('nonExistingKey');
+	//	remove({}) is remove-by-model-reference; silent no-op when no match
+	DataTier.ties.remove({});
 });
 
-suite.runTest({ name: 'create/remove Tie - no object provided' }, test => {
+test('create/remove Tie - no object provided', () => {
 	const t = DataTier.ties.create('noGivenOTieA');
 
-	test.assertEqual('object', typeof t);
-	test.assertTrue(DataTier.Observable.isObservable(t));
+	assert.equal('object', typeof t);
+	assert.isTrue(DataTier.Observable.isObservable(t));
 });
 
-suite.runTest({ name: 'create/remove Tie - plain object provided' }, test => {
+test('create/remove Tie - plain object provided', () => {
 	const o = { test: 'some' };
 	const t = DataTier.ties.create('noGivenOTieB', o);
 
-	test.assertNotEqual(o, t);
-	test.assertEqual('object', typeof t);
-	test.assertEqual('some', t.test);
-	test.assertTrue(DataTier.Observable.isObservable(t));
+	assert.notStrictEqual(o, t);
+	assert.equal('object', typeof t);
+	assert.equal('some', t.test);
+	assert.isTrue(DataTier.Observable.isObservable(t));
 });
 
-suite.runTest({ name: 'create/remove Tie - plain array provided' }, test => {
+test('create/remove Tie - plain array provided', () => {
 	const a = ['a', 'b', 'c'];
 	const t = DataTier.ties.create('noGivenOTieC', a);
 
-	test.assertNotEqual(a, t);
-	test.assertEqual('object', typeof t);
-	test.assertTrue(Array.isArray(t));
-	test.assertEqual('a', t[0]);
-	test.assertTrue(DataTier.Observable.isObservable(t));
+	assert.notStrictEqual(a, t);
+	assert.equal('object', typeof t);
+	assert.isTrue(Array.isArray(t));
+	assert.equal('a', t[0]);
+	assert.isTrue(DataTier.Observable.isObservable(t));
 });
 
-suite.runTest({ name: 'root APIs - negative tests' }, test => {
-	try {
-		DataTier.addDocument();
-		test.fail('should not be able to add undefined root document');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.addDocument(null);
-		test.fail('should not be able to add null root document');
-	} catch (e) {
-		//
-	}
-
-	try {
-		DataTier.addDocument(document.createElement('span'));
-		test.fail('should not be able to add non-document');
-	} catch (e) {
-		//
-	}
+test('root APIs - negative tests', () => {
+	assert.throws(() => DataTier.addDocument());
+	assert.throws(() => DataTier.addDocument(null));
+	assert.throws(() => DataTier.addDocument(document.createElement('span')));
 
 	const rootDocument = document.createDocumentFragment();
 	let addResult = DataTier.addDocument(rootDocument);
-	test.assertTrue(addResult);
+	assert.isTrue(addResult);
 	addResult = DataTier.addDocument(rootDocument);
-	test.assertFalse(addResult);
+	assert.isFalse(addResult);
 
 	let removeResult = DataTier.removeDocument(rootDocument);
-	test.assertTrue(removeResult);
+	assert.isTrue(removeResult);
 	removeResult = DataTier.removeDocument(rootDocument);
-	test.assertFalse(removeResult);
+	assert.isFalse(removeResult);
 });

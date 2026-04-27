@@ -1,33 +1,35 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
+import { getRandom } from '@gullerya/just-test/random';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Testing scoped views (scoped)' });
 
-suite.runTest({ name: 'scoped - self' }, async test => {
+test('scoped - self', async () => {
 	const sv = document.createElement('input');
 	DataTier.ties.create(sv);
 	sv.dataset.tie = 'scope:data.name';
 
 	document.body.appendChild(sv);
 
-	await test.waitNextMicrotask();
-	test.assertEqual('', sv.value);
+	await waitNextTask();
+	assert.equal('', sv.value);
 	const model = DataTier.ties.get(sv);
 	model.data = { name: 'some' };
-	test.assertEqual('some', sv.value);
+	assert.equal('some', sv.value);
 
 	//	model to view
 	model.data.name = 'else';
-	test.assertEqual('else', sv.value);
+	assert.equal('else', sv.value);
 
 	//	view to model
 	sv.value = 'change again';
 	sv.dispatchEvent(new Event('change'));
-	await test.waitNextMicrotask();
-	test.assertEqual('change again', model.data.name);
+	await waitNextTask();
+	assert.equal('change again', model.data.name);
 });
 
-suite.runTest({ name: 'scoped - child a' }, async test => {
+test('scoped - child a', async () => {
 	const sv = document.createElement('div');
 	DataTier.ties.create(sv);
 
@@ -37,24 +39,24 @@ suite.runTest({ name: 'scoped - child a' }, async test => {
 	sv.appendChild(iv);
 	document.body.appendChild(sv);
 
-	await test.waitNextMicrotask();
-	test.assertEqual('', iv.value);
+	await waitNextTask();
+	assert.equal('', iv.value);
 	const model = DataTier.ties.get(sv);
 	model.data = { name: 'some' };
-	test.assertEqual('some', iv.value);
+	assert.equal('some', iv.value);
 
 	//	model to view
 	model.data.name = 'else';
-	test.assertEqual('else', iv.value);
+	assert.equal('else', iv.value);
 
 	//	view to model
 	iv.value = 'change again';
 	iv.dispatchEvent(new Event('change'));
-	await test.waitNextMicrotask();
-	test.assertEqual('change again', model.data.name);
+	await waitNextTask();
+	assert.equal('change again', model.data.name);
 });
 
-suite.runTest({ name: 'scoped - child b' }, async test => {
+test('scoped - child b', async () => {
 	const sv = document.createElement('div');
 	const model = DataTier.ties.create(sv, { data: { name: 'some' } });
 
@@ -64,14 +66,14 @@ suite.runTest({ name: 'scoped - child b' }, async test => {
 	document.body.appendChild(sv);
 
 	sv.appendChild(iv);
-	await test.waitNextMicrotask();
-	test.assertEqual('some', iv.textContent);
+	await waitNextTask();
+	assert.equal('some', iv.textContent);
 
 	model.data.name = 'else';
-	test.assertEqual('else', iv.textContent);
+	assert.equal('else', iv.textContent);
 });
 
-suite.runTest({ name: 'scoped - move around' }, async test => {
+test('scoped - move around', async () => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
 	DataTier.ties.create(sv1);
@@ -79,7 +81,7 @@ suite.runTest({ name: 'scoped - move around' }, async test => {
 	document.body.appendChild(sv1);
 	document.body.appendChild(sv2);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
 	const model1 = DataTier.ties.get(sv1);
 	model1.data = { name: 'some1' };
@@ -90,23 +92,23 @@ suite.runTest({ name: 'scoped - move around' }, async test => {
 	iv.dataset.tie = 'scope:data.name';
 
 	document.body.appendChild(iv);
-	await test.waitNextMicrotask();
-	test.assertEqual('', iv.textContent);
+	await waitNextTask();
+	assert.equal('', iv.textContent);
 
 	sv1.appendChild(iv);
-	await test.waitNextMicrotask();
-	test.assertEqual('some1', iv.textContent);
+	await waitNextTask();
+	assert.equal('some1', iv.textContent);
 	model1.data.name = 'else1';
-	test.assertEqual('else1', iv.textContent);
+	assert.equal('else1', iv.textContent);
 
 	sv2.appendChild(iv);
-	await test.waitNextMicrotask();
-	test.assertEqual('some2', iv.textContent);
+	await waitNextTask();
+	assert.equal('some2', iv.textContent);
 	model2.data.name = 'else2';
-	test.assertEqual('else2', iv.textContent);
+	assert.equal('else2', iv.textContent);
 });
 
-suite.runTest({ name: 'scoped - move around and changes flow' }, async test => {
+test('scoped - move around and changes flow', async () => {
 	const sv1 = document.createElement('div');
 	const sv2 = document.createElement('div');
 	document.body.appendChild(sv1);
@@ -119,33 +121,33 @@ suite.runTest({ name: 'scoped - move around and changes flow' }, async test => {
 	iv.dataset.tie = 'scope:data.name';
 
 	document.body.appendChild(iv);
-	await test.waitNextMicrotask();
-	test.assertEqual('', iv.value);
+	await waitNextTask();
+	assert.equal('', iv.value);
 
 	sv1.appendChild(iv);
-	await test.waitNextMicrotask();
-	test.assertEqual('some1', iv.value);
+	await waitNextTask();
+	assert.equal('some1', iv.value);
 	model1.data.name = 'else1';
-	test.assertEqual('else1', iv.value);
+	assert.equal('else1', iv.value);
 	iv.value = 'value1';
 	iv.dispatchEvent(new Event('change'));
-	await test.waitNextMicrotask();
-	test.assertEqual('value1', model1.data.name);
+	await waitNextTask();
+	assert.equal('value1', model1.data.name);
 
 	sv2.appendChild(iv);
-	await test.waitNextMicrotask();
-	test.assertEqual('some2', iv.value);
+	await waitNextTask();
+	assert.equal('some2', iv.value);
 	model2.data.name = 'else2';
-	test.assertEqual('else2', iv.value);
+	assert.equal('else2', iv.value);
 	iv.value = 'value2';
 	iv.dispatchEvent(new Event('change'));
-	await test.waitNextMicrotask();
-	test.assertEqual('value2', model2.data.name);
-	test.assertEqual('value1', model1.data.name);
+	await waitNextTask();
+	assert.equal('value2', model2.data.name);
+	assert.equal('value1', model1.data.name);
 });
 
-suite.runTest({ name: 'scoped - nested scopes - views first' }, async test => {
-	const tn = test.getRandom(8);
+test('scoped - nested scopes - views first', async () => {
+	const tn = getRandom(8);
 	const v = document.createElement('div');
 	const m = DataTier.ties.create(tn, {
 		firstName: 'first',
@@ -169,15 +171,15 @@ suite.runTest({ name: 'scoped - nested scopes - views first' }, async test => {
 
 	document.body.appendChild(v);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertEqual(m.firstName, v.firstElementChild.children[0].textContent);
-	test.assertEqual(m.lastName, v.firstElementChild.children[1].textContent);
-	test.assertEqual(m.address.city, v.firstElementChild.children[2].children[0].textContent);
-	test.assertEqual(m.address.street, v.firstElementChild.children[2].children[1].textContent);
+	assert.equal(m.firstName, v.firstElementChild.children[0].textContent);
+	assert.equal(m.lastName, v.firstElementChild.children[1].textContent);
+	assert.equal(m.address.city, v.firstElementChild.children[2].children[0].textContent);
+	assert.equal(m.address.street, v.firstElementChild.children[2].children[1].textContent);
 
 	m.firstName = 'FIRST';
 	m.address.city = 'CITY';
-	test.assertEqual(m.firstName, v.firstElementChild.children[0].textContent);
-	test.assertEqual(m.address.city, v.firstElementChild.children[2].children[0].textContent);
+	assert.equal(m.firstName, v.firstElementChild.children[0].textContent);
+	assert.equal(m.address.city, v.firstElementChild.children[2].children[0].textContent);
 });

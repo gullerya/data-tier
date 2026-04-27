@@ -1,11 +1,13 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
+import { getRandom } from '@gullerya/just-test/random';
 import * as DataTier from '../dist/data-tier.js';
 
-const suite = getSuite({ name: 'Testing complex DOM changes (scoped)' });
 
-suite.runTest({ name: 'adding object and immediatelly removing it' }, async test => {
+test('adding object and immediatelly removing it', async () => {
 	const
-		tn = test.getRandom(8),
+		tn = getRandom(8),
 		m = DataTier.ties.create(tn, []);
 
 	//	adding object 1, then adding tied scoped element
@@ -21,13 +23,13 @@ suite.runTest({ name: 'adding object and immediatelly removing it' }, async test
 	document.body.appendChild(e2);
 
 	//	verify
-	await test.waitNextMicrotask();
-	test.assertEqual('someA', e1.textContent);
-	test.assertEqual('someB', e2.textContent);
+	await waitNextTask();
+	assert.equal('someA', e1.textContent);
+	assert.equal('someB', e2.textContent);
 
 	//	cloned content, so the elements selves should remain the same
 	m.splice(0);
 	e1.appendChild(e2);
-	test.assertEqual('someAsomeB', e1.textContent);
-	test.assertEqual('someB', e2.textContent);
+	assert.equal('someAsomeB', e1.textContent);
+	assert.equal('someB', e2.textContent);
 });

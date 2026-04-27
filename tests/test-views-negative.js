@@ -1,11 +1,11 @@
-import { getSuite } from '../node_modules/just-test/dist/just-test.min.js';
+import { test } from '@gullerya/just-test';
+import { assert } from '@gullerya/just-test/assert';
+import { waitNextTask } from '@gullerya/just-test/timing';
 import { ties } from '../dist/data-tier.js';
 
-const
-	originalConsoleError = console.error,
-	suite = getSuite({ name: 'Testing views (negative)' });
+const originalConsoleError = console.error;
 
-suite.runTest({ name: 'wrong tying syntax', sync: true }, async test => {
+test('wrong tying syntax - missing tieKey', async () => {
 	const d = document.createElement('div');
 	const errors = [];
 
@@ -13,14 +13,14 @@ suite.runTest({ name: 'wrong tying syntax', sync: true }, async test => {
 		errors.push(e);
 	};
 
-	d.dataset.tie = 'some::thing';
+	d.dataset.tie = ':path';
 	document.body.appendChild(d);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertTrue(errors.length &&
+	assert.isTrue(errors.length &&
 		errors[0] instanceof Error &&
-		errors[0].message.includes(`invalid tie parameter '${d.dataset.tie}'`));
+		errors[0].message.includes('tie key missing'));
 
 	console.error = originalConsoleError;
 });
@@ -30,7 +30,7 @@ ties.create('negMultiProp', {
 	bool: true
 });
 
-suite.runTest({ name: 'multiple bindings to the same property - explicit', sync: true }, async test => {
+test('multiple bindings to the same property - explicit', async () => {
 	const d = document.createElement('div');
 	const errors = [];
 
@@ -41,17 +41,17 @@ suite.runTest({ name: 'multiple bindings to the same property - explicit', sync:
 	d.dataset.tie = 'negMultiProp:text => data, negMultiProp:bool => data';
 	document.body.appendChild(d);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertTrue(errors.length &&
+	assert.isTrue(errors.length &&
 		typeof errors[0] === 'string' &&
 		errors[0].includes('elements\'s property \'data\' tied more than once'));
-	test.assertEqual('txt', d.data);
+	assert.equal('txt', d.data);
 
 	console.error = originalConsoleError;
 });
 
-suite.runTest({ name: 'multiple bindings to the same property - implicit', sync: true }, async test => {
+test('multiple bindings to the same property - implicit', async () => {
 	const d = document.createElement('div');
 	const errors = [];
 
@@ -62,17 +62,17 @@ suite.runTest({ name: 'multiple bindings to the same property - implicit', sync:
 	d.dataset.tie = 'negMultiProp:bool, negMultiProp:text';
 	document.body.appendChild(d);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertTrue(errors.length &&
+	assert.isTrue(errors.length &&
 		typeof errors[0] === 'string' &&
 		errors[0].includes('elements\'s property \'textContent\' tied more than once'));
-	test.assertEqual(d.textContent, 'true');
+	assert.equal(d.textContent, 'true');
 
 	console.error = originalConsoleError;
 });
 
-suite.runTest({ name: 'multiple bindings to the same property - explicit and implicit', sync: true }, async test => {
+test('multiple bindings to the same property - explicit and implicit', async () => {
 	const d = document.createElement('div');
 	const errors = [];
 
@@ -83,12 +83,12 @@ suite.runTest({ name: 'multiple bindings to the same property - explicit and imp
 	d.dataset.tie = 'negMultiProp:text => textContent, negMultiProp:bool';
 	document.body.appendChild(d);
 
-	await test.waitNextMicrotask();
+	await waitNextTask();
 
-	test.assertTrue(errors.length &&
+	assert.isTrue(errors.length &&
 		typeof errors[0] === 'string' &&
 		errors[0].includes('elements\'s property \'textContent\' tied more than once'));
-	test.assertEqual(d.textContent, 'txt');
+	assert.equal(d.textContent, 'txt');
 
 	console.error = originalConsoleError;
 });

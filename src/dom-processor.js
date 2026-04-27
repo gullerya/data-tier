@@ -37,7 +37,7 @@ export class DOMProcessor {
 			return false;
 		}
 
-		const mo = new MutationObserver(this._boundDOMChangesListener)
+		const mo = new MutationObserver(this._boundDOMChangesListener);
 		mo.observe(rootDocument, MUTATION_OBSERVER_OPTIONS);
 		this._roots.set(rootDocument, mo);
 		for (let i = 0, l = rootDocument.children.length; i < l; i++) {
